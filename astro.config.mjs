@@ -18,7 +18,7 @@ export default defineConfig({
   // adapter: vercel({
   //   imageService: true,
   // }),
-  output: "server",
+  // output: "server",
   // adapter: vercel(),
   markdown: {
     remarkPlugins: [remarkReadingTime],
