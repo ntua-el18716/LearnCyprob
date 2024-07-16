@@ -134,7 +134,7 @@ const canonicalURL = new URL(Astro.url).href;
   </body>
 </html>
 
-<script is:inline async>
+<!-- <script is:inline async>
   const darkModeToggle = document.getElementById("dark-mode-toggle");
   const darkClass = "dark";
   const htmlTag = document.querySelector("html");
@@ -174,6 +174,51 @@ const canonicalURL = new URL(Astro.url).href;
     const isDark = htmlTag.classList.contains(darkClass);
     applyDarkMode(!isDark);
     setCookie("darkMode", !isDark, 30);
+  });
+</script> -->
+
+<script is:inline async>
+  document.addEventListener("DOMContentLoaded", function () {
+    const darkModeToggle = document.getElementById("dark-mode-toggle");
+    const htmlTag = document.querySelector("html");
+    const sunIcon = document.querySelector(".sun-icon");
+    const moonIcon = document.querySelector(".moon-icon");
+    const darkClass = "dark";
+
+    if (!darkModeToggle || !htmlTag || !sunIcon || !moonIcon) {
+      console.error("One or more required elements not found");
+      return;
+    }
+
+    function applyDarkMode(isDark) {
+      htmlTag.classList.toggle(darkClass, isDark);
+      htmlTag.setAttribute("data-theme", isDark ? "min-dark" : "min-light");
+      sunIcon.classList.toggle("hidden", isDark);
+      moonIcon.classList.toggle("hidden", !isDark);
+    }
+
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(";").shift();
+      return null;
+    }
+
+    function setCookie(name, value, expirationDays) {
+      const date = new Date();
+      date.setTime(date.getTime() + expirationDays * 24 * 60 * 60 * 1000);
+      const expires = `expires=${date.toUTCString()}`;
+      document.cookie = `${name}=${value}; ${expires}; path=/`;
+    }
+
+    const isDarkMode = getCookie("darkMode") === "true";
+    applyDarkMode(isDarkMode);
+
+    darkModeToggle.addEventListener("click", () => {
+      const isDark = htmlTag.classList.contains(darkClass);
+      applyDarkMode(!isDark);
+      setCookie("darkMode", !isDark, 30);
+    });
   });
 </script>
 
