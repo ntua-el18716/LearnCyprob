@@ -10,16 +10,13 @@ import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import { remarkReadingTime } from "./remark-reading-time.mjs";
 import react from "@astrojs/react";
 /** @type {import('astro-expressive-code').AstroExpressiveCodeOptions} */
+import netlify from "@astrojs/netlify";
 const astroExpressiveCodeOptions = {
   themes: ["min-dark", "min-light"],
 };
 
+// https://astro.build/config
 export default defineConfig({
-  // adapter: vercel({
-  //   imageService: true,
-  // }),
-  // output: "server",
-  // adapter: vercel(),
   markdown: {
     remarkPlugins: [remarkReadingTime],
     rehypePlugins: [
@@ -64,6 +61,8 @@ export default defineConfig({
       exclude: ["@resvg/resvg-js"],
     },
   },
+  output: "server",
+  adapter: netlify(),
 });
 
 // vite plugin to import fonts
