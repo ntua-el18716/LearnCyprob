@@ -15,11 +15,11 @@ const astroExpressiveCodeOptions = {
 };
 
 export default defineConfig({
-  adapter: vercel({
-    imageService: true,
-  }),
+  // adapter: vercel({
+  //   imageService: true,
+  // }),
   output: "server",
-  adapter: vercel(),
+  // adapter: vercel(),
   markdown: {
     remarkPlugins: [remarkReadingTime],
     rehypePlugins: [
