@@ -8,6 +8,7 @@
       "@data/*": ["src/data/*"],
       "@styles/*": ["src/styles/*"],
       "~/assets/*": ["src/assets/*"]
-    }
+    },
+    "noImplicitAny": false
   }
 }
