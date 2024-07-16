@@ -16,6 +16,9 @@ const astroExpressiveCodeOptions = {
 };
 
 export default defineConfig({
+  adapter: vercel({
+    imageService: true,
+  }),
   markdown: {
     remarkPlugins: [remarkReadingTime],
     rehypePlugins: [
@@ -77,8 +80,3 @@ function rawFonts(ext) {
     },
   };
 }
-
-astroImageTools.hooks["astro:build:done"] = async () =>
-  (
-    await import("./node_modules/astro-imagetools/plugin/hooks/closeBundle.js")
-  ).default();
