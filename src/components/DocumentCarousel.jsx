@@ -31,7 +31,8 @@ export function EmblaCarousel({ children, images, url, ...props }) {
   const [open, setOpen] = useState(false);
 
   function onButtonClick() {
-    const pdfUrl = `../../public/content/document/${url}.pdf`;
+    // const pdfUrl = `../../public/content/document/${url}.pdf`;
+    const pdfUrl = `content/document/${url}.pdf`;
     // const pdfUrl = `content/document/${url}.pdf`;
     const link = document.createElement("a");
     link.href = pdfUrl;
