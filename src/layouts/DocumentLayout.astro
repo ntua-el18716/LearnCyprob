@@ -151,10 +151,10 @@ const fullUpdatedDate = updatedDate?.toLocaleDateString("en", {
   />
   <Pagination />
 </Layout>
-<script is:inline async>
+<!-- <script is:inline async>
   document.getElementById("copy").addEventListener("click", function () {
     let copyText = window.location.href;
-    let toastElement = document.getElementById("toast-share");
+    let toastElement = documentgetElementById("toast-share");
 
     navigator.clipboard.writeText(copyText).then(() => {
       toastElement.classList.remove("!invisible");
@@ -163,4 +163,24 @@ const fullUpdatedDate = updatedDate?.toLocaleDateString("en", {
       }, 2500);
     });
   });
+</script> -->
+
+<script is:inline async>
+  const copyButton = document.getElementById("copy");
+  const toastElement = document.getElementById("toast-share");
+
+  if (copyButton && toastElement) {
+    copyButton.addEventListener("click", function () {
+      let copyText = window.location.href;
+
+      navigator.clipboard.writeText(copyText).then(() => {
+        toastElement.classList.remove("!invisible");
+        setTimeout(() => {
+          toastElement.classList.add("!invisible");
+        }, 2500);
+      });
+    });
+  } else {
+    console.error("Copy button or toast element not found");
+  }
 </script>
