@@ -16,7 +16,7 @@ interface Props {
   pubDate: Date;
 }
 
-export async function GET(context: APIContext) {
+async function GET(context: APIContext) {
   const { title, pubDate } = context.props as Props;
   const date = pubDate.toLocaleDateString("en-US", {
     dateStyle: "full",
@@ -73,7 +73,8 @@ export async function GET(context: APIContext) {
     </div>
   </div>`;
 
-  const svg = await satori(markup, {
+  const svg = await satori(markup as unknown as React.ReactNode, {
+    // const svg = await satori(markup, {
     fonts: [
       {
         name: "Inter",
