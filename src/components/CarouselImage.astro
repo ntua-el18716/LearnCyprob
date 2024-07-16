@@ -1,0 +1,28 @@
+---
+import type { ImageMetadata } from "astro";
+import { Image } from "astro:assets";
+import EmblaCarousel from "./DocumentCarousel.jsx";
+import "./styles.css";
+
+const SLIDE_COUNT = 10;
+const SLIDES = Array.from(Array(SLIDE_COUNT).keys());
+
+const { url, numOfImages, images } = Astro.props;
+const OPTIONS = { slidesToScroll: "auto" };
+---
+
+<EmblaCarousel
+  client:load
+  slides={SLIDES}
+  options={OPTIONS}
+  images={images}
+  url={url}
+>
+  {
+    images.map((image: ImageMetadata) => (
+      <div class="embla__slide">
+        <Image src={image} alt="ts" loading="eager" />
+      </div>
+    ))
+  }
+</EmblaCarousel>
