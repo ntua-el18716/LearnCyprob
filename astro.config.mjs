@@ -9,16 +9,18 @@ import rehypeSlug from "rehype-slug";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import { remarkReadingTime } from "./remark-reading-time.mjs";
 import react from "@astrojs/react";
-
+import vercel from "@astrojs/vercel/static";
 /** @type {import('astro-expressive-code').AstroExpressiveCodeOptions} */
 const astroExpressiveCodeOptions = {
   themes: ["min-dark", "min-light"],
 };
 
 export default defineConfig({
-  // adapter: vercel({
-  //   imageService: true,
-  // }),
+  adapter: vercel({
+    imageService: true,
+  }),
+  output: "server",
+  adapter: vercel(),
   markdown: {
     remarkPlugins: [remarkReadingTime],
     rehypePlugins: [
