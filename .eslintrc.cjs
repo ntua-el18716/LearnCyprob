@@ -8,7 +8,8 @@ module.exports = {
   root: true,
   overrides: [
     {
-      files: ["*.astro"],
+      // files: ["*.astro"],
+      files: ["*.ts", "*.tsx"],
       parser: "astro-eslint-parser",
       parserOptions: {
         parser: "@typescript-eslint/parser",
@@ -29,4 +30,15 @@ module.exports = {
     "plugin:@typescript-eslint/recommended",
     "plugin:astro/recommended",
   ],
+  env: {
+    browser: true,
+    node: true,
+  },
+  rules: {
+    "no-unused-vars": "warn", // Change this rule to warn instead of error
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      { vars: "all", args: "after-used", ignoreRestSiblings: false },
+    ],
+  },
 };
