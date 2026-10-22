@@ -13,7 +13,9 @@ module.exports = {
         olive: { ink: "#4D5F24", "ink-dark": "#B5C27A" },
       },
       fontFamily: {
-        sans: ["InterVariable", "Inter", ...defaultTheme.fontFamily.sans],
+        // Noto covers Greek and Turkish (PLAN.md §10).
+        sans: ["Noto Sans Variable", ...defaultTheme.fontFamily.sans],
+        serif: ["Noto Serif Variable", ...defaultTheme.fontFamily.serif],
       },
       typography: (theme) => ({
         DEFAULT: {
