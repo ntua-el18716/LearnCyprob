@@ -4,3 +4,17 @@ export const locales = ["en", "el", "tr"] as const;
 export type Locale = (typeof locales)[number];
 
 export const defaultLocale = "en" satisfies Locale;
+
+// Locales that get routes. A locale can exist (content, strings) before it is
+// published.
+export const publishedLocales = ["en", "el"] as const satisfies readonly Locale[];
+
+export const localeMeta: Record<Locale, { name: string; ogLocale: string }> = {
+  en: { name: "English", ogLocale: "en_US" },
+  el: { name: "Ελληνικά", ogLocale: "el_GR" },
+  tr: { name: "Türkçe", ogLocale: "tr_TR" },
+};
+
+export function isLocale(value: string | undefined): value is Locale {
+  return (locales as readonly string[]).includes(value ?? "");
+}

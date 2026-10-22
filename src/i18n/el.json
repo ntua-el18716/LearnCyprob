@@ -1,0 +1,14 @@
+{
+  "a11y.skipToContent": "Μετάβαση στο κύριο περιεχόμενο",
+  "nav.label": "Κύρια πλοήγηση",
+  "nav.home": "Αρχική",
+  "nav.issues": "Πτυχές",
+  "nav.documents": "Έγγραφα",
+  "nav.language": "Γλώσσα",
+  "theme.toggle": "Εναλλαγή φωτεινού και σκοτεινού θέματος",
+  "noscript.title": "ΣΗΜΕΙΩΣΗ",
+  "noscript.body": "Ορισμένες λειτουργίες, όπως η εναλλαγή θέματος και η αντιγραφή συνδέσμων, χρειάζονται JavaScript.",
+  "footer.copyright": "© {year} {author}. Με επιφύλαξη παντός δικαιώματος.",
+  "footer.source": "Πηγαίος κώδικας.",
+  "langPicker.title": "Επιλέξτε γλώσσα"
+}

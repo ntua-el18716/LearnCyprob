@@ -3,12 +3,14 @@ import type { HTMLAttributes } from "astro/types";
 
 interface Props extends HTMLAttributes<"a"> {
   text: string;
+  /** Only active on this exact path (e.g. a home page), not its children. */
+  exact?: boolean;
 }
-const { text, href, ...props } = Astro.props;
+const { text, href, exact = false, ...props } = Astro.props;
 let isActive: boolean;
 if (!href) {
   isActive = false;
-} else if (href === "/") {
+} else if (exact) {
   isActive = href === Astro.url.pathname;
 } else {
   isActive = Astro.url.pathname.includes(
@@ -26,7 +28,6 @@ if (!href) {
   aria-current={isActive ? "page" : undefined}
   href={href} 
   {...props}
-  aria-label={`Go to ${text} page`}
 >
   {text}
 </a>

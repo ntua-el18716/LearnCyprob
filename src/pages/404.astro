@@ -1,24 +1,18 @@
 ---
 import Layout from "@layouts/Layout.astro";
-// import bailu from "../assets/bailu.png";
-const title = "Not found";
-const description = "Sorry, the page you are looking for does not exist.";
+import { defaultLocale } from "../i18n/locales";
+import { useTranslations } from "../lib/i18n";
+
+// A static host serves one 404 page for every path, so it uses the default locale.
+const t = useTranslations(defaultLocale);
+const title = t("notFound.title");
+const description = t("notFound.description");
 ---
 
 <Layout title={title} description={description}>
   <div class="flex flex-col items-center gap-4 mt-18">
-    <!-- <Picture
-      src={bailu}
-      alt="Chibi Bailu from Honkai Star Rail (ctto)"
-      loading="eager"
-      class="aspect-square"
-      densities={[1.5, 2]}
-      formats={["webp"]}
-      width={360}
-      height={360}
-    /> -->
     <p class="dark:text-white font-medium text-zinc-900 text-center">
-      Welp, this page doesn't exist.
+      {t("notFound.body")}
     </p>
   </div>
 </Layout>

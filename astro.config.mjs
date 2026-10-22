@@ -8,6 +8,7 @@ import rehypeSlug from "rehype-slug";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import { remarkReadingTime } from "./remark-reading-time.mjs";
 import react from "@astrojs/react";
+import { defaultLocale, locales, publishedLocales } from "./src/i18n/locales.ts";
 
 // https://astro.build/config
 export default defineConfig({
@@ -38,8 +39,20 @@ export default defineConfig({
   },
   // Astro 7 defaults to "jsx", which strips whitespace between inline elements.
   compressHTML: true,
+  i18n: {
+    locales: [...locales],
+    defaultLocale,
+    // Every locale, including the default, lives under /{lang}/. The root page
+    // (src/pages/index.astro) picks a language itself.
+    routing: { prefixDefaultLocale: true, redirectToDefaultLocale: false },
+  },
   integrations: [
-    sitemap(),
+    sitemap({
+      i18n: {
+        defaultLocale,
+        locales: Object.fromEntries(publishedLocales.map((l) => [l, l])),
+      },
+    }),
     icon(),
     mdx(),
     react(),

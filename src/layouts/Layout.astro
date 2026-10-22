@@ -1,7 +1,14 @@
 ---
 import Link from "@components/Link.astro";
 import { Icon } from "astro-icon/components";
-import { author, defaultMeta, navigation } from "@data/constants";
+import { author, defaultMeta } from "@data/constants";
+import { localizePath, useTranslations } from "../lib/i18n";
+import {
+  defaultLocale,
+  localeMeta,
+  publishedLocales,
+  type Locale,
+} from "../i18n/locales";
 import "@styles/global.css";
 import "@fontsource-variable/inter";
 import Callout from "@components/MDX/Callout.astro";
@@ -16,22 +23,40 @@ interface Props {
   };
   pubDate?: Date;
   wide?: boolean;
+  lang?: Locale;
+  /** This page in other languages; defaults to each language's home page. */
+  alternates?: Partial<Record<Locale, string>>;
 }
 
 const {
-  title = defaultMeta.title,
-  description = defaultMeta.description,
-  ogImage = defaultMeta.ogImage,
+  lang = defaultLocale,
   pubDate,
   wide = false,
+  alternates = Object.fromEntries(
+    publishedLocales.map((l) => [l, localizePath(l)]),
+  ),
 } = Astro.props;
+const t = useTranslations(lang);
+const {
+  title = t("site.title"),
+  description = t("site.description"),
+  ogImage = defaultMeta.ogImage,
+} = Astro.props;
+
+// Legacy routes (/cyprob, /document) are not localised yet; they move under
+// /{lang}/ when the issue and document pages are rebuilt.
+const navigation = [
+  { href: localizePath(lang), text: t("nav.home"), exact: true },
+  { href: "/cyprob", text: t("nav.issues") },
+  { href: "/document", text: t("nav.documents") },
+];
 
 const ogImageURL = new URL(ogImage.src, Astro.site).href;
 const canonicalURL = new URL(Astro.url).href;
 ---
 
 <!doctype html>
-<html lang="en-US" class="dark:[color-scheme:dark] scroll-smooth">
+<html lang={lang} class="dark:[color-scheme:dark] scroll-smooth">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
@@ -62,7 +87,16 @@ const canonicalURL = new URL(Astro.url).href;
     <meta property="og:image" content={ogImageURL} />
     <meta property="og:site_name" content={author} />
     <meta property="og:image:alt" content={ogImage.alt} />
-    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale" content={localeMeta[lang].ogLocale} />
+    {
+      Object.entries(alternates).map(([l, href]) => (
+        <link
+          rel="alternate"
+          hreflang={l}
+          href={new URL(href, Astro.site).href}
+        />
+      ))
+    }
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content={canonicalURL} />
     <meta property="twitter:title" content={title} />
@@ -86,9 +120,10 @@ const canonicalURL = new URL(Astro.url).href;
     <a
       href="#main-content"
       class="absolute opacity-0 focus:opacity-100 border-transparent border-y border-r dark:focus:border-zinc-900 text-xs lg:text-sm px-4 py-1.5 lg:py-2 top-1 lg:top-[41px] transition-transform duration-300 rounded-r-full bg-zinc-300 dark:bg-zinc-800 font-medium text-zinc-800 dark:text-zinc-200 focus:outline-none -translate-x-full focus:translate-x-0"
-      >Skip to main content</a
+      >{t("a11y.skipToContent")}</a
     >
     <nav
+      aria-label={t("nav.label")}
       class="mb-16 mx-auto flex overflow-x-auto px-6 lg:px-2 sm:overflow-x-visible justify-between"
       class:list={{
         "max-w-4xl": wide,
@@ -104,14 +139,38 @@ const canonicalURL = new URL(Astro.url).href;
           ))
         }
       </ul>
-      <button
-        id="dark-mode-toggle"
-        class="focus:outline-none dark:text-zinc-100 text-zinc-900 dark:hover:text-zinc-300 hover:text-zinc-600"
-        aria-label="Toggle theme mode"
-      >
-        <Icon name="moon" class="w-6 h-6 sun-icon" />
-        <Icon name="sun" class="w-6 h-6 moon-icon" />
-      </button>
+      <div class="flex items-center gap-4 ml-6">
+        <ul class="flex gap-3 text-sm" aria-label={t("nav.language")}>
+          {
+            publishedLocales.map((l) => (
+              <li>
+                <a
+                  href={alternates[l] ?? localizePath(l)}
+                  hreflang={l}
+                  lang={l}
+                  aria-current={l === lang ? "true" : undefined}
+                  class:list={[
+                    "block py-2.5 transition-colors",
+                    l === lang
+                      ? "font-semibold dark:text-zinc-50 text-zinc-950"
+                      : "dark:text-zinc-400 text-zinc-600 hover:text-zinc-800 dark:hover:text-zinc-50",
+                  ]}
+                >
+                  {localeMeta[l].name}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+        <button
+          id="dark-mode-toggle"
+          class="focus:outline-none dark:text-zinc-100 text-zinc-900 dark:hover:text-zinc-300 hover:text-zinc-600"
+          aria-label={t("theme.toggle")}
+        >
+          <Icon name="moon" class="w-6 h-6 sun-icon" />
+          <Icon name="sun" class="w-6 h-6 moon-icon" />
+        </button>
+      </div>
     </nav>
     <main
       class="px-6 lg:px-2 mx-auto dark:text-zinc-400 text-zinc-600"
@@ -122,9 +181,8 @@ const canonicalURL = new URL(Astro.url).href;
       }}
     >
       <noscript>
-        <Callout type="error" title="NOTICE">
-          Some features on this website won't work without JavaScript such as
-          theme toggle, search bar, and copy article.
+        <Callout type="error" title={t("noscript.title")}>
+          {t("noscript.body")}
         </Callout>
       </noscript>
       <slot />
@@ -134,12 +192,10 @@ const canonicalURL = new URL(Astro.url).href;
         class="mx-auto max-w-4xl px-6 lg:px-2 text-center text-xs lg:text-sm dark:text-zinc-400 text-zinc-600"
       >
         <p>
-          &copy; {new Date().getFullYear()}
-          {author}. All rights reserved. <span
-            ><a
-              href="https://github.com/ntua-el18716/LearnCyprob"
-              class="hover:underline z-10">Source Code.</a
-            ></span
+          {t("footer.copyright", { year: new Date().getFullYear(), author })}
+          <a
+            href="https://github.com/ntua-el18716/LearnCyprob"
+            class="hover:underline z-10">{t("footer.source")}</a
           >
         </p>
       </div>

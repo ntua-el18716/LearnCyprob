@@ -1,12 +1,14 @@
 ---
 interface Props {
   title: string;
+  lang?: string;
 }
 
-const { title } = Astro.props;
+const { title, lang } = Astro.props;
 ---
 
 <h1
+  lang={lang}
   class="mb-6 dark:text-zinc-100 text-zinc-950 text-3xl font-bold tracking-tight sm:text-4xl text-center"
 >
   {title}
