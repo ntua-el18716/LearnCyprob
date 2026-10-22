@@ -1,0 +1,28 @@
+# Checks only; nothing is deployed (the site runs locally for now).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history: i18n:status compares translations with the EN
+          # file's last commit.
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm run lint
+      - run: npm run lint:citations
+      - run: npm run build
+      - run: npm run check:links
+      - run: npm run i18n:status
