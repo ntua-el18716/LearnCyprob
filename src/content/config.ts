@@ -1,17 +1,5 @@
 import { defineCollection, z } from "astro:content";
 
-const blogCollection = defineCollection({
-  schema: ({ image }) =>
-    z.object({
-      title: z.string().max(60).min(10),
-      hero: image(),
-      heroAlt: z.string(),
-      description: z.string().max(160),
-      pubDate: z.date(),
-      updatedDate: z.date().optional(),
-    }),
-});
-
 const cyprobCollection = defineCollection({
   schema: ({ image }) =>
     z.object({
@@ -43,7 +31,6 @@ const documentCollection = defineCollection({
 });
 
 export const collections = {
-  blog: blogCollection,
   cyprob: cyprobCollection,
   document: documentCollection,
 };

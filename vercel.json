@@ -1,7 +1,7 @@
 {
     "build": {
       "env": {
-        "command": "pnpm run build"
+        "command": "npm run build"
       }
     },
     "headers": [

@@ -54,6 +54,7 @@ export default defineConfig({
   image: {
     service: sharpImageService(),
   },
+  // TODO: site name and domain are still open (PLAN.md §14).
   site: "https://astrozinc.exylons.com",
   vite: {
     plugins: [rawFonts([".ttf", ".woff"])],

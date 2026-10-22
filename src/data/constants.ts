@@ -23,12 +23,4 @@ export const navigation = [
     href: "/document",
     text: "Documents",
   },
-  {
-    href: "/blog/",
-    text: "Blog",
-  },
-  {
-    href: "/rss.xml",
-    text: "RSS",
-  },
 ];

@@ -60,16 +60,6 @@ async function GET(context: APIContext) {
       >
         ${title}
       </div>
-      <div tw="flex items-center mt-9">
-        <img
-          src="https://avatars.githubusercontent.com/u/145350865?s=160"
-          tw="w-15 h-15 rounded-full"
-        />
-        <div tw="flex flex-col ml-4 text-2xl">
-          <span tw="text-zinc-400">Lance Ross</span>
-          <span tw="text-zinc-400">@exylods</span>
-        </div>
-      </div>
     </div>
   </div>`;
 
@@ -106,7 +96,10 @@ async function GET(context: APIContext) {
 }
 
 export async function getStaticPaths() {
-  const posts = await getCollection("blog");
+  const posts = [
+    ...(await getCollection("cyprob")),
+    ...(await getCollection("document")),
+  ];
   const paths = posts.map((post) => {
     return {
       params: {

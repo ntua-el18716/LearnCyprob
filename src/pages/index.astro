@@ -3,7 +3,7 @@ import Layout from "@layouts/Layout.astro";
 import Header from "@components/Header.astro";
 import { getCollection } from "astro:content";
 import Benefit from "@components/Benefit.astro";
-import Blog from "@components/Blog.astro";
+import Blog from "@components/Cyprob-blog.astro";
 import { Icon } from "astro-icon/components";
 
 const posts = (await getCollection("cyprob")).sort(
@@ -28,7 +28,7 @@ const posts = (await getCollection("cyprob")).sort(
       <Header title="Why use LearnCyprob?" />
       <ul class="grid grid-cols-1 gap-4 place-items-center">
         <Benefit
-          iconName="cyprusflag"
+          iconName="peace-cooperate-together"
           title="Learn the basic aspects of the Cyprus Problem"
           description="Comes with many different MDX remark plugins to make your blog posts look great and more functional."
         />
@@ -59,7 +59,7 @@ const posts = (await getCollection("cyprob")).sort(
     </ul>
     <a
       class="inline-block mt-7 dark:hover:text-zinc-50 hover:text-zinc-400 transition-colors"
-      href="/blog/">View all posts &rarr;</a
+      href="/cyprob/">View all posts &rarr;</a
     >
   </section>
 </Layout>
