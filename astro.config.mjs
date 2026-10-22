@@ -11,8 +11,33 @@ import { remarkCitations } from "./src/lib/remark-citations.ts";
 import react from "@astrojs/react";
 import { defaultLocale, locales, publishedLocales } from "./src/i18n/locales.ts";
 
+// Old URLs (before the move to /{lang}/issues and /{lang}/documents). A fixed,
+// historical list: new content never needs an entry here.
+const legacyIssues = ["bbf", "bizonality", "political-equality", "rotating-presidency", "security-guarantees", "troops"];
+const legacyDocuments = [
+  "anastasiades-eroglu-joint-declaration",
+  "crans-montana-anastasiades-guterres",
+  "crans-montana-cavusoglu-guterres-1",
+  "crans-montana-cavusoglu-guterres-2",
+  "crans-montana-dinner",
+  "crans-montana-implementation-framework-non-paper",
+  "crans-montana-kotzias-guterres",
+  "crans-montana-mogherini-gutteres",
+  "downer-document",
+  "guterres-framework-4th-july",
+  "papadopoulos-talat-set-of-principles",
+  "un-report-1990",
+];
+const legacyRedirects = {
+  "/cyprob": "/en/issues/",
+  "/document": "/en/documents/",
+  ...Object.fromEntries(legacyIssues.map((s) => [`/cyprob/${s}`, `/en/issues/${s}/`])),
+  ...Object.fromEntries(legacyDocuments.map((s) => [`/document/${s}`, `/en/documents/${s}/`])),
+};
+
 // https://astro.build/config
 export default defineConfig({
+  redirects: legacyRedirects,
   markdown: {
     // Astro 7 defaults to Sätteri; the unified processor keeps our remark/rehype plugins.
     processor: unified({

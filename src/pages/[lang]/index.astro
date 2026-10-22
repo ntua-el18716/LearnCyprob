@@ -1,15 +1,10 @@
 ---
 import Layout from "@layouts/Layout.astro";
 import Header from "@components/Header.astro";
-import { getCollection } from "astro:content";
 import Benefit from "@components/Benefit.astro";
-import Blog from "@components/Cyprob-blog.astro";
-import {
-  defaultLocale,
-  publishedLocales,
-  type Locale,
-} from "../../i18n/locales";
-import { useTranslations } from "../../lib/i18n";
+import { publishedLocales, type Locale } from "../../i18n/locales";
+import { localizePath, useTranslations } from "../../lib/i18n";
+import { getIssue, getIssueSlugs } from "../../lib/issues";
 
 export function getStaticPaths() {
   return publishedLocales.map((lang) => ({ params: { lang } }));
@@ -18,11 +13,15 @@ export function getStaticPaths() {
 const lang = Astro.params.lang as Locale;
 const t = useTranslations(lang);
 
-const posts = (await getCollection("cyprob")).sort(
-  (a, b) =>
-    b.data.pubDate.valueOf() - a.data.pubDate.valueOf() ||
-    a.id.localeCompare(b.id),
-);
+// Most recently reviewed issues, in this language where available.
+const recent = (await Promise.all((await getIssueSlugs()).map((s) => getIssue(s, lang))))
+  .filter((r) => r !== undefined)
+  .sort(
+    (a, b) =>
+      b.entry.data.lastReviewed.valueOf() - a.entry.data.lastReviewed.valueOf() ||
+      a.entry.data.slug.localeCompare(b.entry.data.slug),
+  )
+  .slice(0, 3);
 ---
 
 <Layout lang={lang}>
@@ -71,16 +70,24 @@ const posts = (await getCollection("cyprob")).sort(
     >
       {t("home.recent")}
     </h2>
-    <!-- Legacy posts are English-only until they move to the issues collection. -->
-    <ul
-      class="mt-6 grid grid-cols-1 gap-6"
-      lang={lang === defaultLocale ? undefined : defaultLocale}
-    >
-      {posts.slice(0, 3).map((post) => <Blog {...post} />)}
+    <ul class="mt-6 divide-y divide-zinc-300 dark:divide-zinc-700">
+      {
+        recent.map(({ entry, lang: entryLang, isFallback }) => (
+          <li class="py-4" lang={isFallback ? entryLang : undefined}>
+            <a
+              href={localizePath(lang, `issues/${entry.data.slug}`)}
+              class="font-semibold text-zinc-900 dark:text-zinc-100 underline decoration-zinc-400 underline-offset-2"
+            >
+              {entry.data.title}
+            </a>
+            <p class="mt-1 text-sm">{entry.data.summary}</p>
+          </li>
+        ))
+      }
     </ul>
     <a
       class="inline-block mt-7 dark:hover:text-zinc-50 hover:text-zinc-400 transition-colors"
-      href="/cyprob/"
+      href={localizePath(lang, "issues")}
       lang={t.langOf("home.viewAll")}>{t("home.viewAll")} &rarr;</a
     >
   </section>

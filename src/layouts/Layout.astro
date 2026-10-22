@@ -47,12 +47,10 @@ const {
   ogImage = defaultMeta.ogImage,
 } = Astro.props;
 
-// Legacy routes (/cyprob, /document) are not localised yet; they move under
-// /{lang}/ when the issue and document pages are rebuilt.
 const navigation = [
   { href: localizePath(lang), text: t("nav.home"), exact: true },
-  { href: "/cyprob", text: t("nav.issues") },
-  { href: "/document", text: t("nav.documents") },
+  { href: localizePath(lang, "issues"), text: t("nav.issues") },
+  { href: localizePath(lang, "documents"), text: t("nav.documents") },
 ];
 
 const ogImageURL = new URL(ogImage.src, Astro.site).href;
