@@ -143,5 +143,15 @@
   "certainty.leader-statement": "Leader statement",
   "certainty.reported": "Reported",
   "certainty.inferred": "Inferred",
-  "positions.title": "Positions: {issue}"
+  "positions.title": "Positions: {issue}",
+  "explore.title": "Explore the issues",
+  "explore.description": "Every issue in the negotiations as a tree, with its status in the talks.",
+  "explore.expandAll": "Expand all",
+  "explore.collapseAll": "Collapse all",
+  "explore.status": "Status",
+  "explore.allStatuses": "All statuses",
+  "explore.noStatus": "No status yet",
+  "explore.search": "Filter by name",
+  "explore.noMatches": "No issues match these filters.",
+  "explore.plainList": "Plain list of issues"
 }

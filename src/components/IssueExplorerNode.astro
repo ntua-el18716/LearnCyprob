@@ -1,0 +1,37 @@
+---
+// One issue in the explorer; recursive. Branches are native <details>, so the
+// tree expands and collapses without JavaScript.
+import IssueExplorerLabel from "./IssueExplorerLabel.astro";
+import type { IssueNode } from "../lib/issues";
+import type { Locale } from "../i18n/locales";
+
+interface Props {
+  node: IssueNode;
+  lang: Locale;
+}
+
+const { node, lang } = Astro.props;
+const contentLang = node.isFallback ? node.lang : undefined;
+const summaryClass = "text-sm text-zinc-600 dark:text-zinc-400";
+---
+
+<li data-issue data-status={node.status ?? ""} data-title={node.title.toLocaleLowerCase(lang)} class="mt-2">
+  {
+    node.children.length > 0 ? (
+      <details open>
+        <summary class="cursor-pointer rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2">
+          <IssueExplorerLabel node={node} lang={lang} />
+        </summary>
+        <p lang={contentLang} class:list={["ml-5", summaryClass]}>{node.summary}</p>
+        <ul class="ml-5 border-l border-zinc-300 dark:border-zinc-700 pl-4">
+          {node.children.map((child) => <Astro.self node={child} lang={lang} />)}
+        </ul>
+      </details>
+    ) : (
+      <div class="ml-5">
+        <IssueExplorerLabel node={node} lang={lang} />
+        <p lang={contentLang} class={summaryClass}>{node.summary}</p>
+      </div>
+    )
+  }
+</li>

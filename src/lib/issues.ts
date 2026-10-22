@@ -37,6 +37,8 @@ export type IssueNode = {
   isFallback: boolean;
   draft: boolean;
   order: number;
+  summary: string;
+  status?: Issue["data"]["status"];
   children: IssueNode[];
 };
 
@@ -55,6 +57,8 @@ export async function getIssueTree(lang: Locale): Promise<IssueNode[]> {
         lang: entryLang,
         isFallback,
         draft: entry.data.draft,
+        summary: entry.data.summary,
+        status: entry.data.status,
         parent: entry.data.parent,
         order: entry.data.order,
         children: [],

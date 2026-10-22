@@ -62,5 +62,14 @@
   "board.validFrom": "Από {date}",
   "board.validRange": "Από {from} έως {to}",
   "board.fullPage": "Πλήρης πίνακας θέσεων",
-  "positions.title": "Θέσεις: {issue}"
+  "positions.title": "Θέσεις: {issue}",
+  "explore.title": "Εξερεύνηση θεμάτων",
+  "explore.expandAll": "Ανάπτυξη όλων",
+  "explore.collapseAll": "Σύμπτυξη όλων",
+  "explore.status": "Κατάσταση",
+  "explore.allStatuses": "Όλες οι καταστάσεις",
+  "explore.noStatus": "Χωρίς κατάσταση ακόμη",
+  "explore.search": "Φιλτράρισμα κατά όνομα",
+  "explore.noMatches": "Κανένα θέμα δεν ταιριάζει με αυτά τα φίλτρα.",
+  "explore.plainList": "Απλή λίστα θεμάτων"
 }

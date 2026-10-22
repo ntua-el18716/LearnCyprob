@@ -1,0 +1,136 @@
+---
+import Layout from "@layouts/Layout.astro";
+import Header from "@components/Header.astro";
+import IssueExplorerNode from "@components/IssueExplorerNode.astro";
+import { publishedLocales, type Locale } from "../../i18n/locales";
+import { localizePath, useTranslations } from "../../lib/i18n";
+import { getIssueTree } from "../../lib/issues";
+import { statusGlyphs } from "@components/content/status-glyphs";
+
+export function getStaticPaths() {
+  return publishedLocales.map((lang) => ({ params: { lang } }));
+}
+
+const lang = Astro.params.lang as Locale;
+const t = useTranslations(lang);
+const tree = await getIssueTree(lang);
+const statuses = Object.keys(statusGlyphs) as (keyof typeof statusGlyphs)[];
+const alternates = Object.fromEntries(
+  publishedLocales.map((l) => [l, localizePath(l, "explore")]),
+);
+const control =
+  "rounded-md border border-zinc-400 dark:border-zinc-600 bg-white dark:bg-zinc-900 px-2 py-1";
+---
+
+<Layout
+  lang={lang}
+  title={t("explore.title")}
+  description={t("explore.description")}
+  alternates={alternates}
+>
+  <Header title={t("explore.title")} />
+  <p class="mb-6 text-center" lang={t.langOf("explore.description")}>
+    {t("explore.description")}
+  </p>
+
+  <!-- Filters need JavaScript; they stay hidden without it (the tree itself works). -->
+  <!-- `hidden` sits on a wrapper without a display class: utilities like flex would override it. -->
+  <div data-explorer-controls hidden>
+    <div class="mb-6 flex flex-wrap items-end gap-3 text-sm">
+      <label class="flex flex-col gap-1">
+        {t("explore.search")}
+        <input type="search" data-filter-text class={control} />
+      </label>
+      <label class="flex flex-col gap-1">
+        {t("explore.status")}
+        <select data-filter-status class={control}>
+          <option value="">{t("explore.allStatuses")}</option>
+          {
+            statuses.map((s) => (
+              <option value={s} lang={t.langOf(`status.${s}`)}>
+                {t(`status.${s}`)}
+              </option>
+            ))
+          }
+          <option value="none">{t("explore.noStatus")}</option>
+        </select>
+      </label>
+      <button type="button" data-expand="open" class={control}
+        >{t("explore.expandAll")}</button
+      >
+      <button type="button" data-expand="close" class={control}
+        >{t("explore.collapseAll")}</button
+      >
+    </div>
+  </div>
+
+  <ul data-explorer>
+    {tree.map((node) => <IssueExplorerNode node={node} lang={lang} />)}
+  </ul>
+  <p data-no-matches hidden class="mt-4">{t("explore.noMatches")}</p>
+  <p class="mt-8 text-sm">
+    <a
+      href={localizePath(lang, "issues")}
+      class="underline decoration-zinc-400 underline-offset-2"
+      >{t("explore.plainList")}</a
+    >
+  </p>
+</Layout>
+
+<script>
+  // Progressive enhancement: filters and expand/collapse all.
+  const controls = document.querySelector<HTMLElement>(
+    "[data-explorer-controls]",
+  );
+  const tree = document.querySelector<HTMLElement>("[data-explorer]");
+  const noMatches = document.querySelector<HTMLElement>("[data-no-matches]");
+  const textInput =
+    document.querySelector<HTMLInputElement>("[data-filter-text]");
+  const statusSelect = document.querySelector<HTMLSelectElement>(
+    "[data-filter-status]",
+  );
+
+  if (controls && tree && noMatches && textInput && statusSelect) {
+    controls.hidden = false;
+    const items = [...tree.querySelectorAll<HTMLLIElement>("li[data-issue]")];
+
+    const apply = () => {
+      const text = textInput.value
+        .trim()
+        .toLocaleLowerCase(document.documentElement.lang);
+      const status = statusSelect.value;
+      const filtering = text !== "" || status !== "";
+      const matches = (li: HTMLLIElement) =>
+        (!text || (li.dataset.title ?? "").includes(text)) &&
+        (!status ||
+          (status === "none"
+            ? !li.dataset.status
+            : li.dataset.status === status));
+      // A node stays visible if it or any descendant matches; ancestors of a
+      // match are opened so the match can be seen.
+      for (const li of items) {
+        const visible =
+          matches(li) ||
+          [...li.querySelectorAll<HTMLLIElement>("li[data-issue]")].some(
+            matches,
+          );
+        li.hidden = filtering && !visible;
+        const details = li.querySelector(":scope > details");
+        if (details instanceof HTMLDetailsElement && filtering && visible)
+          details.open = true;
+      }
+      noMatches.hidden = !filtering || items.some((li) => !li.hidden);
+    };
+
+    textInput.addEventListener("input", apply);
+    statusSelect.addEventListener("change", apply);
+    controls
+      .querySelectorAll<HTMLButtonElement>("[data-expand]")
+      .forEach((button) =>
+        button.addEventListener("click", () => {
+          for (const d of tree.querySelectorAll("details"))
+            d.open = button.dataset.expand === "open";
+        }),
+      );
+  }
+</script>
