@@ -5,8 +5,14 @@ positions:
     option: placeholder-option-a
     certainty: official
     validFrom: 2000-01-01
+    validTo: 2010-01-01
     note: { en: "TODO(content): Placeholder nuance." }
     sources: [placeholder-source-a]
+  - actor: placeholder-actor-a
+    option: placeholder-option-b
+    certainty: leader-statement
+    validFrom: 2010-01-01
+    sources: [placeholder-source-a, placeholder-source-b]
   - actor: placeholder-actor-b
     option: no-stated-position
     certainty: inferred
@@ -16,3 +22,17 @@ positions:
       original: "TODO(content): Placeholder quote in its original language."
       lang: en
     sources: [placeholder-source-b]
+  - actor: placeholder-actor-b
+    option: placeholder-option-b
+    certainty: reported
+    validFrom: 2001-01-01
+    sources: [placeholder-source-b]
+  - actor: placeholder-actor-c
+    option: placeholder-option-a
+    certainty: inferred
+    validFrom: 2005-01-01
+    quote:
+      original: "TODO(content): Δοκιμαστικό απόσπασμα στην αρχική γλώσσα."
+      lang: el
+      translation: { en: "TODO(content): Placeholder translation of the quote." }
+    sources: [placeholder-source-a]

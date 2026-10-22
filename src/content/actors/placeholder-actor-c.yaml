@@ -1,0 +1,6 @@
+slug: placeholder-actor-c
+name: { en: "TODO(content): Placeholder government C" }
+shortName: { en: "PH-C" }
+type: government
+active: { from: 2000-01-01 }
+draft: true

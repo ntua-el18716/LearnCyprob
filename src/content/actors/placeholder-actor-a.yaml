@@ -1,7 +1,8 @@
 slug: placeholder-actor-a
-name: { en: "TODO(content): Placeholder actor A" }
+name: { en: "TODO(content): Placeholder actor A", el: "TODO(content): Δοκιμαστικός φορέας Α" }
 shortName: { en: "PH-A" }
 type: party
-community: none
+community: gc
 active: { from: 2000-01-01 }
+color: "#777777"
 draft: true
