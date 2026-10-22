@@ -2,7 +2,9 @@
 import Layout from "@layouts/Layout.astro";
 import { publishedLocales, type Locale } from "../../i18n/locales";
 import { localizePath, useTranslations } from "../../lib/i18n";
-import { getIssue, getIssueSlugs } from "../../lib/issues";
+import { getIssue, getIssueSlugs, getIssueTree } from "../../lib/issues";
+import ChapterIcon from "@components/ChapterIcon.astro";
+import { descendants } from "../../lib/chapters";
 
 export function getStaticPaths() {
   return publishedLocales.map((lang) => ({ params: { lang } }));
@@ -20,6 +22,8 @@ const recent = (await Promise.all((await getIssueSlugs()).map((s) => getIssue(s,
       a.entry.data.slug.localeCompare(b.entry.data.slug),
   )
   .slice(0, 3);
+
+const chapters = await getIssueTree(lang);
 
 // Entry points: the author's four "why use" lines, each leading to its section.
 const entries = [
@@ -46,6 +50,23 @@ const entries = [
         {t("documents.title")}
       </a>
     </div>
+  </section>
+
+  <section class="mt-16 sm:mt-20" aria-labelledby="topics">
+    <h2 id="topics" class="text-2xl font-[720]">{t("explore.title")}</h2>
+    <ul class="mt-6 -mx-4 flex snap-x gap-2 overflow-x-auto px-4 pb-4 sm:mx-0 sm:grid sm:grid-cols-4 sm:gap-y-6 sm:overflow-visible sm:px-0 lg:grid-cols-6">
+      {
+        chapters.map((chapter) => (
+          <li class="w-28 shrink-0 snap-start sm:w-auto">
+            <a href={`${localizePath(lang, "explore")}#chapter-${chapter.slug}`} class="group flex flex-col items-center gap-3 rounded-2xl p-2 text-center hover:bg-sunken">
+              <ChapterIcon slug={chapter.slug} size="md" class="transition duration-200 group-hover:scale-110 group-hover:bg-accent group-hover:text-on-accent motion-reduce:transition-none" />
+              <span class="text-sm font-semibold leading-tight" lang={chapter.isFallback ? chapter.lang : undefined}>{chapter.title}</span>
+              <span class="sr-only">({descendants(chapter).length})</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
   </section>
 
   <section class="mt-16 sm:mt-20" aria-labelledby="why">

@@ -1,11 +1,16 @@
 ---
+// The issue map: one circle per chapter (top-level issue), and a panel with
+// the chosen chapter's issues. Without JavaScript the circles are links to
+// every chapter's panel, listed in full.
 import Layout from "@layouts/Layout.astro";
 import PageHeader from "@components/PageHeader.astro";
-import IssueExplorerNode from "@components/IssueExplorerNode.astro";
+import ChapterIcon from "@components/ChapterIcon.astro";
+import ExplorerIssue from "@components/ExplorerIssue.astro";
 import { publishedLocales, type Locale } from "../../i18n/locales";
 import { localizePath, useTranslations } from "../../lib/i18n";
 import { getIssueTree } from "../../lib/issues";
-import { statusGlyphs } from "@components/content/status-glyphs";
+import { descendants, statusCounts } from "../../lib/chapters";
+import { statusGlyphs, type StatusValue } from "@components/content/status-glyphs";
 
 export function getStaticPaths() {
   return publishedLocales.map((lang) => ({ params: { lang } }));
@@ -13,121 +18,206 @@ export function getStaticPaths() {
 
 const lang = Astro.params.lang as Locale;
 const t = useTranslations(lang);
-const tree = await getIssueTree(lang);
-const statuses = Object.keys(statusGlyphs) as (keyof typeof statusGlyphs)[];
-const alternates = Object.fromEntries(
-  publishedLocales.map((l) => [l, localizePath(l, "explore")]),
-);
-const control =
-  "rounded-md border border-control bg-bg px-2 py-1";
+const chapters = await getIssueTree(lang);
+const statuses = Object.keys(statusGlyphs) as StatusValue[];
+const plural = new Intl.PluralRules(lang);
+const countLabel = (n: number) =>
+  n === 0 ? t("explore.noIssues") : t(plural.select(n) === "one" ? "explore.issueCountOne" : "explore.issueCount", { n });
+const alternates = Object.fromEntries(publishedLocales.map((l) => [l, localizePath(l, "explore")]));
 ---
 
-<Layout
-  lang={lang}
-  title={t("explore.title")}
-  description={t("explore.description")}
-  alternates={alternates}
->
+<Layout lang={lang} title={t("explore.title")} description={t("explore.description")} alternates={alternates}>
   <PageHeader title={t("explore.title")} intro={t("explore.description")} introLang={t.langOf("explore.description")} />
 
-  <!-- Filters need JavaScript; they stay hidden without it (the tree itself works). -->
-  <!-- `hidden` sits on a wrapper without a display class: utilities like flex would override it. -->
-  <div data-explorer-controls hidden>
-    <div class="mb-6 flex flex-wrap items-end gap-3 text-sm">
-      <label class="flex flex-col gap-1">
-        {t("explore.search")}
-        <input type="search" data-filter-text class={control} />
-      </label>
-      <label class="flex flex-col gap-1">
-        {t("explore.status")}
-        <select data-filter-status class={control}>
-          <option value="">{t("explore.allStatuses")}</option>
-          {
-            statuses.map((s) => (
-              <option value={s} lang={t.langOf(`status.${s}`)}>
-                {t(`status.${s}`)}
-              </option>
-            ))
-          }
-          <option value="none">{t("explore.noStatus")}</option>
-        </select>
-      </label>
-      <button type="button" data-expand="open" class={control}
-        >{t("explore.expandAll")}</button
-      >
-      <button type="button" data-expand="close" class={control}
-        >{t("explore.collapseAll")}</button
-      >
+  <div class="lg:grid lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-12">
+    <div>
+      <!-- `hidden` on a wrapper without a display class; search needs JavaScript. -->
+      <div data-explorer-controls hidden>
+        <label class="mb-8 block max-w-sm text-sm font-semibold">
+          {t("explore.search")}
+          <input type="search" data-filter-text class="control mt-1 w-full font-normal" />
+        </label>
+      </div>
+
+      <ul class="grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3" aria-label={t("explore.chooseChapter")}>
+        {
+          chapters.map((chapter) => {
+            const all = descendants(chapter);
+            const counts = statusCounts(chapter, statuses);
+            return (
+              <li data-chapter-item={chapter.slug}>
+                <a
+                  href={`#chapter-${chapter.slug}`}
+                  data-chapter={chapter.slug}
+                  class="group flex flex-col items-center rounded-2xl px-2 py-3 text-center transition-colors hover:bg-sunken"
+                >
+                  <span class="relative">
+                    <ChapterIcon
+                      slug={chapter.slug}
+                      size="lg"
+                      class="transition duration-200 group-hover:scale-105 group-hover:bg-accent/15 group-aria-[current=true]:bg-accent group-aria-[current=true]:text-on-accent group-aria-[current=true]:shadow-lg group-aria-[current=true]:shadow-accent/25 motion-reduce:transition-none"
+                    />
+                    {all.length > 0 && (
+                      <span aria-hidden="true" class="absolute -right-1 -top-1 grid size-8 place-items-center rounded-full bg-ink text-sm font-bold text-bg ring-4 ring-bg">
+                        {all.length}
+                      </span>
+                    )}
+                  </span>
+                  <span class="mt-4 text-lg font-bold leading-tight" lang={chapter.isFallback ? chapter.lang : undefined}>
+                    {chapter.title}
+                  </span>
+                  <span class="mt-1 text-sm text-muted">{countLabel(all.length)}</span>
+                  {counts.length > 0 && (
+                    <span class="mt-2 flex flex-wrap justify-center gap-x-3 gap-y-1 text-sm text-muted">
+                      {counts.map(({ status, count }) => (
+                        <span class="inline-flex items-center gap-1">
+                          <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true" set:html={statusGlyphs[status]} />
+                          <span class="sr-only" lang={t.langOf(`status.${status}`)}>{t(`status.${status}`)}:</span>
+                          {count}
+                        </span>
+                      ))}
+                    </span>
+                  )}
+                </a>
+              </li>
+            );
+          })
+        }
+      </ul>
+
+      <section class="mt-12 border-t border-rule pt-5 text-sm text-muted" aria-labelledby="legend">
+        <h2 id="legend" class="font-semibold text-ink">{t("explore.legend")}</h2>
+        <ul class="mt-2 flex flex-wrap gap-x-5 gap-y-1">
+          {statuses.map((s) => (
+            <li class="inline-flex items-center gap-1.5">
+              <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true" set:html={statusGlyphs[s]} />
+              <span lang={t.langOf(`status.${s}`)}>{t(`status.${s}`)}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </div>
+
+    <div class="mt-12 lg:mt-0 lg:sticky lg:top-6 lg:self-start lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto" data-panels>
+      {
+        chapters.map((chapter) => (
+          <section
+            id={`chapter-${chapter.slug}`}
+            data-chapter-panel={chapter.slug}
+            aria-labelledby={`chapter-${chapter.slug}-title`}
+            class="panel mb-8 scroll-mt-6 rounded-2xl border border-rule p-6"
+          >
+            <div class="flex items-start gap-4">
+              <ChapterIcon slug={chapter.slug} size="md" />
+              <div class="min-w-0">
+                <h2 id={`chapter-${chapter.slug}-title`} class="text-2xl font-[720] leading-tight" lang={chapter.isFallback ? chapter.lang : undefined}>
+                  {chapter.title}
+                </h2>
+                <p class="mt-1 text-muted" lang={chapter.isFallback ? chapter.lang : undefined}>{chapter.summary}</p>
+                <a href={localizePath(lang, `issues/${chapter.slug}`)} class="mt-2 inline-block text-sm font-semibold link">
+                  {t("explore.openChapter")}
+                </a>
+              </div>
+            </div>
+            {chapter.children.length > 0 ? (
+              <ul class="mt-4 divide-y divide-rule border-t border-rule">
+                {chapter.children.map((node) => <ExplorerIssue node={node} lang={lang} />)}
+              </ul>
+            ) : (
+              <p class="mt-4 border-t border-rule pt-4 text-muted">{t("explore.noIssues")}</p>
+            )}
+          </section>
+        ))
+      }
+      <p data-no-matches hidden class="rounded-2xl border border-rule p-6">{t("explore.noMatches")}</p>
     </div>
   </div>
 
-  <ul data-explorer>
-    {tree.map((node) => <IssueExplorerNode node={node} lang={lang} />)}
-  </ul>
-  <p data-no-matches hidden class="mt-4">{t("explore.noMatches")}</p>
-  <p class="mt-8 text-sm">
-    <a
-      href={localizePath(lang, "issues")}
-      class="link"
-      >{t("explore.plainList")}</a
-    >
+  <p class="mt-12 text-sm">
+    <a href={localizePath(lang, "issues")} class="link">{t("explore.plainList")}</a>
   </p>
 </Layout>
 
+<style>
+  /* Panel swap: a short fade when a chapter is chosen. */
+  @media (prefers-reduced-motion: no-preference) {
+    [data-panels].js .panel:not([hidden]) {
+      animation: panel-in 220ms ease-out;
+    }
+  }
+  @keyframes panel-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: none; }
+  }
+</style>
+
 <script>
-  // Progressive enhancement: filters and expand/collapse all.
-  const controls = document.querySelector<HTMLElement>(
-    "[data-explorer-controls]",
-  );
-  const tree = document.querySelector<HTMLElement>("[data-explorer]");
+  // Progressive enhancement: show one chapter at a time, and search.
+  const panelsBox = document.querySelector<HTMLElement>("[data-panels]");
+  const links = [...document.querySelectorAll<HTMLAnchorElement>("a[data-chapter]")];
+  const panels = [...document.querySelectorAll<HTMLElement>("[data-chapter-panel]")];
+  const controls = document.querySelector<HTMLElement>("[data-explorer-controls]");
+  const search = document.querySelector<HTMLInputElement>("[data-filter-text]");
   const noMatches = document.querySelector<HTMLElement>("[data-no-matches]");
-  const textInput =
-    document.querySelector<HTMLInputElement>("[data-filter-text]");
-  const statusSelect = document.querySelector<HTMLSelectElement>(
-    "[data-filter-status]",
-  );
 
-  if (controls && tree && noMatches && textInput && statusSelect) {
+  if (panelsBox && links.length && panels.length && controls && search && noMatches) {
+    panelsBox.classList.add("js");
     controls.hidden = false;
-    const items = [...tree.querySelectorAll<HTMLLIElement>("li[data-issue]")];
+    const wide = matchMedia("(min-width: 1024px)");
 
-    const apply = () => {
-      const text = textInput.value
-        .trim()
-        .toLocaleLowerCase(document.documentElement.lang);
-      const status = statusSelect.value;
-      const filtering = text !== "" || status !== "";
-      const matches = (li: HTMLLIElement) =>
-        (!text || (li.dataset.title ?? "").includes(text)) &&
-        (!status ||
-          (status === "none"
-            ? !li.dataset.status
-            : li.dataset.status === status));
-      // A node stays visible if it or any descendant matches; ancestors of a
-      // match are opened so the match can be seen.
-      for (const li of items) {
-        const visible =
-          matches(li) ||
-          [...li.querySelectorAll<HTMLLIElement>("li[data-issue]")].some(
-            matches,
-          );
-        li.hidden = filtering && !visible;
-        const details = li.querySelector(":scope > details");
-        if (details instanceof HTMLDetailsElement && filtering && visible)
-          details.open = true;
-      }
-      noMatches.hidden = !filtering || items.some((li) => !li.hidden);
+    const select = (slug: string, scroll: boolean) => {
+      links.forEach((a) => a.setAttribute("aria-current", String(a.dataset.chapter === slug)));
+      panels.forEach((p) => (p.hidden = p.dataset.chapterPanel !== slug));
+      if (scroll && !wide.matches) panels.find((p) => !p.hidden)?.scrollIntoView({ behavior: "smooth", block: "start" });
     };
 
-    textInput.addEventListener("input", apply);
-    statusSelect.addEventListener("change", apply);
-    controls
-      .querySelectorAll<HTMLButtonElement>("[data-expand]")
-      .forEach((button) =>
-        button.addEventListener("click", () => {
-          for (const d of tree.querySelectorAll("details"))
-            d.open = button.dataset.expand === "open";
-        }),
-      );
+    const fromHash = location.hash.replace(/^#chapter-/, "");
+    select(links.some((a) => a.dataset.chapter === fromHash) ? fromHash : (links[0].dataset.chapter ?? ""), false);
+
+    links.forEach((a) =>
+      a.addEventListener("click", (event) => {
+        event.preventDefault();
+        search.value = "";
+        resetSearch();
+        select(a.dataset.chapter ?? "", true);
+        history.replaceState(null, "", `#chapter-${a.dataset.chapter}`);
+      }),
+    );
+
+    // Back/forward and edited URLs change only the hash.
+    addEventListener("hashchange", () => {
+      const slug = location.hash.replace(/^#chapter-/, "");
+      if (links.some((a) => a.dataset.chapter === slug)) select(slug, false);
+    });
+
+    const items = [...document.querySelectorAll<HTMLLIElement>("[data-chapter-panel] li[data-issue]")];
+    const resetSearch = () => {
+      items.forEach((li) => (li.hidden = false));
+      document.querySelectorAll<HTMLElement>("[data-chapter-item]").forEach((el) => el.classList.remove("opacity-35"));
+      noMatches.hidden = true;
+    };
+
+    search.addEventListener("input", () => {
+      const query = search.value.trim().toLocaleLowerCase(document.documentElement.lang);
+      if (!query) {
+        resetSearch();
+        select(links.find((a) => a.getAttribute("aria-current") === "true")?.dataset.chapter ?? links[0].dataset.chapter ?? "", false);
+        return;
+      }
+      // Show every chapter's matches (an issue stays visible if a descendant matches).
+      const matches = (li: HTMLLIElement) =>
+        (li.dataset.title ?? "").includes(query) ||
+        [...li.querySelectorAll<HTMLLIElement>("li[data-issue]")].some((c) => (c.dataset.title ?? "").includes(query));
+      let any = false;
+      panels.forEach((panel) => {
+        const panelItems = [...panel.querySelectorAll<HTMLLIElement>("li[data-issue]")];
+        panelItems.forEach((li) => (li.hidden = !matches(li)));
+        const hit = panelItems.some((li) => !li.hidden);
+        panel.hidden = !hit;
+        any ||= hit;
+        document.querySelector(`[data-chapter-item="${panel.dataset.chapterPanel}"]`)?.classList.toggle("opacity-35", !hit);
+      });
+      noMatches.hidden = any;
+    });
   }
 </script>

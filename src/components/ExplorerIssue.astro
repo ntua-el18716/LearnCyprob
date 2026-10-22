@@ -1,0 +1,46 @@
+---
+// One issue in a chapter panel (recursive): its status as a glyph in a small
+// circle, the linked title and status name, and its summary.
+import type { IssueNode } from "../lib/issues";
+import type { Locale } from "../i18n/locales";
+import { statusGlyphs } from "./content/status-glyphs";
+import { localizePath, useTranslations } from "../lib/i18n";
+
+interface Props {
+  node: IssueNode;
+  lang: Locale;
+}
+
+const { node, lang } = Astro.props;
+const t = useTranslations(lang);
+const statusKey = node.status && (`status.${node.status}` as const);
+const contentLang = node.isFallback ? node.lang : undefined;
+---
+
+<li data-issue data-status={node.status ?? ""} data-title={node.title.toLocaleLowerCase(lang)} class="py-3">
+  <div class="flex gap-3">
+    <span
+      aria-hidden="true"
+      class:list={[
+        "mt-0.5 grid size-8 shrink-0 place-items-center rounded-full border-2",
+        node.status ? "border-accent text-accent" : "border-dashed border-control text-muted",
+      ]}
+    >
+      {node.status && <svg viewBox="0 0 12 12" width="13" height="13" set:html={statusGlyphs[node.status]} />}
+    </span>
+    <div class="min-w-0">
+      <a href={localizePath(lang, `issues/${node.slug}`)} lang={contentLang} class="font-semibold link">{node.title}</a>
+      <p class="text-sm text-muted">
+        {statusKey ? <span lang={t.langOf(statusKey)}>{t(statusKey)}</span> : <span>{t("explore.noStatus")}</span>}
+      </p>
+      <p lang={contentLang} class="mt-1 text-[0.95rem] leading-snug">{node.summary}</p>
+    </div>
+  </div>
+  {
+    node.children.length > 0 && (
+      <ul class="ml-4 mt-2 border-l-2 border-rule pl-5">
+        {node.children.map((child) => <Astro.self node={child} lang={lang} />)}
+      </ul>
+    )
+  }
+</li>

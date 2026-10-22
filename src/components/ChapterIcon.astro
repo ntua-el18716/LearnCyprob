@@ -1,0 +1,28 @@
+---
+// A chapter's icon in its circle: the site's visual motif for the issue
+// chapters (explorer, home page, article headers). Decorative: the chapter
+// name is always given as text next to it.
+import { Icon } from "astro-icon/components";
+import { iconFor } from "../lib/chapters";
+
+interface Props {
+  slug: string;
+  size?: "sm" | "md" | "lg";
+  class?: string;
+}
+
+const { slug, size = "md", class: className } = Astro.props;
+const box = { sm: "size-9", md: "size-14", lg: "size-24 sm:size-28" }[size];
+const glyph = { sm: "size-[1.1rem]", md: "size-7", lg: "size-10 sm:size-12" }[size];
+---
+
+<span
+  aria-hidden="true"
+  class:list={[
+    "chapter-icon relative inline-grid shrink-0 place-items-center rounded-full bg-panel text-accent",
+    box,
+    className,
+  ]}
+>
+  <Icon name={iconFor(slug)} class={glyph} />
+</span>

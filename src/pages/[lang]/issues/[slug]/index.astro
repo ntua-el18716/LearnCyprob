@@ -3,6 +3,7 @@ import Layout from "@layouts/Layout.astro";
 import PageNotice from "@components/PageNotice.astro";
 import PositionBoard from "@components/PositionBoard.astro";
 import ArticleOutline from "@components/ArticleOutline.astro";
+import ChapterIcon from "@components/ChapterIcon.astro";
 import Analysis from "@components/content/Analysis.astro";
 import Cite from "@components/content/Cite.astro";
 import Claim from "@components/content/Claim.astro";
@@ -38,7 +39,15 @@ const statusCitation = remarkPluginFrontmatter.statusCitation as
   | { numbers: string; refs: string }
   | undefined;
 
-const parent = data.parent ? await getIssue(data.parent, lang) : undefined;
+// Ancestors, chapter first (for the breadcrumb and the chapter icon).
+const ancestors: NonNullable<Awaited<ReturnType<typeof getIssue>>>[] = [];
+for (let next = data.parent; next; ) {
+  const found = await getIssue(next, lang);
+  if (!found || ancestors.some((a) => a.entry.data.slug === next)) break;
+  ancestors.unshift(found);
+  next = found.entry.data.parent;
+}
+const chapterSlug = ancestors[0]?.entry.data.slug ?? slug;
 const hasProvisions = (await getCollection("provisions", (p) => p.data.issue === slug && isVisible(p))).length > 0;
 const related = (
   await Promise.all(data.related.map((s) => getIssue(s, lang)))
@@ -98,16 +107,25 @@ const alternates = Object.fromEntries(
 
   <article>
     <header class="-mt-2 mb-10 border-b border-rule pb-10">
-      {
-        parent && (
-          <p class="mb-3 font-semibold text-accent">
-            <span class="sr-only" lang={t.langOf("issue.partOf")}>{t("issue.partOf")}</span>
-            <a href={issueLink(parent.entry.data.slug)} lang={parent.isFallback ? parent.lang : undefined} class="hover:underline">
-              {parent.entry.data.title}
-            </a>
-          </p>
-        )
-      }
+      <div class="mb-5 flex items-center gap-3">
+        <ChapterIcon slug={chapterSlug} size={ancestors.length ? "sm" : "md"} />
+        {
+          ancestors.length > 0 && (
+            <nav aria-label={t("issue.partOf")} class="font-semibold text-accent">
+              <ol class="flex flex-wrap items-center gap-x-2">
+                {ancestors.map((a, i) => (
+                  <li class="flex items-center gap-x-2">
+                    {i > 0 && <span aria-hidden="true" class="text-muted">/</span>}
+                    <a href={issueLink(a.entry.data.slug)} lang={a.isFallback ? a.lang : undefined} class="hover:underline">
+                      {a.entry.data.title}
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            </nav>
+          )
+        }
+      </div>
       <h1 lang={contentLangAttr} class="max-w-4xl text-4xl sm:text-[3.4rem] font-[780] tracking-[-0.025em] leading-[1.04]">
         {data.title}
       </h1>

@@ -145,7 +145,7 @@
   "certainty.inferred": "Inferred",
   "positions.title": "Positions: {issue}",
   "explore.title": "Explore the issues",
-  "explore.description": "Every issue in the negotiations as a tree, with its status in the talks.",
+  "explore.description": "The negotiations are organised in chapters. Choose one to see its issues and where the talks stand on each.",
   "explore.expandAll": "Expand all",
   "explore.collapseAll": "Collapse all",
   "explore.status": "Status",
@@ -167,5 +167,12 @@
   "compare.backToMatrix": "Back to the comparison",
   "outline.title": "On this page",
   "explore.subissues": "{n} sub-issues",
-  "explore.subissue": "{n} sub-issue"
+  "explore.subissue": "{n} sub-issue",
+  "explore.issueCount": "{n} issues",
+  "explore.issueCountOne": "{n} issue",
+  "explore.noIssues": "No issues yet",
+  "explore.openChapter": "Open the chapter overview",
+  "explore.chooseChapter": "Choose a chapter",
+  "explore.results": "Search results",
+  "explore.legend": "Status"
 }

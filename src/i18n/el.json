@@ -83,5 +83,12 @@
   "compare.backToMatrix": "Πίσω στη σύγκριση",
   "outline.title": "Σε αυτή τη σελίδα",
   "explore.subissues": "{n} υποθέματα",
-  "explore.subissue": "{n} υπόθεμα"
+  "explore.subissue": "{n} υπόθεμα",
+  "explore.issueCount": "{n} θέματα",
+  "explore.issueCountOne": "{n} θέμα",
+  "explore.noIssues": "Δεν υπάρχουν ακόμη θέματα",
+  "explore.openChapter": "Επισκόπηση του κεφαλαίου",
+  "explore.chooseChapter": "Επιλέξτε κεφάλαιο",
+  "explore.results": "Αποτελέσματα αναζήτησης",
+  "explore.legend": "Κατάσταση"
 }
