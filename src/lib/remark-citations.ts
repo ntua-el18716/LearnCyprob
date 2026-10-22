@@ -11,6 +11,9 @@ import { visit } from "unist-util-visit";
  *   `ref` (a unique back-link id for this use).
  * - `<Status>`, `<Concern>` and `<Claim>` with `sources={["a", "b"]}` get
  *   `numbers="1,2"` and `refs="…"` the same way.
+ * - An issue's frontmatter `statusSources` are numbered first (the status
+ *   badge sits in the page header); their numbers go to frontmatter
+ *   `statusCitation` as `{ numbers, refs }`.
  * - Frontmatter `citations` lists each source once, in order of first use,
  *   with every use (back-link id and anchor); the article layout passes it
  *   to `<SourcesList>`.
@@ -36,6 +39,19 @@ export function remarkCitations() {
       return { n, ref };
     };
 
+    const astro = (file.data.astro ??= {}) as { frontmatter?: Record<string, unknown> };
+    const statusSources = astro.frontmatter?.statusSources;
+    if (Array.isArray(statusSources) && statusSources.length > 0) {
+      const cited = statusSources.map((id) => number(String(id)));
+      astro.frontmatter = {
+        ...astro.frontmatter,
+        statusCitation: {
+          numbers: cited.map((c) => c.n).join(","),
+          refs: cited.map((c) => c.ref).join(","),
+        },
+      };
+    }
+
     visit(tree, (node) => {
       if (node.type !== "mdxJsxFlowElement" && node.type !== "mdxJsxTextElement") return;
       const el = node;
@@ -52,7 +68,6 @@ export function remarkCitations() {
       }
     });
 
-    const astro = (file.data.astro ??= {}) as { frontmatter?: Record<string, unknown> };
     astro.frontmatter = { ...astro.frontmatter, citations };
   };
 }
