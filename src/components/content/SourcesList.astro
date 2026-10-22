@@ -29,15 +29,15 @@ const entries = await Promise.all(
 );
 ---
 
-<section aria-labelledby="sources" class="mt-12 border-t border-zinc-300 dark:border-zinc-700 pt-6">
-  <h2 id="sources" class="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+<section aria-labelledby="sources" class="mt-14 scroll-mt-6 border-t-2 border-rule pt-8">
+  <h2 id="sources" class="text-2xl font-[720]">
     {t("sources.heading")}
   </h2>
-  <ol class="mt-4 space-y-3 text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
+  <ol class="mt-5 space-y-3 text-[0.95rem] leading-relaxed">
     {
       entries.map((s) => (
-        <li id={`cite-src-${s.n}`} class="grid grid-cols-[2.5ch_1fr] gap-x-2 target:bg-zinc-200/60 dark:target:bg-zinc-800/60 rounded-sm">
-          <span class="tabular-nums text-right text-zinc-500 dark:text-zinc-400">{s.n}.</span>
+        <li id={`cite-src-${s.n}`} class="grid grid-cols-[3ch_1fr] gap-x-2 rounded-sm target:bg-panel">
+          <span class="tabular-nums text-right font-semibold text-accent">{s.n}</span>
           <div>
             <span class="mr-1 whitespace-nowrap">
               {s.uses.map((use, i) => (
@@ -55,16 +55,16 @@ const entries = await Promise.all(
             </span>
             {s.author && <span>{s.author}, </span>}
             {s.url || s.documentPath ? (
-              <a href={s.url ?? s.documentPath} lang={s.lang} class="underline decoration-zinc-400 underline-offset-2 hover:decoration-zinc-600">{s.title}</a>
+              <a href={s.url ?? s.documentPath} lang={s.lang} class="link">{s.title}</a>
             ) : (
               <span lang={s.lang}>{s.title}</span>
             )}{". "}
             {s.publisher}, <time datetime={s.date.toISOString().slice(0, 10)}>{formatDate.format(s.date)}</time>.
             {s.documentPath && s.url && (
-              <> <a href={s.documentPath} class="underline decoration-zinc-400 underline-offset-2">{t("sources.inLibrary")}</a>.</>
+              <> <a href={s.documentPath} class="link">{t("sources.inLibrary")}</a>.</>
             )}
             {s.archiveUrl && (
-              <> <a href={s.archiveUrl} class="underline decoration-zinc-400 underline-offset-2">{t("sources.archived")}</a>.</>
+              <> <a href={s.archiveUrl} class="link">{t("sources.archived")}</a>.</>
             )}
             {s.documentPath &&
               s.uses
@@ -72,7 +72,7 @@ const entries = await Promise.all(
                 .map((use) => (
                   <>
                     {" "}
-                    <a href={`${s.documentPath}#${use.anchor}`} class="underline decoration-zinc-400 underline-offset-2 whitespace-nowrap">
+                    <a href={`${s.documentPath}#${use.anchor}`} class="link whitespace-nowrap">
                       ¶ {use.anchor!.replace(/-/g, " ")}
                     </a>
                   </>

@@ -32,4 +32,4 @@ const marks = await Promise.all(
 // The markup below stays on one line: any whitespace would show as a gap
 // between the text and the number.
 ---
-<sup class="cite whitespace-nowrap">{marks.map((m, i) => (<>{i > 0 && ","}<a id={m.ref} href={`#cite-src-${m.n}`} aria-label={t("cite.label", { n: m.n })} title={m.title} class="tabular-nums no-underline hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 rounded-sm">{m.n}</a></>))}</sup>
+<sup class="cite whitespace-nowrap font-semibold text-accent">[{marks.map((m, i) => (<>{i > 0 && ","}<a id={m.ref} href={`#cite-src-${m.n}`} aria-label={t("cite.label", { n: m.n })} title={m.title} class="no-underline hover:underline tabular-nums">{m.n}</a></>))}]</sup>

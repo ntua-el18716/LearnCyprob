@@ -1,9 +1,11 @@
 ---
-// One issue in the explorer; recursive. Branches are native <details>, so the
-// tree expands and collapses without JavaScript.
+// One issue in the explorer; recursive. The title link and summary come first;
+// sub-issues sit in a native <details> (expands and collapses without
+// JavaScript), whose toggle contains no link.
 import IssueExplorerLabel from "./IssueExplorerLabel.astro";
 import type { IssueNode } from "../lib/issues";
 import type { Locale } from "../i18n/locales";
+import { useTranslations } from "../lib/i18n";
 
 interface Props {
   node: IssueNode;
@@ -11,27 +13,23 @@ interface Props {
 }
 
 const { node, lang } = Astro.props;
+const t = useTranslations(lang);
 const contentLang = node.isFallback ? node.lang : undefined;
-const summaryClass = "text-sm text-zinc-600 dark:text-zinc-400";
 ---
 
-<li data-issue data-status={node.status ?? ""} data-title={node.title.toLocaleLowerCase(lang)} class="mt-2">
+<li data-issue data-status={node.status ?? ""} data-title={node.title.toLocaleLowerCase(lang)} class="mt-4">
+  <IssueExplorerLabel node={node} lang={lang} />
+  <p lang={contentLang} class="mt-0.5 text-muted">{node.summary}</p>
   {
-    node.children.length > 0 ? (
-      <details open>
-        <summary class="cursor-pointer rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2">
-          <IssueExplorerLabel node={node} lang={lang} />
+    node.children.length > 0 && (
+      <details open class="mt-2">
+        <summary class="cursor-pointer text-sm font-semibold text-accent">
+          {t(new Intl.PluralRules(lang).select(node.children.length) === "one" ? "explore.subissue" : "explore.subissues", { n: node.children.length })}
         </summary>
-        <p lang={contentLang} class:list={["ml-5", summaryClass]}>{node.summary}</p>
-        <ul class="ml-5 border-l border-zinc-300 dark:border-zinc-700 pl-4">
+        <ul class="ml-1 mt-1 border-l-2 border-rule pl-5">
           {node.children.map((child) => <Astro.self node={child} lang={lang} />)}
         </ul>
       </details>
-    ) : (
-      <div class="ml-5">
-        <IssueExplorerLabel node={node} lang={lang} />
-        <p lang={contentLang} class={summaryClass}>{node.summary}</p>
-      </div>
     )
   }
 </li>

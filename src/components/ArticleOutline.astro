@@ -1,0 +1,59 @@
+---
+// "On this page": a sticky rail on wide screens, a collapsible list on narrow
+// ones. Works without JavaScript; with it, the section being read is marked.
+import { localeOf, useTranslations } from "../lib/i18n";
+
+interface Props {
+  items: { id: string; text: string; lang?: string }[];
+}
+
+const { items } = Astro.props;
+const t = useTranslations(localeOf(Astro.currentLocale));
+const list = "flex flex-col gap-2 text-[0.95rem]";
+---
+
+{
+  items.length > 1 && (
+    <>
+      <details class="lg:hidden mb-8 rounded-md border border-rule px-4 py-3">
+        <summary class="cursor-pointer font-semibold">{t("outline.title")}</summary>
+        <ul class:list={[list, "mt-3"]}>
+          {items.map((i) => <li><a href={`#${i.id}`} lang={i.lang} class="link">{i.text}</a></li>)}
+        </ul>
+      </details>
+      <nav aria-label={t("outline.title")} class="hidden lg:block sticky top-6 self-start" data-outline>
+        <p class="mb-3 font-bold">{t("outline.title")}</p>
+        <ul class:list={[list, "border-l-2 border-rule"]}>
+          {items.map((i) => (
+            <li>
+              <a href={`#${i.id}`} lang={i.lang} class="-ml-[2px] block border-l-2 border-transparent pl-4 text-muted hover:text-ink aria-[current=true]:border-accent aria-[current=true]:font-semibold aria-[current=true]:text-accent">
+                {i.text}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </>
+  )
+}
+
+<script>
+  // Mark the outline entry for the section currently at the top of the view.
+  const nav = document.querySelector<HTMLElement>("[data-outline]");
+  if (nav && "IntersectionObserver" in window) {
+    const links = [...nav.querySelectorAll<HTMLAnchorElement>("a[href^='#']")];
+    const targets = links
+      .map((a) => document.getElementById(decodeURIComponent(a.hash.slice(1))))
+      .filter((el): el is HTMLElement => el !== null);
+    const mark = (id: string) =>
+      links.forEach((a) => a.setAttribute("aria-current", String(a.hash === `#${id}`)));
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible[0]) mark(visible[0].target.id);
+      },
+      { rootMargin: "0px 0px -70% 0px" },
+    );
+    targets.forEach((el) => observer.observe(el));
+  }
+</script>

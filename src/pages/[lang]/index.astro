@@ -1,7 +1,5 @@
 ---
 import Layout from "@layouts/Layout.astro";
-import Header from "@components/Header.astro";
-import Benefit from "@components/Benefit.astro";
 import { publishedLocales, type Locale } from "../../i18n/locales";
 import { localizePath, useTranslations } from "../../lib/i18n";
 import { getIssue, getIssueSlugs } from "../../lib/issues";
@@ -22,73 +20,65 @@ const recent = (await Promise.all((await getIssueSlugs()).map((s) => getIssue(s,
       a.entry.data.slug.localeCompare(b.entry.data.slug),
   )
   .slice(0, 3);
+
+// Entry points: the author's four "why use" lines, each leading to its section.
+const entries = [
+  { key: "home.benefit.aspects", href: localizePath(lang, "explore") },
+  { key: "home.benefit.history", href: localizePath(lang, "timeline") },
+  { key: "home.benefit.documents", href: localizePath(lang, "documents") },
+  { key: "home.benefit.latest", href: localizePath(lang, "timeline") },
+] as const;
 ---
 
 <Layout lang={lang}>
-  <section class="text-center">
-    <div class="grid place-items-center">
-      <Header title={t("home.title")} lang={t.langOf("home.title")} />
-      <p
-        class="mt-3 max-w-prose leading-relaxed"
-        lang={t.langOf("home.intro")}
-      >
-        {t("home.intro")}
-      </p>
+  <section class="max-w-3xl">
+    <h1 class="text-5xl sm:text-6xl font-[780] tracking-[-0.025em] leading-[1.02]" lang={t.langOf("home.title")}>
+      {t("home.title")}
+    </h1>
+    <p class="mt-5 text-xl sm:text-2xl leading-snug text-muted" lang={t.langOf("home.intro")}>
+      {t("home.intro")}
+    </p>
+    <div class="mt-8 flex flex-wrap gap-3">
+      <a href={localizePath(lang, "explore")} class="rounded-md bg-accent px-5 py-3 font-semibold text-on-accent hover:bg-accent/90">
+        {t("explore.title")}
+      </a>
+      <a href={localizePath(lang, "documents")} class="rounded-md border-2 border-ink px-5 py-3 font-semibold hover:bg-sunken">
+        {t("documents.title")}
+      </a>
     </div>
   </section>
-  <section class="text-center mt-20">
-    <div>
-      <Header title={t("home.why")} lang={t.langOf("home.why")} />
-      <ul class="grid grid-cols-1 gap-4 place-items-center">
-        <Benefit
-          iconName="peace-cooperate-together"
-          title={t("home.benefit.aspects")}
-          lang={t.langOf("home.benefit.aspects")}
-        />
-        <Benefit
-          iconName="peace-negotiations"
-          title={t("home.benefit.history")}
-          lang={t.langOf("home.benefit.history")}
-        />
-        <Benefit
-          iconName="peace-document"
-          title={t("home.benefit.documents")}
-          lang={t.langOf("home.benefit.documents")}
-        />
-        <Benefit
-          iconName="peace-calendar"
-          title={t("home.benefit.latest")}
-          lang={t.langOf("home.benefit.latest")}
-        />
-      </ul>
-    </div>
-  </section>
-  <section>
-    <h2
-      class="mt-12 text-2xl font-semibold dark:text-zinc-100 text-zinc-900"
-      lang={t.langOf("home.recent")}
-    >
-      {t("home.recent")}
-    </h2>
-    <ul class="mt-6 divide-y divide-zinc-300 dark:divide-zinc-700">
+
+  <section class="mt-16 sm:mt-20" aria-labelledby="why">
+    <h2 id="why" class="text-2xl font-[720]" lang={t.langOf("home.why")}>{t("home.why")}</h2>
+    <ul class="mt-6 grid gap-x-10 gap-y-2 sm:grid-cols-2">
       {
-        recent.map(({ entry, lang: entryLang, isFallback }) => (
-          <li class="py-4" lang={isFallback ? entryLang : undefined}>
-            <a
-              href={localizePath(lang, `issues/${entry.data.slug}`)}
-              class="font-semibold text-zinc-900 dark:text-zinc-100 underline decoration-zinc-400 underline-offset-2"
-            >
-              {entry.data.title}
+        entries.map((e) => (
+          <li class="border-t-2 border-accent">
+            <a href={e.href} class="block py-4 text-lg font-semibold leading-snug hover:underline hover:underline-offset-4" lang={t.langOf(e.key)}>
+              {t(e.key)}
             </a>
-            <p class="mt-1 text-sm">{entry.data.summary}</p>
           </li>
         ))
       }
     </ul>
-    <a
-      class="inline-block mt-7 dark:hover:text-zinc-50 hover:text-zinc-400 transition-colors"
-      href={localizePath(lang, "issues")}
-      lang={t.langOf("home.viewAll")}>{t("home.viewAll")} &rarr;</a
-    >
+  </section>
+
+  <section class="mt-16 sm:mt-20" aria-labelledby="recent">
+    <h2 id="recent" class="text-2xl font-[720]" lang={t.langOf("home.recent")}>{t("home.recent")}</h2>
+    <ul class="mt-4 divide-y divide-rule border-y border-rule">
+      {
+        recent.map(({ entry, lang: entryLang, isFallback }) => (
+          <li class="py-4" lang={isFallback ? entryLang : undefined}>
+            <a href={localizePath(lang, `issues/${entry.data.slug}`)} class="text-lg font-semibold link">
+              {entry.data.title}
+            </a>
+            <p class="mt-1 text-muted">{entry.data.summary}</p>
+          </li>
+        ))
+      }
+    </ul>
+    <a href={localizePath(lang, "issues")} class="mt-5 inline-block font-semibold link" lang={t.langOf("home.viewAll")}>
+      {t("home.viewAll")}
+    </a>
   </section>
 </Layout>

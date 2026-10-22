@@ -164,5 +164,8 @@
   "compare.issueTitle": "{issue}: across plans",
   "compare.paragraphs": "Paragraphs",
   "compare.empty": "No provisions recorded yet.",
-  "compare.backToMatrix": "Back to the comparison"
+  "compare.backToMatrix": "Back to the comparison",
+  "outline.title": "On this page",
+  "explore.subissues": "{n} sub-issues",
+  "explore.subissue": "{n} sub-issue"
 }

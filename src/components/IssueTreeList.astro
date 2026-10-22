@@ -19,7 +19,7 @@ const { nodes, lang } = Astro.props;
         <a
           href={localizePath(lang, `issues/${node.slug}`)}
           lang={node.isFallback ? node.lang : undefined}
-          class="underline decoration-zinc-400 underline-offset-2"
+          class="link"
         >
           {node.title}
         </a>

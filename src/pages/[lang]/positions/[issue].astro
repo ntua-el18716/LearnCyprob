@@ -28,11 +28,11 @@ const title = t("positions.title", { issue: issue.entry.data.title });
 const alternates = Object.fromEntries(publishedLocales.map((l) => [l, localizePath(l, `positions/${slug}`)]));
 ---
 
-<Layout lang={lang} title={title} alternates={alternates} noindex={board.draft} wide>
+<Layout lang={lang} title={title} alternates={alternates} noindex={board.draft}>
   {board.draft && <PageNotice kind="draft">{t("draft.banner")}</PageNotice>}
-  <h1 class="text-3xl font-bold tracking-tight text-zinc-950 dark:text-zinc-100">{title}</h1>
+  <h1 class="text-3xl font-bold tracking-tight text-ink">{title}</h1>
   <p class="mt-2">
-    <a href={localizePath(lang, `issues/${slug}`)} lang={issue.isFallback ? issue.lang : undefined} class="underline decoration-zinc-400 underline-offset-2">
+    <a href={localizePath(lang, `issues/${slug}`)} lang={issue.isFallback ? issue.lang : undefined} class="link">
       {issue.entry.data.title}
     </a>
   </p>

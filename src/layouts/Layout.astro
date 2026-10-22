@@ -11,10 +11,7 @@ import {
   type Locale,
 } from "../i18n/locales";
 import "@styles/global.css";
-import "@fontsource-variable/noto-sans";
-import "@fontsource-variable/noto-serif";
-import Callout from "@components/MDX/Callout.astro";
-
+import "@fontsource-variable/commissioner";
 
 interface Props {
   title?: string;
@@ -24,7 +21,6 @@ interface Props {
     alt: string;
   };
   pubDate?: Date;
-  wide?: boolean;
   lang?: Locale;
   /** Keep the page out of search engines (drafts). */
   noindex?: boolean;
@@ -36,7 +32,6 @@ const {
   lang = defaultLocale,
   noindex = false,
   pubDate,
-  wide = false,
   alternates = Object.fromEntries(
     publishedLocales.map((l) => [l, localizePath(l)]),
   ),
@@ -68,7 +63,7 @@ const canonicalURL = new URL(Astro.url).href;
 ---
 
 <!doctype html>
-<html lang={lang} class="dark:[color-scheme:dark] scroll-smooth">
+<html lang={lang} class="scroll-smooth">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
@@ -126,102 +121,81 @@ const canonicalURL = new URL(Astro.url).href;
       )
     }
   </head>
-  <body
-    class="dark:bg-zinc-950 bg-zinc-50 antialiased selection:bg-zinc-700 selection:text-zinc-100 dark:selection:bg-zinc-500 dark:selection:text-white pt-10 2xl:text-lg"
-  >
+  <body class="min-h-screen flex flex-col">
     <a
       href="#main-content"
-      class="absolute opacity-0 focus:opacity-100 border-transparent border-y border-r dark:focus:border-zinc-900 text-xs lg:text-sm px-4 py-1.5 lg:py-2 top-1 lg:top-[41px] transition-transform duration-300 rounded-r-full bg-zinc-300 dark:bg-zinc-800 font-medium text-zinc-800 dark:text-zinc-200 focus:outline-none -translate-x-full focus:translate-x-0"
+      class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-bg focus:px-4 focus:py-2 focus:text-ink focus:shadow"
       >{t("a11y.skipToContent")}</a
     >
-    <nav
-      aria-label={t("nav.label")}
-      class="mb-16 mx-auto flex flex-wrap items-center justify-between gap-x-6 px-6 lg:px-2"
-      class:list={{
-        "max-w-4xl": wide,
-        "max-w-3xl": !wide,
-      }}
-    >
-      <ul class="flex flex-wrap gap-x-6">
-        {
-          navigation.map((item) => (
-            <li>
-              <Link {...item} />
-            </li>
-          ))
-        }
-      </ul>
-      <div class="flex items-center gap-4">
-        <ul class="flex gap-3 text-sm" aria-label={t("nav.language")}>
-          {
-            publishedLocales.map((l) => (
-              <li>
-                <a
-                  href={alternates[l] ?? localizePath(l)}
-                  hreflang={l}
-                  lang={l}
-                  aria-current={l === lang ? "true" : undefined}
-                  class:list={[
-                    "block py-2.5 transition-colors",
-                    l === lang
-                      ? "font-semibold dark:text-zinc-50 text-zinc-950"
-                      : "dark:text-zinc-400 text-zinc-600 hover:text-zinc-800 dark:hover:text-zinc-50",
-                  ]}
-                >
-                  {localeMeta[l].name}
-                </a>
-              </li>
-            ))
-          }
-        </ul>
-        <button
-          id="dark-mode-toggle"
-          class="focus:outline-none dark:text-zinc-100 text-zinc-900 dark:hover:text-zinc-300 hover:text-zinc-600"
-          aria-label={t("theme.toggle")}
-        >
-          <Icon name="moon" class="w-6 h-6 sun-icon" />
-          <Icon name="sun" class="w-6 h-6 moon-icon" />
-        </button>
+    <header class="bg-accent text-on-accent dark:border-b dark:border-accent/40 dark:bg-panel dark:text-ink">
+      <div class="mx-auto max-w-6xl px-4 sm:px-8">
+        <div class="flex items-center gap-x-6 pt-3 md:py-3">
+          <a href={localizePath(lang)} class="text-lg font-[760] tracking-tight whitespace-nowrap">
+            {t("site.title")}
+          </a>
+          <nav aria-label={t("nav.label")} class="hidden md:block">
+            <ul class="flex gap-x-5">
+              {navigation.map((item) => <li><Link {...item} /></li>)}
+            </ul>
+          </nav>
+          <div class="ml-auto flex items-center gap-3">
+            <ul class="flex items-center gap-1 text-sm font-semibold" aria-label={t("nav.language")}>
+              {
+                publishedLocales.map((l) => (
+                  <li>
+                    <a
+                      href={alternates[l] ?? localizePath(l)}
+                      hreflang={l}
+                      lang={l}
+                      aria-current={l === lang ? "true" : undefined}
+                      class:list={[
+                        "block rounded px-2 py-1",
+                        l === lang ? "bg-white/20 dark:bg-white/10" : "opacity-80 hover:opacity-100",
+                      ]}
+                    >
+                      {localeMeta[l].short}<span class="sr-only"> {localeMeta[l].name}</span>
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+            <button id="dark-mode-toggle" class="rounded p-1.5 hover:bg-white/20 dark:hover:bg-white/10" aria-label={t("theme.toggle")}>
+              <Icon name="moon" class="w-5 h-5 sun-icon" />
+              <Icon name="sun" class="w-5 h-5 moon-icon" />
+            </button>
+          </div>
+        </div>
+        <!-- Narrow screens: links on their own scrollable row. -->
+        <nav aria-label={t("nav.label")} class="md:hidden -mx-4 overflow-x-auto px-4 pb-2 pt-1">
+          <ul class="flex gap-x-5 whitespace-nowrap">
+            {navigation.map((item) => <li><Link {...item} /></li>)}
+          </ul>
+        </nav>
       </div>
-    </nav>
-    <main
-      class="px-6 lg:px-2 mx-auto dark:text-zinc-400 text-zinc-600"
-      id="main-content"
-      class:list={{
-        "max-w-4xl": wide,
-        "max-w-3xl": !wide,
-      }}
-    >
+    </header>
+    <main id="main-content" class="mx-auto w-full max-w-6xl flex-1 px-4 sm:px-8 py-10 sm:py-14">
       <noscript>
-        <Callout type="error" title={t("noscript.title")}>
-          {t("noscript.body")}
-        </Callout>
+        <p class="mb-8 rounded-md bg-sunken px-4 py-3 text-sm">{t("noscript.body")}</p>
       </noscript>
       <slot />
     </main>
-    <footer class="mt-12 pb-12">
-      <div
-        class="mx-auto max-w-4xl px-6 lg:px-2 text-center text-xs lg:text-sm dark:text-zinc-400 text-zinc-600"
-      >
+    <footer class="border-t border-rule">
+      <div class="mx-auto max-w-6xl px-4 sm:px-8 py-8 text-sm text-muted flex flex-wrap items-baseline gap-x-8 gap-y-3">
+        <span class="font-[760] text-ink">{t("site.title")}</span>
         {
           footerPages.length > 0 && (
-            <ul class="mb-3 flex flex-wrap justify-center gap-x-6">
+            <ul class="flex flex-wrap gap-x-6">
               {footerPages.map((slug) => (
                 <li>
-                  <a href={localizePath(lang, slug)} class="hover:underline">
-                    {t(`footer.${slug}`)}
-                  </a>
+                  <a href={localizePath(lang, slug)} class="link">{t(`footer.${slug}`)}</a>
                 </li>
               ))}
             </ul>
           )
         }
-        <p>
+        <p class="sm:ml-auto">
           {t("footer.copyright", { year: new Date().getFullYear(), author })}
-          <a
-            href={repoUrl}
-            class="hover:underline z-10">{t("footer.source")}</a
-          >
+          <a href={repoUrl} class="link">{t("footer.source")}</a>
         </p>
       </div>
     </footer>
@@ -255,17 +229,3 @@ const canonicalURL = new URL(Astro.url).href;
     });
   }
 </script>
-
-<style>
-  body::-webkit-scrollbar {
-    width: 8px;
-  }
-
-  body::-webkit-scrollbar-thumb {
-    @apply bg-zinc-400;
-  }
-
-  .dark body::-webkit-scrollbar-thumb {
-    @apply bg-zinc-800;
-  }
-</style>

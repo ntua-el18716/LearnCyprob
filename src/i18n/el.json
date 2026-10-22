@@ -80,5 +80,8 @@
   "compare.issueTitle": "{issue}: σύγκριση σχεδίων",
   "compare.paragraphs": "Παράγραφοι",
   "compare.empty": "Δεν υπάρχουν ακόμη καταγεγραμμένες διατάξεις.",
-  "compare.backToMatrix": "Πίσω στη σύγκριση"
+  "compare.backToMatrix": "Πίσω στη σύγκριση",
+  "outline.title": "Σε αυτή τη σελίδα",
+  "explore.subissues": "{n} υποθέματα",
+  "explore.subissue": "{n} υπόθεμα"
 }

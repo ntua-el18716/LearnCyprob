@@ -1,64 +1,83 @@
 /** @type {import('tailwindcss').Config} */
 const defaultTheme = require("tailwindcss/defaultTheme");
+
+// Design tokens live in src/styles/global.css as CSS variables (light + dark).
+const token = (name) => `rgb(var(--${name}) / <alpha-value>)`;
+
 module.exports = {
-  content: [
-    "./src/**/*.{js,ts,jsx,tsx,astro}",
-  ],
+  content: ["./src/**/*.{js,ts,jsx,tsx,astro}"],
   darkMode: "class",
   theme: {
     extend: {
-      colors: {
-        // The site's own voice (<Analysis>) only. Olive: shared, belongs to
-        // neither community, and avoids flag blue/red.
-        olive: { ink: "#4D5F24", "ink-dark": "#B5C27A" },
-      },
+      colors: Object.fromEntries(
+        ["bg", "ink", "muted", "rule", "control", "accent", "on-accent", "panel", "sunken"].map(
+          (n) => [n, token(n)],
+        ),
+      ),
       fontFamily: {
-        // Noto covers Greek and Turkish (PLAN.md §10).
-        sans: ["Noto Sans Variable", ...defaultTheme.fontFamily.sans],
-        serif: ["Noto Serif Variable", ...defaultTheme.fontFamily.serif],
+        // Commissioner covers Greek and Turkish (PLAN.md §10).
+        sans: ["Commissioner Variable", ...defaultTheme.fontFamily.sans],
       },
-      typography: (theme) => ({
-        DEFAULT: {
+      maxWidth: {
+        // Reading measure for body text.
+        prose: "40rem",
+      },
+      typography: () => ({
+        site: {
           css: {
+            "--tw-prose-body": "rgb(var(--ink))",
+            "--tw-prose-headings": "rgb(var(--ink))",
+            "--tw-prose-lead": "rgb(var(--muted))",
+            "--tw-prose-links": "rgb(var(--ink))",
+            "--tw-prose-bold": "rgb(var(--ink))",
+            "--tw-prose-counters": "rgb(var(--muted))",
+            "--tw-prose-bullets": "rgb(var(--muted))",
+            "--tw-prose-hr": "rgb(var(--rule))",
+            "--tw-prose-quotes": "rgb(var(--ink))",
+            "--tw-prose-quote-borders": "rgb(var(--accent))",
+            "--tw-prose-captions": "rgb(var(--muted))",
+            "--tw-prose-th-borders": "rgb(var(--accent))",
+            "--tw-prose-td-borders": "rgb(var(--rule))",
+            fontSize: "1.15rem",
+            lineHeight: "1.7",
+            a: {
+              textDecorationColor: "rgb(var(--accent) / 0.6)",
+              textUnderlineOffset: "3px",
+              fontWeight: "500",
+              "&:hover": { textDecorationColor: "rgb(var(--accent))", textDecorationThickness: "2px" },
+            },
+            "h2, h3": { fontWeight: "720", letterSpacing: "-0.01em", scrollMarginTop: "1.5rem", position: "relative" },
+            h2: { fontSize: "1.65em" },
+            blockquote: {
+              fontStyle: "normal",
+              fontWeight: "500",
+              borderLeftWidth: "4px",
+              quotes: "none",
+            },
+            "blockquote p:first-of-type::before, blockquote p:last-of-type::after": { content: "none" },
+            "thead th": { borderBottomWidth: "2px" },
+            // Heading anchors sit in the left margin so headings never shift.
             ".anchor-link": {
-              marginRight: "0.25rem",
-              opacity: "0.3",
+              position: "absolute",
+              right: "100%",
+              paddingRight: "0.4rem",
+              opacity: "0",
               textDecoration: "none !important",
-              transitionProperty: "opacity !important",
-              transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1);",
-              transitionDuration: "150ms",
-              "&:hover": {
-                opacity: "1",
-              },
+              color: "rgb(var(--muted))",
             },
-            "code::before": {
-              content: '""',
-            },
-            "code::after": {
-              content: '""',
-            },
+            "h2:hover .anchor-link, h3:hover .anchor-link, .anchor-link:focus-visible": { opacity: "1" },
+            "code::before": { content: '""' },
+            "code::after": { content: '""' },
             ":not(pre) > code": {
-              backgroundColor: theme("colors.zinc.200"),
-              borderColor: theme("colors.zinc.300"),
-              padding: "0.250rem 0.4rem",
-              borderRadius: "0.250rem",
+              backgroundColor: "rgb(var(--sunken))",
+              padding: "0.15rem 0.35rem",
+              borderRadius: "0.25rem",
               fontWeight: "400",
-            },
-          },
-        },
-        invert: {
-          css: {
-            ":not(pre) > code": {
-              backgroundColor: theme("colors.zinc.900"),
-              borderColor: theme("colors.zinc.800"),
             },
           },
         },
       }),
     },
   },
-  plugins: [
-    require("@tailwindcss/typography"),
-    require("@tailwindcss/aspect-ratio"),
-  ],
+  plugins: [require("@tailwindcss/typography"), require("@tailwindcss/aspect-ratio")],
 };

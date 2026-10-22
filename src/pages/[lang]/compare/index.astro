@@ -1,6 +1,6 @@
 ---
 import Layout from "@layouts/Layout.astro";
-import Header from "@components/Header.astro";
+import PageHeader from "@components/PageHeader.astro";
 import ProvisionStatus from "@components/ProvisionStatus.astro";
 import { publishedLocales, type Locale } from "../../../i18n/locales";
 import { localizePath, pickLocalized, useTranslations } from "../../../lib/i18n";
@@ -14,12 +14,11 @@ const lang = Astro.params.lang as Locale;
 const t = useTranslations(lang);
 const { plans, issues, cell } = await getComparison(lang);
 const alternates = Object.fromEntries(publishedLocales.map((l) => [l, localizePath(l, "compare")]));
-const link = "underline decoration-zinc-400 underline-offset-2";
+const link = "link";
 ---
 
-<Layout lang={lang} title={t("compare.title")} description={t("compare.description")} alternates={alternates} wide>
-  <Header title={t("compare.title")} />
-  <p class="mb-8 text-center" lang={t.langOf("compare.description")}>{t("compare.description")}</p>
+<Layout lang={lang} title={t("compare.title")} description={t("compare.description")} alternates={alternates}>
+  <PageHeader title={t("compare.title")} intro={t("compare.description")} introLang={t.langOf("compare.description")} />
   {
     issues.length === 0 ? (
       <p>{t("compare.empty")}</p>
@@ -28,7 +27,7 @@ const link = "underline decoration-zinc-400 underline-offset-2";
         <table class="w-full min-w-[40rem] border-collapse text-left text-sm">
           <caption class="sr-only">{t("compare.title")}</caption>
           <thead>
-            <tr class="border-b border-zinc-400 dark:border-zinc-600">
+            <tr class="border-b border-control">
               <th scope="col" class="py-2 pr-3 align-bottom">{t("compare.issue")}</th>
               {plans.map((plan) => (
                 <th scope="col" class="py-2 pr-3 align-bottom">
@@ -41,7 +40,7 @@ const link = "underline decoration-zinc-400 underline-offset-2";
           </thead>
           <tbody>
             {issues.map((issue) => (
-              <tr class="border-b border-zinc-200 dark:border-zinc-800 align-top">
+              <tr class="border-b border-rule align-top">
                 <th scope="row" class="py-3 pr-3 font-medium">
                   <a href={localizePath(lang, `compare/${issue.slug}`)} lang={issue.isFallback ? issue.lang : undefined} class={link}>
                     {issue.title}
@@ -50,7 +49,7 @@ const link = "underline decoration-zinc-400 underline-offset-2";
                 {plans.map((plan) => {
                   const provision = cell(issue.slug, plan.id);
                   if (!provision) {
-                    return <td class="py-3 pr-3 text-zinc-500 dark:text-zinc-400">{t("compare.notCovered")}</td>;
+                    return <td class="py-3 pr-3 text-muted">{t("compare.notCovered")}</td>;
                   }
                   const summary = pickLocalized(provision.data.summary, lang);
                   return (

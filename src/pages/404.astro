@@ -1,5 +1,7 @@
 ---
 import Layout from "@layouts/Layout.astro";
+import PageHeader from "@components/PageHeader.astro";
+import { localizePath } from "../lib/i18n";
 import { defaultLocale } from "../i18n/locales";
 import { useTranslations } from "../lib/i18n";
 
@@ -10,9 +12,7 @@ const description = t("notFound.description");
 ---
 
 <Layout title={title} description={description}>
-  <div class="flex flex-col items-center gap-4 mt-18">
-    <p class="dark:text-white font-medium text-zinc-900 text-center">
-      {t("notFound.body")}
-    </p>
-  </div>
+  <PageHeader title={title} intro={t("notFound.body")}>
+    <a href={localizePath(defaultLocale)} class="mt-6 inline-block font-semibold link">{t("nav.home")}</a>
+  </PageHeader>
 </Layout>

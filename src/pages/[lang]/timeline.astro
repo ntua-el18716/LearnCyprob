@@ -1,6 +1,6 @@
 ---
 import Layout from "@layouts/Layout.astro";
-import Header from "@components/Header.astro";
+import PageHeader from "@components/PageHeader.astro";
 import SourceLinks from "@components/SourceLinks.astro";
 import { getCollection, getEntries } from "astro:content";
 import { publishedLocales, type Locale } from "../../i18n/locales";
@@ -40,30 +40,30 @@ const enriched = await Promise.all(
 );
 const formatDate = (d: Date, c: (typeof events)[number]["data"]["dateCertainty"]) =>
   formatDocumentDate(d, c, lang, t);
-const linkClass = "underline decoration-zinc-400 underline-offset-2";
+const linkClass = "link";
 const alternates = Object.fromEntries(publishedLocales.map((l) => [l, localizePath(l, "timeline")]));
 ---
 
 <Layout lang={lang} title={t("timeline.title")} description={t("timeline.description")} alternates={alternates}>
-  <Header title={t("timeline.title")} />
-  <p class="mb-8 text-center" lang={t.langOf("timeline.description")}>{t("timeline.description")}</p>
+  <PageHeader title={t("timeline.title")} intro={t("timeline.description")} introLang={t.langOf("timeline.description")} />
+  <div class="max-w-3xl">
   {events.length === 0 && <p>{t("timeline.empty")}</p>}
   {
     eras.map((era) => (
       <section aria-labelledby={`era-${era}`} class="mb-10">
-        <h2 id={`era-${era}`} class="text-xl font-semibold text-zinc-900 dark:text-zinc-100 border-b border-zinc-300 dark:border-zinc-700 pb-1">
+        <h2 id={`era-${era}`} class="text-xl font-semibold text-ink border-b border-rule pb-1">
           {eraLabel(era)}
         </h2>
         <ol class="mt-4 space-y-6">
           {enriched
             .filter(({ event }) => event.data.era === era)
             .map(({ event, title, summary, issues, documents }) => (
-              <li id={event.id} data-importance={event.data.importance} class="scroll-mt-8 target:bg-zinc-200/60 dark:target:bg-zinc-800/60 rounded-sm">
-                <p class="text-sm text-zinc-600 dark:text-zinc-400">
+              <li id={event.id} data-importance={event.data.importance} class="scroll-mt-8 target:bg-panel rounded-sm">
+                <p class="text-sm text-muted">
                   <time datetime={event.data.date.toISOString().slice(0, 10)}>{formatDate(event.data.date, event.data.dateCertainty)}</time>
                   {event.data.endDate && <> – <time datetime={event.data.endDate.toISOString().slice(0, 10)}>{formatDate(event.data.endDate, event.data.dateCertainty)}</time></>}
                 </p>
-                <h3 class="font-semibold text-zinc-900 dark:text-zinc-100" lang={title.isFallback ? title.lang : undefined}>
+                <h3 class="font-semibold text-ink" lang={title.isFallback ? title.lang : undefined}>
                   <a href={`#${event.id}`} class="no-underline hover:underline">{title.text}</a>
                   {event.data.draft && <span class="ml-2 text-sm font-normal">({t("draft.label")})</span>}
                 </h3>
@@ -90,4 +90,5 @@ const alternates = Object.fromEntries(publishedLocales.map((l) => [l, localizePa
       </section>
     ))
   }
+  </div>
 </Layout>

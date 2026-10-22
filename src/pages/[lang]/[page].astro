@@ -46,21 +46,21 @@ const alternates = Object.fromEntries(
   {data.draft && <PageNotice kind="draft">{t("draft.banner")}</PageNotice>}
   {isFallback && <PageNotice kind="translation">{t("translation.missing")}</PageNotice>}
 
-  <article>
+  <article class="max-w-[42rem]">
     <header class="mb-8">
-      <h1 lang={contentLangAttr} class="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-950 dark:text-zinc-100">
+      <h1 lang={contentLangAttr} class="page-title">
         {data.title}
       </h1>
-      <p class="mt-4 flex flex-wrap gap-x-4 text-sm text-zinc-600 dark:text-zinc-400">
+      <p class="mt-4 flex flex-wrap gap-x-4 text-sm text-muted">
         <time datetime={data.lastReviewed.toISOString().slice(0, 10)}>
           {t("issue.lastReviewed", { date: formatDate.format(data.lastReviewed) })}
         </time>
-        <a href={`${repoUrl}/commits/main/${entry.filePath}`} class="underline decoration-zinc-400 underline-offset-2">
+        <a href={`${repoUrl}/commits/main/${entry.filePath}`} class="link">
           {t("issue.history")}
         </a>
       </p>
     </header>
-    <div lang={contentLangAttr} class="prose prose-zinc dark:prose-invert max-w-none font-serif prose-headings:font-sans">
+    <div lang={contentLangAttr} class="prose prose-site max-w-none">
       <Content components={{ Analysis, Cite, Claim, Concern, Status, StatusTerm }} />
     </div>
     <SourcesList citations={citations} />

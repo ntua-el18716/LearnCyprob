@@ -1,6 +1,6 @@
 ---
 import Layout from "@layouts/Layout.astro";
-import Header from "@components/Header.astro";
+import PageHeader from "@components/PageHeader.astro";
 import IssueTreeList from "@components/IssueTreeList.astro";
 import { publishedLocales, type Locale } from "../../../i18n/locales";
 import { localizePath, useTranslations } from "../../../lib/i18n";
@@ -19,7 +19,8 @@ const alternates = Object.fromEntries(
 ---
 
 <Layout lang={lang} title={t("issues.title")} description={t("issues.description")} alternates={alternates}>
-  <Header title={t("issues.title")} />
-  <p class="mb-8 text-center" lang={t.langOf("issues.description")}>{t("issues.description")}</p>
+  <PageHeader title={t("issues.title")} intro={t("issues.description")} introLang={t.langOf("issues.description")} />
+  <div class="max-w-3xl">
   <IssueTreeList nodes={tree} lang={lang} />
+  </div>
 </Layout>

@@ -11,9 +11,11 @@ interface Props {
   sources: string[];
   numbers?: string;
   refs?: string;
+  /** Large pill with a "Status in the talks" label (article header). */
+  large?: boolean;
 }
 
-const { value, sources = [], numbers, refs } = Astro.props;
+const { value, sources = [], numbers, refs, large = false } = Astro.props;
 if (sources.length === 0) {
   throw new Error(`<Status value="${value}"> needs at least one source (CLAUDE.md: statuses must carry sources).`);
 }
@@ -27,24 +29,36 @@ const href = `${localizePath(lang, "methodology")}#status-${value}`;
 ---
 
 <span
-  class="status font-sans inline-flex items-baseline gap-1.5 rounded-full border border-zinc-400 dark:border-zinc-600 px-2.5 py-0.5 text-sm text-zinc-800 dark:text-zinc-200"
+  class:list={[
+    "status not-prose inline-flex items-center rounded-full font-sans text-ink",
+    large ? "gap-3 border-2 border-ink py-2 pl-3.5 pr-5" : "gap-1.5 border border-control px-2.5 py-0.5 text-[0.9em] align-baseline",
+  ]}
 >
   <svg
     viewBox="0 0 12 12"
-    width="12"
-    height="12"
+    width={large ? 20 : 12}
+    height={large ? 20 : 12}
     aria-hidden="true"
-    class="self-center shrink-0"
+    class="shrink-0"
     set:html={statusGlyphs[value]}
   />
-  <span class="sr-only">{t("status.label")}:</span>
-  <a
-    href={href}
-    title={t("status.definition", { status: label })}
-    lang={t.langOf(key)}
-    class="no-underline hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 rounded-sm"
-  >
-    {label}
-  </a>
-  <CitationMarks ids={sources} numbers={numbers} refs={refs} />
+  <span class:list={[large && "flex flex-col leading-tight"]}>
+    {large ? (
+      <span class="text-xs font-normal text-muted" lang={t.langOf("issue.status")}>{t("issue.status")}</span>
+    ) : (
+      <span class="sr-only">{t("status.label")}:</span>
+    )}
+    <span>
+      <a
+        href={href}
+        title={t("status.definition", { status: label })}
+        lang={t.langOf(key)}
+        class:list={["no-underline hover:underline", large ? "font-[650]" : "font-medium"]}
+      >
+        {label}
+      </a>
+      {large && <CitationMarks ids={sources} numbers={numbers} refs={refs} />}
+    </span>
+  </span>
+  {!large && <CitationMarks ids={sources} numbers={numbers} refs={refs} />}
 </span>

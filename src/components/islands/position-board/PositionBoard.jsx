@@ -15,7 +15,7 @@ const certaintyGlyphs = {
 };
 
 const NO_STATED = "no-stated-position";
-const link = "underline decoration-zinc-400 underline-offset-2";
+const link = "link";
 
 const validAt = (p, date) => p.validFrom <= date && (!p.validTo || date < p.validTo);
 
@@ -39,17 +39,17 @@ function PositionDetails({ position, strings, dateLabels }) {
       </summary>
       <div className="mt-2 space-y-2 text-sm font-normal">
         {position.quote && (
-          <blockquote className="border-l-2 border-zinc-400 pl-2">
+          <blockquote className="border-l-2 border-control pl-2">
             <p lang={position.quote.lang}>“{position.quote.original}”</p>
             {position.quote.translation && (
-              <p lang={position.quote.translation.lang} className="text-zinc-600 dark:text-zinc-400">
+              <p lang={position.quote.translation.lang} className="text-muted">
                 {position.quote.translation.text}
               </p>
             )}
           </blockquote>
         )}
         {position.note && <p lang={position.note.lang}>{position.note.text}</p>}
-        <p className="text-zinc-600 dark:text-zinc-400">{range}</p>
+        <p className="text-muted">{range}</p>
         <p>
           {strings.sources}:{" "}
           {position.sources.map((s, i) => (
@@ -95,7 +95,7 @@ export default function PositionBoard({ data, strings, dateLabels, today }) {
           value={index}
           onChange={(e) => setIndex(Number(e.target.value))}
           aria-valuetext={dateLabels[date]}
-          className="w-full max-w-xs accent-zinc-700 dark:accent-zinc-300"
+          className="w-full max-w-xs accent-accent"
           disabled={stops.length < 2}
         />
         <output htmlFor={sliderId} className="text-sm" aria-live="polite">
@@ -109,14 +109,14 @@ export default function PositionBoard({ data, strings, dateLabels, today }) {
             {strings.caption.replace("{issue}", data.issue.title).replace("{date}", dateLabels[date])}
           </caption>
           <thead>
-            <tr className="border-b border-zinc-400 dark:border-zinc-600">
+            <tr className="border-b border-control">
               <th scope="col" className="py-2 pr-3 align-bottom">
                 {strings.actor}
               </th>
               {data.options.map((o) => (
                 <th key={o.id} scope="col" className="py-2 pr-3 align-bottom">
                   <span lang={o.label.lang}>{o.label.text}</span>
-                  <span lang={o.description.lang} className="block font-normal text-zinc-600 dark:text-zinc-400">
+                  <span lang={o.description.lang} className="block font-normal text-muted">
                     {o.description.text}
                   </span>
                 </th>
@@ -129,7 +129,7 @@ export default function PositionBoard({ data, strings, dateLabels, today }) {
           {groups.map((group) => (
             <tbody key={group}>
               <tr>
-                <th scope="colgroup" colSpan={columns.length + 1} className="pt-4 pb-1 text-xs font-semibold text-zinc-600 dark:text-zinc-400">
+                <th scope="colgroup" colSpan={columns.length + 1} className="pt-4 pb-1 text-xs font-semibold text-muted">
                   <span lang={strings.groups[group].lang}>{strings.groups[group].text}</span>
                 </th>
               </tr>
@@ -138,7 +138,7 @@ export default function PositionBoard({ data, strings, dateLabels, today }) {
                 .map((actor) => {
                   const mine = current.filter((p) => p.actor === actor.id);
                   return (
-                    <tr key={actor.id} className="border-t border-zinc-200 dark:border-zinc-800 align-top">
+                    <tr key={actor.id} className="border-t border-rule align-top">
                       <th scope="row" className="py-2 pr-3 font-medium">
                         <span className="inline-flex items-center gap-1.5">
                           {actor.color && (
@@ -148,7 +148,7 @@ export default function PositionBoard({ data, strings, dateLabels, today }) {
                         </span>
                       </th>
                       {mine.length === 0 ? (
-                        <td colSpan={columns.length} className="py-2 text-zinc-500 dark:text-zinc-400">
+                        <td colSpan={columns.length} className="py-2 text-muted">
                           {strings.noRecord}
                         </td>
                       ) : (
@@ -170,7 +170,7 @@ export default function PositionBoard({ data, strings, dateLabels, today }) {
         </table>
       </div>
 
-      <figcaption className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-zinc-600 dark:text-zinc-400">
+      <figcaption className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
         {Object.keys(certaintyGlyphs).map((c) => (
           <span key={c} className="inline-flex items-center gap-1">
             <Glyph certainty={c} />

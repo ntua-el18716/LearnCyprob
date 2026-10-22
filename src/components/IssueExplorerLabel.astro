@@ -19,11 +19,11 @@ const statusKey = node.status && (`status.${node.status}` as const);
   <a
     href={localizePath(lang, `issues/${node.slug}`)}
     lang={node.isFallback ? node.lang : undefined}
-    class="font-semibold underline decoration-zinc-400 underline-offset-2"
+    class="text-lg font-semibold link"
   >
     {node.title}
   </a>
-  <span class="inline-flex items-center gap-1 text-sm text-zinc-600 dark:text-zinc-400">
+  <span class="inline-flex items-center gap-1 text-sm text-muted">
     {node.status && <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true" set:html={statusGlyphs[node.status]} />}
     {statusKey ? <span lang={t.langOf(statusKey)}>{t(statusKey)}</span> : <span>{t("explore.noStatus")}</span>}
   </span>

@@ -1,0 +1,18 @@
+---
+// Title block for index pages: bold title, optional intro. `introLang`
+// marks an intro that fell back to another language.
+interface Props {
+  title: string;
+  intro?: string;
+  titleLang?: string;
+  introLang?: string;
+}
+
+const { title, intro, titleLang, introLang } = Astro.props;
+---
+
+<header class="mb-10 sm:mb-12">
+  <h1 class="page-title" lang={titleLang}>{title}</h1>
+  {intro && <p class="page-intro" lang={introLang}>{intro}</p>}
+  <slot />
+</header>

@@ -21,12 +21,13 @@ if (!href) {
 
 <a
   class:list={[
-    "font-semibold text-base block py-2.5 transition-colors",
-    { "dark:text-zinc-50 text-zinc-950": isActive },
-    { "dark:text-zinc-400 text-zinc-600 hover:text-zinc-800 dark:hover:text-zinc-50": !isActive },
+    "block py-1 font-medium",
+    isActive
+      ? "underline decoration-2 underline-offset-[6px]"
+      : "opacity-85 hover:opacity-100 hover:underline hover:decoration-1 hover:underline-offset-[6px]",
   ]}
   aria-current={isActive ? "page" : undefined}
-  href={href} 
+  href={href}
   {...props}
 >
   {text}

@@ -29,7 +29,7 @@ export default function ResultsChart({ data }) {
   return (
     <svg
       viewBox={`0 0 ${width} ${height}`}
-      className="w-full max-w-xl h-auto mx-auto text-zinc-800 dark:text-zinc-200"
+      className="w-full max-w-xl h-auto mx-auto text-ink"
       aria-hidden="true"
       focusable="false"
     >

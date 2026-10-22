@@ -1,6 +1,6 @@
 ---
 import Layout from "@layouts/Layout.astro";
-import Header from "@components/Header.astro";
+import PageHeader from "@components/PageHeader.astro";
 import SourceLinks from "@components/SourceLinks.astro";
 import { getCollection } from "astro:content";
 import { publishedLocales, type Locale } from "../../i18n/locales";
@@ -22,13 +22,13 @@ const alternates = Object.fromEntries(publishedLocales.map((l) => [l, localizePa
 ---
 
 <Layout lang={lang} title={t("glossary.title")} description={t("glossary.description")} alternates={alternates}>
-  <Header title={t("glossary.title")} />
-  <p class="mb-8 text-center" lang={t.langOf("glossary.description")}>{t("glossary.description")}</p>
+  <PageHeader title={t("glossary.title")} intro={t("glossary.description")} introLang={t.langOf("glossary.description")} />
+  <div class="max-w-3xl">
   <dl class="space-y-8">
     {
       terms.map(({ entry, term, definition }) => (
-        <div id={entry.data.slug} class="scroll-mt-8 target:bg-zinc-200/60 dark:target:bg-zinc-800/60 rounded-sm">
-          <dt class="text-lg font-semibold text-zinc-900 dark:text-zinc-100" lang={fallback(term)}>
+        <div id={entry.data.slug} class="scroll-mt-8 target:bg-panel rounded-sm">
+          <dt class="text-lg font-semibold text-ink" lang={fallback(term)}>
             <a href={`#${entry.data.slug}`} class="no-underline hover:underline">{term.text}</a>
             {entry.data.draft && <span class="ml-2 text-sm font-normal">({t("draft.label")})</span>}
           </dt>
@@ -56,4 +56,5 @@ const alternates = Object.fromEntries(publishedLocales.map((l) => [l, localizePa
       ))
     }
   </dl>
+  </div>
 </Layout>

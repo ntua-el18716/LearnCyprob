@@ -42,17 +42,17 @@ const dateLabels = data
 
 {
   data && strings && (
-    <section aria-labelledby={`positions-${issue}`} class="mt-12">
-      <h2 id={`positions-${issue}`} class="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+    <section aria-labelledby={`positions-${issue}-title`} id={`positions-${issue}`} class="mt-14 scroll-mt-6">
+      <h2 id={`positions-${issue}-title`} class="text-2xl font-[720]">
         {t("board.title")}
       </h2>
-      <p class="mt-1 text-sm text-zinc-600 dark:text-zinc-400" lang={t.langOf("board.description")}>
+      <p class="mt-1 text-muted" lang={t.langOf("board.description")}>
         {t("board.description")}
       </p>
       <PositionBoardIsland client:visible data={data} strings={strings} dateLabels={dateLabels} today={today} />
       {
         linkToFullPage && (
-          <a href={localizePath(lang, `positions/${issue}`)} class="text-sm underline decoration-zinc-400 underline-offset-2">
+          <a href={localizePath(lang, `positions/${issue}`)} class="font-semibold link">
             {t("board.fullPage")}
           </a>
         )

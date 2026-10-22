@@ -1,21 +1,17 @@
 ---
-// The site's own argument or interpretation (PLAN.md §1). The only element
-// that uses the olive accent, so the site's voice is never mistaken for fact.
+// The site's own argument or interpretation (PLAN.md §1): a tinted panel with
+// its label, so the site's voice is never mistaken for fact.
 import { localeOf, useTranslations } from "../../lib/i18n";
 
 const t = useTranslations(localeOf(Astro.currentLocale));
 ---
 
-<aside
-  class="analysis not-prose my-8 border-l-4 border-olive-ink dark:border-olive-ink-dark bg-olive-ink/[0.05] dark:bg-olive-ink-dark/[0.06] py-4 pl-5 pr-4"
->
-  <p class="font-sans font-semibold text-olive-ink dark:text-olive-ink-dark" lang={t.langOf("analysis.label")}>
-    {t("analysis.label")}
+<aside class="analysis not-prose my-8 rounded-lg bg-panel px-5 py-4 sm:px-6 sm:py-5">
+  <p class="font-sans text-sm">
+    <span class="font-bold text-accent" lang={t.langOf("analysis.label")}>{t("analysis.label")}</span>
+    <span class="text-muted" lang={t.langOf("analysis.note")}>{t("analysis.note")}</span>
   </p>
-  <p class="font-sans text-sm text-zinc-600 dark:text-zinc-400" lang={t.langOf("analysis.note")}>
-    {t("analysis.note")}
-  </p>
-  <div class="prose dark:prose-invert max-w-none mt-3 text-zinc-800 dark:text-zinc-200">
+  <div class="prose prose-site max-w-none mt-2">
     <slot />
   </div>
 </aside>

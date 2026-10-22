@@ -13,10 +13,8 @@ const { kind, lang } = Astro.props;
   role="note"
   lang={lang}
   class:list={[
-    "my-6 rounded-md border px-4 py-3 text-sm text-zinc-800 dark:text-zinc-200",
-    kind === "draft"
-      ? "border-2 border-dashed border-zinc-500"
-      : "border-zinc-400 dark:border-zinc-600 bg-zinc-100 dark:bg-zinc-900",
+    "mb-8 rounded-md px-4 py-3 text-sm",
+    kind === "draft" ? "border-2 border-dashed border-control" : "bg-sunken",
   ]}
 >
   <slot />

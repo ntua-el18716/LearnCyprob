@@ -1,5 +1,5 @@
 const field =
-  "block w-full mt-1 p-2 rounded-md border border-zinc-400 dark:border-zinc-600 bg-white dark:bg-zinc-900";
+  "block w-full mt-1 p-2 rounded-md border border-control bg-bg";
 
 function OptionBar({ strings, onCrossVotingPercentage, onElectionRound }) {
   return (
