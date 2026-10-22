@@ -1,0 +1,85 @@
+---
+// Numbered sources for a page, generated from the `citations` frontmatter that
+// remarkCitations writes. Never hand-written (CLAUDE.md).
+import { getEntry } from "astro:content";
+import type { Citation } from "../../lib/remark-citations";
+import { localeOf, localizePath, useTranslations } from "../../lib/i18n";
+
+interface Props {
+  citations: Citation[];
+}
+
+const { citations } = Astro.props;
+const lang = localeOf(Astro.currentLocale);
+const t = useTranslations(lang);
+const formatDate = new Intl.DateTimeFormat(lang, { dateStyle: "long" });
+const letters = "abcdefghijklmnopqrstuvwxyz";
+
+if (citations.length === 0) return null;
+
+const entries = await Promise.all(
+  citations.map(async ({ id, uses }, i) => {
+    const source = await getEntry("sources", id);
+    if (!source) throw new Error(`Unknown source "${id}" (no src/content/sources/${id}.yaml).`);
+    const documentPath = source.data.document
+      ? localizePath(lang, `documents/${source.data.document.id}`)
+      : undefined;
+    return { n: i + 1, uses, documentPath, ...source.data };
+  }),
+);
+---
+
+<section aria-labelledby="sources" class="mt-12 border-t border-zinc-300 dark:border-zinc-700 pt-6">
+  <h2 id="sources" class="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+    {t("sources.heading")}
+  </h2>
+  <ol class="mt-4 space-y-3 text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
+    {
+      entries.map((s) => (
+        <li id={`cite-src-${s.n}`} class="grid grid-cols-[2.5ch_1fr] gap-x-2 target:bg-zinc-200/60 dark:target:bg-zinc-800/60 rounded-sm">
+          <span class="tabular-nums text-right text-zinc-500 dark:text-zinc-400">{s.n}.</span>
+          <div>
+            <span class="mr-1 whitespace-nowrap">
+              {s.uses.map((use, i) => (
+                <>
+                  {i > 0 && " "}
+                  <a
+                    href={`#${use.ref}`}
+                    aria-label={t("sources.backToText", { n: s.n })}
+                    class="no-underline hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 rounded-sm"
+                  >
+                    {s.uses.length === 1 ? "↩" : letters[i]}
+                  </a>
+                </>
+              ))}
+            </span>
+            {s.author && <span>{s.author}, </span>}
+            {s.url || s.documentPath ? (
+              <a href={s.url ?? s.documentPath} lang={s.lang} class="underline decoration-zinc-400 underline-offset-2 hover:decoration-zinc-600">{s.title}</a>
+            ) : (
+              <span lang={s.lang}>{s.title}</span>
+            )}{". "}
+            {s.publisher}, <time datetime={s.date.toISOString().slice(0, 10)}>{formatDate.format(s.date)}</time>.
+            {s.documentPath && s.url && (
+              <> <a href={s.documentPath} class="underline decoration-zinc-400 underline-offset-2">{t("sources.inLibrary")}</a>.</>
+            )}
+            {s.archiveUrl && (
+              <> <a href={s.archiveUrl} class="underline decoration-zinc-400 underline-offset-2">{t("sources.archived")}</a>.</>
+            )}
+            {s.documentPath &&
+              s.uses
+                .filter((use) => use.anchor)
+                .map((use) => (
+                  <>
+                    {" "}
+                    <a href={`${s.documentPath}#${use.anchor}`} class="underline decoration-zinc-400 underline-offset-2 whitespace-nowrap">
+                      ¶ {use.anchor!.replace(/-/g, " ")}
+                    </a>
+                  </>
+                ))}
+          </div>
+        </li>
+      ))
+    }
+  </ol>
+</section>

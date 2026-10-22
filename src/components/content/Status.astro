@@ -1,0 +1,66 @@
+---
+// <Status value="converged" sources={["source-id"]} />. A status always carries
+// sources (CLAUDE.md). Each value has its own glyph shape plus a text label, so
+// nothing depends on colour; the label links to its methodology definition.
+import type { CollectionEntry } from "astro:content";
+import CitationMarks from "./CitationMarks.astro";
+import { localeOf, localizePath, useTranslations } from "../../lib/i18n";
+
+type StatusValue = NonNullable<CollectionEntry<"issues">["data"]["status"]>;
+
+interface Props {
+  value: StatusValue;
+  sources: string[];
+  numbers?: string;
+  refs?: string;
+}
+
+const { value, sources = [], numbers, refs } = Astro.props;
+if (sources.length === 0) {
+  throw new Error(`<Status value="${value}"> needs at least one source (CLAUDE.md: statuses must carry sources).`);
+}
+
+const lang = localeOf(Astro.currentLocale);
+const t = useTranslations(lang);
+const key = `status.${value}` as const;
+const label = t(key);
+const href = `${localizePath(lang, "methodology")}#status-${value}`;
+
+// Fill level reads left to right: agreed (full) → divergent (empty).
+const glyphs: Record<StatusValue, string> = {
+  agreed: '<circle cx="6" cy="6" r="5" fill="currentColor"/>',
+  converged:
+    '<circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6 1a5 5 0 1 1-5 5h5z" fill="currentColor"/>',
+  "partially-converged":
+    '<circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6 1a5 5 0 0 1 0 10z" fill="currentColor"/>',
+  "convergence-disputed":
+    '<circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6 1a5 5 0 0 1 0 10z" fill="currentColor"/><path d="M1.5 10.5l9-9" stroke="currentColor" stroke-width="1.5"/>',
+  divergent: '<circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/>',
+  "proposal-only":
+    '<path d="M6 1l5 5-5 5-5-5z" fill="none" stroke="currentColor" stroke-width="1.5"/>',
+  "not-discussed": '<path d="M2 6h8" stroke="currentColor" stroke-width="1.5"/>',
+};
+---
+
+<span
+  class="status inline-flex items-baseline gap-1.5 rounded-full border border-zinc-400 dark:border-zinc-600 px-2.5 py-0.5 text-sm text-zinc-800 dark:text-zinc-200"
+>
+  <svg
+    viewBox="0 0 12 12"
+    width="12"
+    height="12"
+    aria-hidden="true"
+    class="self-center shrink-0"
+    set:html={glyphs[value]}
+  />
+  <span class="sr-only">{t("status.label")}:</span>
+  <a
+    href={href}
+    title={t("status.definition", { status: label })}
+    lang={t.langOf(key)}
+    class="no-underline hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 rounded-sm"
+  >
+    {label}
+  </a>
+  <CitationMarks ids={sources} numbers={numbers} refs={refs} />
+</span>

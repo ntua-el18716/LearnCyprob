@@ -7,6 +7,7 @@ import { unified } from "@astrojs/markdown-remark";
 import rehypeSlug from "rehype-slug";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import { remarkReadingTime } from "./remark-reading-time.mjs";
+import { remarkCitations } from "./src/lib/remark-citations.ts";
 import react from "@astrojs/react";
 import { defaultLocale, locales, publishedLocales } from "./src/i18n/locales.ts";
 
@@ -15,7 +16,7 @@ export default defineConfig({
   markdown: {
     // Astro 7 defaults to Sätteri; the unified processor keeps our remark/rehype plugins.
     processor: unified({
-      remarkPlugins: [remarkReadingTime],
+      remarkPlugins: [remarkReadingTime, remarkCitations],
       rehypePlugins: [
         rehypeSlug,
         [

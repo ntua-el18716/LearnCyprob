@@ -1,0 +1,35 @@
+---
+// Superscript citation numbers. `numbers`/`refs` are filled in by the
+// remarkCitations plugin; outside MDX there is nothing to number against.
+import { getEntry } from "astro:content";
+import { localeOf, useTranslations } from "../../lib/i18n";
+
+interface Props {
+  ids: string[];
+  numbers?: string;
+  refs?: string;
+}
+
+const { ids, numbers, refs } = Astro.props;
+const t = useTranslations(localeOf(Astro.currentLocale));
+
+if (ids.length === 0) return null;
+if (!numbers || !refs) {
+  throw new Error(
+    `Citations [${ids.join(", ")}] have no numbers: they must be used in MDX compiled with remarkCitations.`,
+  );
+}
+
+const ns = numbers.split(",");
+const rs = refs.split(",");
+const marks = await Promise.all(
+  ids.map(async (id, i) => {
+    const source = await getEntry("sources", id);
+    if (!source) throw new Error(`Unknown source "${id}" (no src/content/sources/${id}.yaml).`);
+    return { n: ns[i], ref: rs[i], title: source.data.title };
+  }),
+);
+// The markup below stays on one line: any whitespace would show as a gap
+// between the text and the number.
+---
+<sup class="cite whitespace-nowrap">{marks.map((m, i) => (<>{i > 0 && ","}<a id={m.ref} href={`#cite-src-${m.n}`} aria-label={t("cite.label", { n: m.n })} title={m.title} class="tabular-nums no-underline hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 rounded-sm">{m.n}</a></>))}</sup>

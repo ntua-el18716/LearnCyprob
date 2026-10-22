@@ -1,0 +1,16 @@
+---
+// Inline citation: <Cite id="source-id" anchor="para-12" />. The number and
+// back-link id come from remarkCitations; the anchor is shown in <SourcesList>.
+import CitationMarks from "./CitationMarks.astro";
+
+interface Props {
+  id: string;
+  anchor?: string;
+  n?: string;
+  ref?: string;
+}
+
+const { id, n, ref } = Astro.props;
+---
+
+<CitationMarks ids={[id]} numbers={n} refs={ref} />

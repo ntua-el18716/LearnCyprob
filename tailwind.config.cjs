@@ -7,6 +7,11 @@ module.exports = {
   darkMode: "class",
   theme: {
     extend: {
+      colors: {
+        // The site's own voice (<Analysis>) only. Olive: shared, belongs to
+        // neither community, and avoids flag blue/red.
+        olive: { ink: "#4D5F24", "ink-dark": "#B5C27A" },
+      },
       fontFamily: {
         sans: ["InterVariable", "Inter", ...defaultTheme.fontFamily.sans],
       },

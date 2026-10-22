@@ -10,5 +10,10 @@
   "noscript.body": "Ορισμένες λειτουργίες, όπως η εναλλαγή θέματος και η αντιγραφή συνδέσμων, χρειάζονται JavaScript.",
   "footer.copyright": "© {year} {author}. Με επιφύλαξη παντός δικαιώματος.",
   "footer.source": "Πηγαίος κώδικας.",
-  "langPicker.title": "Επιλέξτε γλώσσα"
+  "langPicker.title": "Επιλέξτε γλώσσα",
+  "sources.heading": "Πηγές",
+  "sources.backToText": "Επιστροφή στην παραπομπή {n}",
+  "sources.archived": "Αρχειοθετημένο αντίγραφο",
+  "sources.inLibrary": "Στη βιβλιοθήκη εγγράφων",
+  "analysis.label": "Ανάλυση"
 }

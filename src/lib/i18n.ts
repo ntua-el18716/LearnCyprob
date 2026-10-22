@@ -1,7 +1,7 @@
 import en from "../i18n/en.json";
 import el from "../i18n/el.json";
 import tr from "../i18n/tr.json";
-import { defaultLocale, type Locale } from "../i18n/locales";
+import { defaultLocale, isLocale, type Locale } from "../i18n/locales";
 
 // en.json is the reference: every key must exist there. Other locales may be
 // incomplete and fall back to EN string by string.
@@ -44,4 +44,9 @@ export function pickLocalized(
   return text
     ? { text, lang, isFallback: false }
     : { text: value[defaultLocale], lang: defaultLocale as Locale, isFallback: lang !== defaultLocale };
+}
+
+/** The page locale for components: `localeOf(Astro.currentLocale)`. */
+export function localeOf(value: string | undefined): Locale {
+  return isLocale(value) ? value : defaultLocale;
 }

@@ -1,0 +1,37 @@
+---
+// <Concern community="gc" sources={["source-id"]}>…</Concern>: a sourced
+// concern or criticism. Both communities get the identical treatment; no
+// community colours (CLAUDE.md).
+import CitationMarks from "./CitationMarks.astro";
+import { localeOf, useTranslations } from "../../lib/i18n";
+
+interface Props {
+  community: "gc" | "tc";
+  sources: string[];
+  numbers?: string;
+  refs?: string;
+}
+
+const { community, sources = [], numbers, refs } = Astro.props;
+if (sources.length === 0) {
+  throw new Error(`<Concern community="${community}"> needs at least one source.`);
+}
+
+const t = useTranslations(localeOf(Astro.currentLocale));
+const origin = `concern.community.${community}` as const;
+---
+
+<aside
+  class="concern not-prose my-6 border-l-2 border-dashed border-zinc-400 dark:border-zinc-600 py-1 pl-5"
+>
+  <p class="text-sm text-zinc-600 dark:text-zinc-400">
+    <span class="font-semibold text-zinc-900 dark:text-zinc-100" lang={t.langOf("concern.label")}>
+      {t("concern.label")}
+    </span>
+    <span lang={t.langOf(origin)}>({t(origin)})</span>
+    <CitationMarks ids={sources} numbers={numbers} refs={refs} />
+  </p>
+  <div class="prose dark:prose-invert max-w-none mt-2">
+    <slot />
+  </div>
+</aside>
