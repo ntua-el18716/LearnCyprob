@@ -22,11 +22,11 @@ const t = useTranslations(localeOf(Astro.currentLocale));
 <dl
   class="claim not-prose my-6 grid gap-x-6 gap-y-2 border-y border-zinc-300 dark:border-zinc-700 py-4 sm:grid-cols-[minmax(8rem,auto)_1fr]"
 >
-  <dt class="text-sm font-semibold text-zinc-600 dark:text-zinc-400" lang={t.langOf("claim.label")}>
+  <dt class="font-sans text-sm font-semibold text-zinc-600 dark:text-zinc-400" lang={t.langOf("claim.label")}>
     {t("claim.label")}
   </dt>
   <dd class="italic text-zinc-900 dark:text-zinc-100"><q>{claim}</q></dd>
-  <dt class="text-sm font-semibold text-zinc-600 dark:text-zinc-400">
+  <dt class="font-sans text-sm font-semibold text-zinc-600 dark:text-zinc-400">
     <span lang={t.langOf("claim.documents")}>{t("claim.documents")}</span><CitationMarks
       ids={sources}
       numbers={numbers}

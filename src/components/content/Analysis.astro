@@ -9,10 +9,10 @@ const t = useTranslations(localeOf(Astro.currentLocale));
 <aside
   class="analysis not-prose my-8 border-l-4 border-olive-ink dark:border-olive-ink-dark bg-olive-ink/[0.05] dark:bg-olive-ink-dark/[0.06] py-4 pl-5 pr-4"
 >
-  <p class="font-semibold text-olive-ink dark:text-olive-ink-dark" lang={t.langOf("analysis.label")}>
+  <p class="font-sans font-semibold text-olive-ink dark:text-olive-ink-dark" lang={t.langOf("analysis.label")}>
     {t("analysis.label")}
   </p>
-  <p class="text-sm text-zinc-600 dark:text-zinc-400" lang={t.langOf("analysis.note")}>
+  <p class="font-sans text-sm text-zinc-600 dark:text-zinc-400" lang={t.langOf("analysis.note")}>
     {t("analysis.note")}
   </p>
   <div class="prose dark:prose-invert max-w-none mt-3 text-zinc-800 dark:text-zinc-200">

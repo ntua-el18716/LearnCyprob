@@ -1,7 +1,7 @@
 ---
 import Link from "@components/Link.astro";
 import { Icon } from "astro-icon/components";
-import { author, defaultMeta } from "@data/constants";
+import { author, defaultMeta, repoUrl } from "@data/constants";
 import { localizePath, useTranslations } from "../lib/i18n";
 import {
   defaultLocale,
@@ -25,12 +25,15 @@ interface Props {
   pubDate?: Date;
   wide?: boolean;
   lang?: Locale;
+  /** Keep the page out of search engines (drafts). */
+  noindex?: boolean;
   /** This page in other languages; defaults to each language's home page. */
   alternates?: Partial<Record<Locale, string>>;
 }
 
 const {
   lang = defaultLocale,
+  noindex = false,
   pubDate,
   wide = false,
   alternates = Object.fromEntries(
@@ -104,7 +107,7 @@ const canonicalURL = new URL(Astro.url).href;
     <meta property="twitter:description" content={description} />
     <meta property="twitter:image" content={ogImageURL} />
     <meta name="generator" content={Astro.generator} />
-    <meta name="robots" content="follow, index" />
+    <meta name="robots" content={noindex ? "noindex, follow" : "follow, index"} />
     <meta name="author" content={author} />
     {
       pubDate && (
@@ -195,7 +198,7 @@ const canonicalURL = new URL(Astro.url).href;
         <p>
           {t("footer.copyright", { year: new Date().getFullYear(), author })}
           <a
-            href="https://github.com/ntua-el18716/LearnCyprob"
+            href={repoUrl}
             class="hover:underline z-10">{t("footer.source")}</a
           >
         </p>

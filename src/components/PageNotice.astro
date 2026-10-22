@@ -1,0 +1,23 @@
+---
+// Page-level notice (draft, missing translation). Neutral styling; the draft
+// variant is told apart by its dashed border, not by colour.
+interface Props {
+  kind: "draft" | "translation";
+  lang?: string;
+}
+
+const { kind, lang } = Astro.props;
+---
+
+<p
+  role="note"
+  lang={lang}
+  class:list={[
+    "my-6 rounded-md border px-4 py-3 text-sm text-zinc-800 dark:text-zinc-200",
+    kind === "draft"
+      ? "border-2 border-dashed border-zinc-500"
+      : "border-zinc-400 dark:border-zinc-600 bg-zinc-100 dark:bg-zinc-900",
+  ]}
+>
+  <slot />
+</p>

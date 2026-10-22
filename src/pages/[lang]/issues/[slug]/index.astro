@@ -1,0 +1,160 @@
+---
+import Layout from "@layouts/Layout.astro";
+import PageNotice from "@components/PageNotice.astro";
+import Analysis from "@components/content/Analysis.astro";
+import Cite from "@components/content/Cite.astro";
+import Claim from "@components/content/Claim.astro";
+import Concern from "@components/content/Concern.astro";
+import SourcesList from "@components/content/SourcesList.astro";
+import Status from "@components/content/Status.astro";
+import { render } from "astro:content";
+import { repoUrl } from "@data/constants";
+import { publishedLocales, type Locale } from "../../../../i18n/locales";
+import { localizePath, useTranslations } from "../../../../lib/i18n";
+import { getIssue, getIssueSlugs } from "../../../../lib/issues";
+import type { Citation } from "../../../../lib/remark-citations";
+
+export async function getStaticPaths() {
+  const slugs = await getIssueSlugs();
+  return publishedLocales.flatMap((lang) =>
+    slugs.map((slug) => ({ params: { lang, slug } })),
+  );
+}
+
+const lang = Astro.params.lang as Locale;
+const slug = Astro.params.slug!;
+const t = useTranslations(lang);
+
+const issue = (await getIssue(slug, lang))!;
+const { entry, lang: contentLang, isFallback } = issue;
+const { data } = entry;
+const { Content, headings, remarkPluginFrontmatter } = await render(entry);
+const citations = (remarkPluginFrontmatter.citations ?? []) as Citation[];
+const statusCitation = remarkPluginFrontmatter.statusCitation as
+  | { numbers: string; refs: string }
+  | undefined;
+
+const parent = data.parent ? await getIssue(data.parent, lang) : undefined;
+const related = (
+  await Promise.all(data.related.map((s) => getIssue(s, lang)))
+).filter((r) => r !== undefined);
+
+// Every issue article needs a "Concerns & criticisms" section (CLAUDE.md).
+// Heading text includes the "#" anchor that rehype-autolink-headings adds.
+const concernsHeading = useTranslations(contentLang)("issue.concernsHeading");
+const hasConcerns = headings.some(
+  (h) => h.text.replace(/^#\s*/, "").trim() === concernsHeading,
+);
+if (!hasConcerns) {
+  console.warn(
+    `[issues] ${entry.id}: missing a "${concernsHeading}" section (required for every issue).`,
+  );
+}
+
+// Mark content that fell back to another language (UI strings stay in `lang`).
+const contentLangAttr = isFallback ? contentLang : undefined;
+const formatDate = new Intl.DateTimeFormat(lang, { dateStyle: "long" });
+const issueLink = (s: string) => localizePath(lang, `issues/${s}`);
+const alternates = Object.fromEntries(
+  publishedLocales.map((l) => [l, localizePath(l, `issues/${slug}`)]),
+);
+---
+
+<Layout
+  lang={lang}
+  title={data.title}
+  description={data.summary}
+  alternates={alternates}
+  noindex={data.draft}
+  ogImage={{ src: `${issueLink(slug)}og.png`, alt: data.title }}
+>
+  {data.draft && <PageNotice kind="draft">{t("draft.banner")}</PageNotice>}
+  {isFallback && <PageNotice kind="translation">{t("translation.missing")}</PageNotice>}
+  {
+    import.meta.env.DEV && !hasConcerns && (
+      <PageNotice kind="draft" lang="en">
+        Dev only: this issue has no “{concernsHeading}” section. Every issue
+        article needs one (CLAUDE.md).
+      </PageNotice>
+    )
+  }
+
+  <article>
+    <header class="mb-8">
+      {
+        parent && (
+          <p class="mb-2 text-sm text-zinc-600 dark:text-zinc-400">
+            <span lang={t.langOf("issue.partOf")}>{t("issue.partOf")}</span>{" "}
+            <a
+              href={issueLink(parent.entry.data.slug)}
+              lang={parent.isFallback ? parent.lang : undefined}
+              class="underline decoration-zinc-400 underline-offset-2"
+            >
+              {parent.entry.data.title}
+            </a>
+          </p>
+        )
+      }
+      <h1
+        lang={contentLangAttr}
+        class="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-950 dark:text-zinc-100">
+        {data.title}
+      </h1>
+      <p lang={contentLangAttr} class="mt-3 text-lg text-zinc-700 dark:text-zinc-300">
+        {data.summary}
+      </p>
+      {
+        data.status && (
+          <p class="mt-4 flex flex-wrap items-baseline gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+            <span lang={t.langOf("issue.status")}>{t("issue.status")}</span>
+            <Status
+              value={data.status}
+              sources={data.statusSources.map((s) => s.id)}
+              numbers={statusCitation?.numbers}
+              refs={statusCitation?.refs}
+            />
+          </p>
+        )
+      }
+      <p class="mt-4 flex flex-wrap gap-x-4 text-sm text-zinc-600 dark:text-zinc-400">
+        <time datetime={data.lastReviewed.toISOString().slice(0, 10)}>
+          {t("issue.lastReviewed", { date: formatDate.format(data.lastReviewed) })}
+        </time>
+        <a
+          href={`${repoUrl}/commits/main/${entry.filePath}`}
+          class="underline decoration-zinc-400 underline-offset-2"
+        >
+          {t("issue.history")}
+        </a>
+      </p>
+    </header>
+
+    <div
+      lang={contentLangAttr}
+      class="prose prose-zinc dark:prose-invert max-w-none font-serif prose-headings:font-sans prose-a:underline-offset-2"
+    >
+      <Content components={{ Analysis, Cite, Claim, Concern, Status }} />
+    </div>
+
+    {
+      related.length > 0 && (
+        <nav aria-labelledby="related" class="mt-12">
+          <h2 id="related" class="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+            {t("issue.related")}
+          </h2>
+          <ul class="mt-3 list-disc pl-5">
+            {related.map((r) => (
+              <li lang={r.isFallback ? r.lang : undefined}>
+                <a href={issueLink(r.entry.data.slug)} class="underline decoration-zinc-400 underline-offset-2">
+                  {r.entry.data.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )
+    }
+
+    <SourcesList citations={citations} />
+  </article>
+</Layout>

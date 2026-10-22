@@ -1,0 +1,25 @@
+---
+import Layout from "@layouts/Layout.astro";
+import Header from "@components/Header.astro";
+import IssueTreeList from "@components/IssueTreeList.astro";
+import { publishedLocales, type Locale } from "../../../i18n/locales";
+import { localizePath, useTranslations } from "../../../lib/i18n";
+import { getIssueTree } from "../../../lib/issues";
+
+export function getStaticPaths() {
+  return publishedLocales.map((lang) => ({ params: { lang } }));
+}
+
+const lang = Astro.params.lang as Locale;
+const t = useTranslations(lang);
+const tree = await getIssueTree(lang);
+const alternates = Object.fromEntries(
+  publishedLocales.map((l) => [l, localizePath(l, "issues")]),
+);
+---
+
+<Layout lang={lang} title={t("issues.title")} description={t("issues.description")} alternates={alternates}>
+  <Header title={t("issues.title")} />
+  <p class="mb-8 text-center" lang={t.langOf("issues.description")}>{t("issues.description")}</p>
+  <IssueTreeList nodes={tree} lang={lang} />
+</Layout>
