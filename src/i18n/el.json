@@ -94,5 +94,13 @@
   "home.mapCenter": "{n} κεφάλαια",
   "home.mapHint": "Επιλέξτε κεφάλαιο",
   "glossary.letters": "Μετάβαση σε γράμμα",
-  "timeline.overview": "Επισκόπηση χρονολογίου: περίοδοι και γεγονότα κατά ημερομηνία"
+  "timeline.overview": "Επισκόπηση χρονολογίου: περίοδοι και γεγονότα κατά ημερομηνία",
+  "documents.pages": "{n} σελίδες",
+  "documents.pagesOne": "{n} σελίδα",
+  "documents.hasText": "Πλήρες κείμενο",
+  "documents.allTypes": "Όλα τα είδη",
+  "documents.filterType": "Είδος",
+  "documents.count": "{n} έγγραφα",
+  "documents.countOne": "{n} έγγραφο",
+  "documents.decade": "Δεκαετία {decade}"
 }

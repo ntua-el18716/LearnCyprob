@@ -1,0 +1,93 @@
+---
+// A document in the library grid: its first scanned page as the thumbnail
+// (or a paper-style placeholder), title, date and what is available.
+import { Image } from "astro:assets";
+import { Icon } from "astro-icon/components";
+import type { Document } from "../lib/documents";
+import { formatDocumentDate } from "../lib/documents";
+import { localizePath, pickLocalized, useTranslations } from "../lib/i18n";
+import type { Locale } from "../i18n/locales";
+
+interface Props {
+  doc: Document;
+  lang: Locale;
+  hasText: boolean;
+}
+
+const { doc, lang, hasText } = Astro.props;
+const t = useTranslations(lang);
+const { data } = doc;
+const title = pickLocalized(data.title, lang);
+const typeKey = data.type && (`documents.type.${data.type}` as const);
+const pages = data.scans.length;
+const plural = new Intl.PluralRules(lang);
+const href = localizePath(lang, `documents/${doc.id}`);
+const chip = "rounded-full px-2.5 py-0.5 text-xs font-semibold";
+---
+
+<li
+  data-document
+  data-title={title.text.toLocaleLowerCase(lang)}
+  data-type={data.type ?? ""}
+  class="group relative flex flex-col overflow-hidden rounded-2xl border border-rule bg-bg transition focus-within:ring-[3px] focus-within:ring-accent hover:-translate-y-0.5 hover:border-accent hover:shadow-lg motion-reduce:transition-none"
+>
+  <div class="relative aspect-[4/3] overflow-hidden border-b border-rule bg-sunken">
+    {
+      pages > 0 ? (
+        <Image
+          src={data.scans[0]}
+          alt=""
+          width={480}
+          height={360}
+          fit="cover"
+          position="top"
+          class="h-full w-full object-cover object-top transition duration-300 group-hover:scale-[1.03] dark:brightness-[0.85] motion-reduce:transition-none"
+        />
+      ) : (
+        <div aria-hidden="true" class="grid h-full place-items-center">
+          <div class="flex h-[78%] w-[58%] flex-col gap-2 rounded-sm bg-bg p-4 shadow-md">
+            <Icon name="lucide:file-text" class="size-6 text-accent" />
+            <span class="h-1.5 w-full rounded bg-rule" />
+            <span class="h-1.5 w-5/6 rounded bg-rule" />
+            <span class="h-1.5 w-4/6 rounded bg-rule" />
+            <span class="mt-auto text-lg font-bold text-muted">{data.date.getUTCFullYear()}</span>
+          </div>
+        </div>
+      )
+    }
+    {
+      data.isLeaked && (
+        <span class:list={[chip, "absolute left-3 top-3 bg-ink text-bg"]} lang={t.langOf("documents.leaked")}>
+          {t("documents.leaked")}
+        </span>
+      )
+    }
+  </div>
+  <div class="flex flex-1 flex-col gap-2 p-5">
+    <p class="text-sm font-bold text-accent">
+      <time datetime={data.date.toISOString().slice(0, 10)}>{formatDocumentDate(data.date, data.dateCertainty, lang, t)}</time>
+    </p>
+    <h3 class="text-lg font-bold leading-snug" lang={title.isFallback ? title.lang : undefined}>
+      <!-- The link covers the whole card. -->
+      <a href={href} class="after:absolute after:inset-0 after:content-[''] focus-visible:outline-none group-focus-within:underline">
+        {title.text}
+      </a>
+    </h3>
+    <ul class="mt-auto flex flex-wrap gap-2 pt-2 text-muted">
+      {typeKey && <li class:list={[chip, "bg-panel text-accent"]} lang={t.langOf(typeKey)}>{t(typeKey)}</li>}
+      {pages > 0 && (
+        <li class:list={[chip, "inline-flex items-center gap-1 bg-sunken"]}>
+          <Icon name="lucide:images" class="size-3.5" aria-hidden="true" />
+          {t(plural.select(pages) === "one" ? "documents.pagesOne" : "documents.pages", { n: pages })}
+        </li>
+      )}
+      {hasText && (
+        <li class:list={[chip, "inline-flex items-center gap-1 bg-sunken"]}>
+          <Icon name="lucide:text" class="size-3.5" aria-hidden="true" />
+          {t("documents.hasText")}
+        </li>
+      )}
+      {data.draft && <li class:list={[chip, "border border-dashed border-control"]}>{t("draft.label")}</li>}
+    </ul>
+  </div>
+</li>

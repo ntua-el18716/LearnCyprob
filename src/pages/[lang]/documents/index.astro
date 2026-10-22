@@ -1,9 +1,15 @@
 ---
+// The document library: cards grouped by decade, newest first. With
+// JavaScript, search by title and filter by type; without it, everything is
+// listed.
 import Layout from "@layouts/Layout.astro";
 import PageHeader from "@components/PageHeader.astro";
+import DocumentCard from "@components/DocumentCard.astro";
+import { getCollection } from "astro:content";
 import { publishedLocales, type Locale } from "../../../i18n/locales";
-import { localizePath, pickLocalized, useTranslations } from "../../../lib/i18n";
-import { formatDocumentDate, getDocuments } from "../../../lib/documents";
+import { isVisible } from "../../../lib/drafts";
+import { localizePath, useTranslations } from "../../../lib/i18n";
+import { getDocuments } from "../../../lib/documents";
 
 export function getStaticPaths() {
   return publishedLocales.map((lang) => ({ params: { lang } }));
@@ -12,44 +18,92 @@ export function getStaticPaths() {
 const lang = Astro.params.lang as Locale;
 const t = useTranslations(lang);
 const documents = await getDocuments();
-const alternates = Object.fromEntries(
-  publishedLocales.map((l) => [l, localizePath(l, "documents")]),
-);
+const texts = new Set((await getCollection("documentTexts", isVisible)).map((e) => e.id.split("/")[0]));
+const decadeOf = (d: Date) => Math.floor(d.getUTCFullYear() / 10) * 10;
+const decades = [...new Set(documents.map((d) => decadeOf(d.data.date)))];
+const types = [...new Set(documents.map((d) => d.data.type).filter((x) => x !== undefined))];
+const plural = new Intl.PluralRules(lang);
+const count = (n: number) => t(plural.select(n) === "one" ? "documents.countOne" : "documents.count", { n });
+const alternates = Object.fromEntries(publishedLocales.map((l) => [l, localizePath(l, "documents")]));
+const chipBase = "rounded-full border px-3.5 py-1.5 text-sm font-semibold transition";
 ---
 
-<Layout
-  lang={lang}
-  title={t("documents.title")}
-  description={t("documents.description")}
-  alternates={alternates}
->
-  <PageHeader title={t("documents.title")} intro={t("documents.description")} introLang={t.langOf("documents.description")} />
-  <div class="max-w-3xl">
-  <ul class="divide-y divide-rule">
-    {
-      documents.map((doc) => {
-        const title = pickLocalized(doc.data.title, lang);
-        const typeKey = doc.data.type && (`documents.type.${doc.data.type}` as const);
-        return (
-          <li class="py-4">
-            <a
-              href={localizePath(lang, `documents/${doc.id}`)}
-              lang={title.isFallback ? title.lang : undefined}
-              class="font-semibold text-ink link"
-            >
-              {title.text}
-            </a>
-            <p class="mt-1 flex flex-wrap gap-x-4 text-sm text-muted">
-              <time datetime={doc.data.date.toISOString().slice(0, 10)}>
-                {formatDocumentDate(doc.data.date, doc.data.dateCertainty, lang, t)}
-              </time>
-              {typeKey && <span lang={t.langOf(typeKey)}>{t(typeKey)}</span>}
-              {doc.data.draft && <span>{t("draft.label")}</span>}
-            </p>
-          </li>
-        );
-      })
-    }
-  </ul>
+<Layout lang={lang} title={t("documents.title")} description={t("documents.description")} alternates={alternates}>
+  <PageHeader title={t("documents.title")} intro={t("documents.description")} introLang={t.langOf("documents.description")}>
+    <p class="mt-4 text-sm font-semibold text-muted">{count(documents.length)}</p>
+  </PageHeader>
+
+  <!-- `hidden` on a wrapper without a display class; filters need JavaScript. -->
+  <div data-doc-controls hidden>
+    <div class="mb-10 flex flex-wrap items-end gap-x-6 gap-y-4">
+      <label class="block w-full max-w-sm text-sm font-semibold">
+        {t("explore.search")}
+        <input type="search" data-doc-search class="control mt-1 w-full font-normal" />
+      </label>
+      {
+        types.length > 0 && (
+          <div role="group" aria-label={t("documents.filterType")} class="flex flex-wrap gap-2">
+            <button type="button" data-doc-type="" aria-pressed="true" class:list={[chipBase, "border-rule aria-pressed:border-accent aria-pressed:bg-accent aria-pressed:text-on-accent"]}>
+              {t("documents.allTypes")}
+            </button>
+            {types.map((type) => (
+              <button type="button" data-doc-type={type} aria-pressed="false" lang={t.langOf(`documents.type.${type}`)} class:list={[chipBase, "border-rule hover:border-accent aria-pressed:border-accent aria-pressed:bg-accent aria-pressed:text-on-accent"]}>
+                {t(`documents.type.${type}`)}
+              </button>
+            ))}
+          </div>
+        )
+      }
+    </div>
   </div>
+
+  {
+    decades.map((decade) => (
+      <section aria-labelledby={`decade-${decade}`} data-decade class="relative mb-14">
+        <h2 id={`decade-${decade}`} class="mb-6 flex items-baseline gap-4">
+          <span class="text-4xl font-[800] tracking-tight text-accent">{decade}</span>
+          <span class="sr-only">{t("documents.decade", { decade })}</span>
+          <span aria-hidden="true" class="h-px flex-1 self-center bg-rule" />
+        </h2>
+        <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {documents
+            .filter((d) => decadeOf(d.data.date) === decade)
+            .map((doc) => <DocumentCard doc={doc} lang={lang} hasText={texts.has(doc.id)} />)}
+        </ul>
+      </section>
+    ))
+  }
+  <p data-doc-empty hidden class="rounded-2xl border border-rule p-6">{t("explore.noMatches")}</p>
 </Layout>
+
+<script>
+  const controls = document.querySelector<HTMLElement>("[data-doc-controls]");
+  const search = document.querySelector<HTMLInputElement>("[data-doc-search]");
+  const empty = document.querySelector<HTMLElement>("[data-doc-empty]");
+  const cards = [...document.querySelectorAll<HTMLElement>("[data-document]")];
+  const typeButtons = [...document.querySelectorAll<HTMLButtonElement>("[data-doc-type]")];
+
+  if (controls && search && empty && cards.length) {
+    controls.hidden = false;
+    let type = "";
+    const apply = () => {
+      const query = search.value.trim().toLocaleLowerCase(document.documentElement.lang);
+      cards.forEach((card) => {
+        card.hidden = (query !== "" && !(card.dataset.title ?? "").includes(query)) || (type !== "" && card.dataset.type !== type);
+      });
+      // Hide decades left empty.
+      document.querySelectorAll<HTMLElement>("[data-decade]").forEach((section) => {
+        section.hidden = ![...section.querySelectorAll<HTMLElement>("[data-document]")].some((c) => !c.hidden);
+      });
+      empty.hidden = cards.some((c) => !c.hidden);
+    };
+    search.addEventListener("input", apply);
+    typeButtons.forEach((button) =>
+      button.addEventListener("click", () => {
+        type = button.dataset.docType ?? "";
+        typeButtons.forEach((b) => b.setAttribute("aria-pressed", String(b === button)));
+        apply();
+      }),
+    );
+  }
+</script>
