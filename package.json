@@ -68,5 +68,6 @@
   },
   "engines": {
     "node": ">=22.23.4"
-  }
+  },
+  "type": "module"
 }
