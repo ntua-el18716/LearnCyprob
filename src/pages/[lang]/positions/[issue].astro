@@ -1,0 +1,40 @@
+---
+import Layout from "@layouts/Layout.astro";
+import PageNotice from "@components/PageNotice.astro";
+import PositionBoard from "@components/PositionBoard.astro";
+import { publishedLocales, type Locale } from "../../../i18n/locales";
+import { localizePath, useTranslations } from "../../../lib/i18n";
+import { getIssue } from "../../../lib/issues";
+import { getPositionBoard, getPositionBoardSlugs } from "../../../lib/positions";
+
+export async function getStaticPaths() {
+  const slugs = await getPositionBoardSlugs();
+  const paths: { params: { lang: Locale; issue: string } }[] = [];
+  for (const lang of publishedLocales) {
+    for (const issue of slugs) {
+      if (await getPositionBoard(issue, lang)) paths.push({ params: { lang, issue } });
+    }
+  }
+  return paths;
+}
+
+const lang = Astro.params.lang as Locale;
+const slug = Astro.params.issue ?? "";
+const t = useTranslations(lang);
+const issue = await getIssue(slug, lang);
+const board = await getPositionBoard(slug, lang);
+if (!issue || !board) return Astro.redirect(localizePath(lang));
+const title = t("positions.title", { issue: issue.entry.data.title });
+const alternates = Object.fromEntries(publishedLocales.map((l) => [l, localizePath(l, `positions/${slug}`)]));
+---
+
+<Layout lang={lang} title={title} alternates={alternates} noindex={board.draft} wide>
+  {board.draft && <PageNotice kind="draft">{t("draft.banner")}</PageNotice>}
+  <h1 class="text-3xl font-bold tracking-tight text-zinc-950 dark:text-zinc-100">{title}</h1>
+  <p class="mt-2">
+    <a href={localizePath(lang, `issues/${slug}`)} lang={issue.isFallback ? issue.lang : undefined} class="underline decoration-zinc-400 underline-offset-2">
+      {issue.entry.data.title}
+    </a>
+  </p>
+  <PositionBoard issue={slug} />
+</Layout>

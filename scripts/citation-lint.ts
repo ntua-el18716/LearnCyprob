@@ -7,6 +7,7 @@
  * - a <Cite anchor> whose source has no library document, or whose document
  *   text has no element with that id;
  * - <Status>, <Concern> or <Claim> without `sources`;
+ * - a position whose `option` is not one of its issue's options;
  * - an issue slug (parent, related, positions, documents, events,
  *   provisions) that matches no issue. Astro validates the other references
  *   at build time; these are plain slugs, so they are checked here.
@@ -129,6 +130,43 @@ for (const issue of issues) {
         errors.push(`${where}: ${field}: no issue "${slug}"`);
     }
   }
+}
+
+// --- Position boards --------------------------------------------------------------
+
+// Options are defined on the default-locale (EN) issue entry.
+const optionIds = new Map(
+  issues
+    .filter((i) => rel(i.file).split("/").at(-2) === "en")
+    .map((i) => [
+      String(i.data.slug),
+      new Set(
+        (Array.isArray(i.data.options)
+          ? (i.data.options as { id?: unknown }[])
+          : []
+        ).map((o) => String(o.id)),
+      ),
+    ]),
+);
+for (const file of loadAll("positions", [".yaml"])) {
+  const ids = optionIds.get(String(file.data.issue));
+  const positions = Array.isArray(file.data.positions)
+    ? (file.data.positions as { option?: unknown }[])
+    : [];
+  if (!ids?.size && positions.length) {
+    errors.push(
+      `${rel(file.file)}: issue "${String(file.data.issue)}" has no options in its EN file`,
+    );
+    continue;
+  }
+  positions.forEach((p, i) => {
+    const option = String(p.option);
+    if (option !== "no-stated-position" && !ids?.has(option)) {
+      errors.push(
+        `${rel(file.file)}: positions[${i}]: option "${option}" is not one of the issue's options`,
+      );
+    }
+  });
 }
 
 // --- Site pages -----------------------------------------------------------------

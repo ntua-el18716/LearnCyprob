@@ -1,0 +1,62 @@
+---
+// Position board for an issue: data and translated strings for the island.
+// Renders nothing when the issue has no options or no positions file.
+import PositionBoardIsland from "./islands/position-board/PositionBoard.jsx";
+import { localeOf, localizePath, useTranslations } from "../lib/i18n";
+import { actorGroups, getPositionBoard } from "../lib/positions";
+
+interface Props {
+  issue: string;
+  /** Link to the standalone board (when embedded in the issue article). */
+  linkToFullPage?: boolean;
+}
+
+const { issue, linkToFullPage = false } = Astro.props;
+const lang = localeOf(Astro.currentLocale);
+const t = useTranslations(lang);
+const data = await getPositionBoard(issue, lang);
+
+const labelled = <K extends Parameters<typeof t>[0]>(key: K) => ({ text: t(key), lang: t.langOf(key) });
+const certainties = ["official", "leader-statement", "reported", "inferred"] as const;
+const strings = data && {
+  slider: t("board.slider"),
+  asOf: t("board.asOf", { date: "{date}" }),
+  caption: t("board.caption", { issue: "{issue}", date: "{date}" }),
+  actor: t("board.actor"),
+  noStated: t("board.noStated"),
+  noRecord: t("board.noRecord"),
+  validFrom: t("board.validFrom", { date: "{date}" }),
+  validRange: t("board.validRange", { from: "{from}", to: "{to}" }),
+  sources: t("sources.heading"),
+  certainty: Object.fromEntries(certainties.map((c) => [c, labelled(`certainty.${c}`)])),
+  groups: Object.fromEntries(actorGroups.map((g) => [g, labelled(`board.group.${g}`)])),
+};
+
+// Formatted on the server so the server render and hydration agree.
+const today = new Date().toISOString().slice(0, 10);
+const format = new Intl.DateTimeFormat(lang, { dateStyle: "long" });
+const dateLabels = data
+  ? Object.fromEntries([...data.dates, today].map((d) => [d, format.format(new Date(`${d}T00:00:00Z`))]))
+  : {};
+---
+
+{
+  data && strings && (
+    <section aria-labelledby={`positions-${issue}`} class="mt-12">
+      <h2 id={`positions-${issue}`} class="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+        {t("board.title")}
+      </h2>
+      <p class="mt-1 text-sm text-zinc-600 dark:text-zinc-400" lang={t.langOf("board.description")}>
+        {t("board.description")}
+      </p>
+      <PositionBoardIsland client:visible data={data} strings={strings} dateLabels={dateLabels} today={today} />
+      {
+        linkToFullPage && (
+          <a href={localizePath(lang, `positions/${issue}`)} class="text-sm underline decoration-zinc-400 underline-offset-2">
+            {t("board.fullPage")}
+          </a>
+        )
+      }
+    </section>
+  )
+}

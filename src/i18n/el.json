@@ -53,5 +53,14 @@
   "era.since": "Από το {year} έως σήμερα",
   "glossary.title": "Γλωσσάριο",
   "related.issues": "Θέματα",
-  "related.documents": "Έγγραφα"
+  "related.documents": "Έγγραφα",
+  "board.title": "Θέσεις",
+  "board.slider": "Ημερομηνία",
+  "board.asOf": "Θέσεις στις {date}",
+  "board.caption": "Θέσεις για το θέμα «{issue}» στις {date}",
+  "board.actor": "Φορέας",
+  "board.validFrom": "Από {date}",
+  "board.validRange": "Από {from} έως {to}",
+  "board.fullPage": "Πλήρης πίνακας θέσεων",
+  "positions.title": "Θέσεις: {issue}"
 }

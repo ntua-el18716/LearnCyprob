@@ -1,6 +1,7 @@
 ---
 import Layout from "@layouts/Layout.astro";
 import PageNotice from "@components/PageNotice.astro";
+import PositionBoard from "@components/PositionBoard.astro";
 import Analysis from "@components/content/Analysis.astro";
 import Cite from "@components/content/Cite.astro";
 import Claim from "@components/content/Claim.astro";
@@ -135,6 +136,8 @@ const alternates = Object.fromEntries(
     >
       <Content components={{ Analysis, Cite, Claim, Concern, Status }} />
     </div>
+
+    <PositionBoard issue={slug} linkToFullPage />
 
     {
       related.length > 0 && (

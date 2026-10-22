@@ -150,6 +150,7 @@ type Certainty = "official" | "leader-statement" | "reported" | "inferred";
 - **`Localized` is strict:** `en` is required, other locales are optional, unknown locale keys are rejected. It is derived from `src/i18n/locales.ts`.
 - **Statuses carry sources:** `Issue.statusSources` must be non-empty when `status` is set, and `Provision.sources` needs at least one entry.
 - **Entry ids come from file names:** `sources/{id}.yaml` and `events/{date}-{slug}.yaml` have no `id` field; the file name is the id. Collections with a `slug` field use it as the id.
+- **Issue `options`** live on the default-locale (EN) issue entry only; their labels are `Localized`, so translated issue files don't repeat them.
 - **Position files** are an object `{ issue, positions: Position[], draft }` rather than a bare array, so the issue is explicit.
 - **Site pages** (About, Methodology, Corrections) are a `pages` collection like issues: `pages/{lang}/{slug}.mdx`, id `{lang}/{slug}`, fields `slug`, `title`, `description?`, `lastReviewed`, `translationOf?`, `draft`. Methodology defines each status with `<StatusTerm value="…">`, which gives the `#status-{value}` anchor that status badges link to.
 - **Document texts** are a separate collection, `documentTexts` (`documents/{slug}/text.{lang}.md` or `.mdx`, id `{slug}/{lang}`), since a YAML entry cannot render markdown.
