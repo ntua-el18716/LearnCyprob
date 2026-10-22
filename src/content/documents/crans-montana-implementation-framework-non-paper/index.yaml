@@ -1,0 +1,18 @@
+# Moved from src/content/document/crans-montana-implementation-framework-non-paper.mdx. Only values that file already held are carried
+# over; facts it did not record are left as TODO(content).
+slug: crans-montana-implementation-framework-non-paper
+title:
+  en: "Implementation Monitoring Framework - NON-PAPER"
+# TODO(content): verify; carried over unchanged from the old documentDate.
+date: 2017-07-06
+# TODO(content): add dateCertainty, type, isLeaked and provenance (required
+# before draft: false), and parties and issues.
+# Old description, kept for reference: "NON-PAPER for the Implementation Monitoring Framework prepared by the UNSG"
+files:
+  - lang: en
+    path: /documents/crans-montana-implementation-framework-non-paper.pdf
+    kind: original # TODO(content): confirm
+scans:
+  - files/crans-montana-implementation.framework-non-paper-1.JPG
+  - files/crans-montana-implementation.framework-non-paper-2.JPG
+draft: true

@@ -1,0 +1,17 @@
+# Moved from src/content/document/guterres-framework-4th-july.mdx. Only values that file already held are carried
+# over; facts it did not record are left as TODO(content).
+slug: guterres-framework-4th-july
+title:
+  en: "Guterres Framework - 4th of July"
+# TODO(content): verify; carried over unchanged from the old documentDate.
+date: 2017-07-04
+# TODO(content): add dateCertainty, type, isLeaked and provenance (required
+# before draft: false), and parties and issues.
+# Old description, kept for reference: "Explanatory note for Guterres Framework - 04/07/2017"
+files:
+  - lang: en
+    path: /documents/guterres-framework-4th-july.pdf
+    kind: original # TODO(content): confirm
+scans:
+  - files/guterres-framework-4th-july.JPG
+draft: true

@@ -1,0 +1,12 @@
+# Moved from src/content/document/un-report-1990.mdx. Only values that file already held are carried
+# over; facts it did not record are left as TODO(content).
+slug: un-report-1990
+title:
+  en: "UNSG Report 1990"
+# TODO(content): verify; carried over unchanged from the old documentDate.
+date: 2006-08-08
+# TODO(content): add dateCertainty, type, isLeaked and provenance (required
+# before draft: false), and parties and issues.
+# Old description, kept for reference: "UNSG Report 1990"
+files: [] # no PDF in the repo
+draft: true

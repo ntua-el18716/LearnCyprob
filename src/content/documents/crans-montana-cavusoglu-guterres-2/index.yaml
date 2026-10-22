@@ -1,0 +1,18 @@
+# Moved from src/content/document/crans-montana-cavusoglu-guterres-2.mdx. Only values that file already held are carried
+# over; facts it did not record are left as TODO(content).
+slug: crans-montana-cavusoglu-guterres-2
+title:
+  en: "Guterres-\u00c7avu\u015fo\u011flu Meeting - Crans Montana - 06/07/2017 4:30 p.m."
+# TODO(content): verify; carried over unchanged from the old documentDate.
+date: 2017-07-12
+# TODO(content): add dateCertainty, type, isLeaked and provenance (required
+# before draft: false), and parties and issues.
+# Old description, kept for reference: "Note of the \u00c7avu\u015fo\u011flu-Guterres Meeting at 4:30 p.m. in Crans Montana"
+files:
+  - lang: en
+    path: /documents/crans-montana-cavusoglu-guterres-2.pdf
+    kind: original # TODO(content): confirm
+scans:
+  - files/crans-montana-cavusoglu-guterres-2-1.webp
+  - files/crans-montana-cavusoglu-guterres-2-2.webp
+draft: true

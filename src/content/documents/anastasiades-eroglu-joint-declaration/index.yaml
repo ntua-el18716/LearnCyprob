@@ -1,0 +1,18 @@
+# Moved from src/content/document/anastasiades-eroglu-joint-declaration.mdx. Only values that file already held are carried
+# over; facts it did not record are left as TODO(content).
+slug: anastasiades-eroglu-joint-declaration
+title:
+  en: "Anastasiades \u2013 Eroglu Joint Declaration"
+# TODO(content): verify; carried over unchanged from the old documentDate.
+date: 2017-07-06
+# TODO(content): add dateCertainty, type, isLeaked and provenance (required
+# before draft: false), and parties and issues.
+# Old description, kept for reference: "Note of the Dinner of Crans Montana"
+files:
+  - lang: en
+    path: /documents/anastasiades-eroglu-joint-declaration.pdf
+    kind: original # TODO(content): confirm
+scans:
+  - files/anastasiades-eroglu-joint-declaration-1.jpg
+  - files/anastasiades-eroglu-joint-declaration-2.jpg
+draft: true

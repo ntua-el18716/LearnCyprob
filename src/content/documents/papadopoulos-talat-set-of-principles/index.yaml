@@ -1,0 +1,14 @@
+# Moved from src/content/document/papadopoulos-talat-set-of-principles.mdx. Only values that file already held are carried
+# over; facts it did not record are left as TODO(content).
+slug: papadopoulos-talat-set-of-principles
+title:
+  en: "Papadopoulos - Talat Set of Principles"
+# TODO(content): verify; carried over unchanged from the old documentDate.
+date: 2006-08-08
+# TODO(content): add dateCertainty, type, isLeaked and provenance (required
+# before draft: false), and parties and issues.
+# Old description, kept for reference: "Agreement of the 8th of July 2006 - Papadopoulos-Talat Set of Principles"
+files: [] # no PDF in the repo
+scans:
+  - files/papadopoulos-talat-set-of-principles.jpg
+draft: true

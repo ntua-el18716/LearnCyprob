@@ -1,0 +1,18 @@
+# Moved from src/content/document/crans-montana-anastasiades-guterres.mdx. Only values that file already held are carried
+# over; facts it did not record are left as TODO(content).
+slug: crans-montana-anastasiades-guterres
+title:
+  en: "Guterres-Anastasiades Meeting - Crans Montana - 06/07/2017"
+# TODO(content): verify; carried over unchanged from the old documentDate.
+date: 2017-07-06
+# TODO(content): add dateCertainty, type, isLeaked and provenance (required
+# before draft: false), and parties and issues.
+# Old description, kept for reference: "Note of the Anastasiades-Guterres Meeting in Crans Montana"
+files:
+  - lang: en
+    path: /documents/crans-montana-anastasiades-guterres.pdf
+    kind: original # TODO(content): confirm
+scans:
+  - files/crans-montana-anastasiades-guterres-1.webp
+  - files/crans-montana-anastasiades-guterres-2.webp
+draft: true

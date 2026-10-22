@@ -1,0 +1,15 @@
+# Moved from src/content/document/downer-document.mdx. Only values that file already held are carried
+# over; facts it did not record are left as TODO(content).
+slug: downer-document
+title:
+  en: "Downer Document - Christofias-Talat Convergences"
+# TODO(content): verify; carried over unchanged from the old documentDate.
+date: 2017-07-04
+# TODO(content): add dateCertainty, type, isLeaked and provenance (required
+# before draft: false), and parties and issues.
+# Old description, kept for reference: "Convergences achieved during the 2008-2010 negotiations between Christofias and Talat"
+files:
+  - lang: en
+    path: /documents/downer-document.pdf
+    kind: original # TODO(content): confirm
+draft: true
