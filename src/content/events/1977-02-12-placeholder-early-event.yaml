@@ -1,0 +1,9 @@
+date: 1977-02-12
+dateCertainty: month
+title: { en: "TODO(content): Placeholder early event" }
+summary: { en: "TODO(content): Placeholder summary of an earlier event." }
+era: 1974-1977
+importance: 2
+issues: [placeholder-child-issue]
+sources: [placeholder-source-b]
+draft: true

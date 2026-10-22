@@ -1,0 +1,10 @@
+date: 2003-06-01
+dateCertainty: exact
+endDate: 2003-06-05
+title: { en: "TODO(content): Placeholder major event", el: "TODO(content): Δοκιμαστικό σημαντικό γεγονός" }
+summary: { en: "TODO(content): Placeholder summary of a major event that spans several days." }
+era: 1999-2004
+importance: 1
+documents: [placeholder-plan]
+sources: [placeholder-source-a]
+draft: true

@@ -1,0 +1,8 @@
+date: 2017-01-01
+dateCertainty: year
+title: { en: "TODO(content): Placeholder minor event" }
+summary: { en: "TODO(content): Placeholder summary of a minor event with no linked issue." }
+era: 2014-2017
+importance: 3
+sources: [placeholder-source-b]
+draft: true
