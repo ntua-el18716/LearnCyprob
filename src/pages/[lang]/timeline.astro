@@ -3,6 +3,8 @@ import Layout from "@layouts/Layout.astro";
 import PageHeader from "@components/PageHeader.astro";
 import SourceLinks from "@components/SourceLinks.astro";
 import ChapterIcon from "@components/ChapterIcon.astro";
+import TimelineOverview from "@components/TimelineOverview.astro";
+import { eras as allEras, type Era } from "../../lib/eras";
 import { getCollection, getEntries } from "astro:content";
 import { publishedLocales, type Locale } from "../../i18n/locales";
 import { isVisible } from "../../lib/drafts";
@@ -23,13 +25,14 @@ const events = (await getCollection("events", isVisible)).sort(
 
 // Eras in schema order; label "1960-1963" as "1960–1963", and the open ends
 // in words.
-const eraLabel = (era: string) => {
+const eraLabel = (era: Era) => {
   const [from, to] = era.split("-");
   if (from === "pre") return t("era.before", { year: to });
   if (to === "present") return t("era.since", { year: from });
   return `${from}–${to}`;
 };
-const eras = [...new Set(events.map((e) => e.data.era))];
+// Eras that have events, in era order.
+const eras = allEras.filter((era) => events.some((e) => e.data.era === era));
 
 const enriched = await Promise.all(
   events.map(async (event) => ({
@@ -50,42 +53,80 @@ const alternates = Object.fromEntries(publishedLocales.map((l) => [l, localizePa
 <Layout lang={lang} title={t("timeline.title")} description={t("timeline.description")} alternates={alternates}>
   <PageHeader title={t("timeline.title")} intro={t("timeline.description")} introLang={t.langOf("timeline.description")} />
   {events.length === 0 && <p>{t("timeline.empty")}</p>}
-  <div class="max-w-4xl">
+  {
+    events.length > 0 && (
+      <TimelineOverview
+        label={t("timeline.overview")}
+        eraLabel={eraLabel}
+        events={enriched.map(({ event, title }) => ({
+          id: event.id,
+          date: event.data.date,
+          importance: event.data.importance,
+          title: title.text,
+          lang: title.isFallback ? title.lang : undefined,
+          era: event.data.era,
+        }))}
+      />
+    )
+  }
+
+  <div class="relative">
+    <!-- The line: left on phones, centred on wide screens. -->
+    <span aria-hidden="true" class="absolute bottom-0 left-5 top-0 w-0.5 bg-rule lg:left-1/2 lg:-translate-x-1/2" />
     {
-      eras.map((era) => (
-        <section aria-labelledby={`era-${era}`} class="relative">
-          <h2 id={`era-${era}`} class="relative z-10 mb-6 ml-0 inline-block rounded-full bg-panel px-4 py-1.5 text-lg font-bold text-accent sm:ml-[9.5rem]">
-            {eraLabel(era)}
-          </h2>
-          <ol class="relative mb-12 ml-5 border-l-2 border-rule sm:ml-[11rem]">
-            {enriched
-              .filter(({ event }) => event.data.era === era)
-              .map(({ event, title, summary, issues, documents }) => {
+      eras.map((era) => {
+        const items = enriched.filter(({ event }) => event.data.era === era);
+        return (
+          <section aria-labelledby={`era-${era}`} class="relative pb-6">
+            <header class="relative mb-10 pt-4 lg:text-center">
+              {/* Decorative watermark, drawn by CSS (content: attr()) so it is not page text. */}
+              <span
+                aria-hidden="true"
+                data-watermark={eraLabel(era)}
+                class="pointer-events-none absolute -top-3 left-0 hidden select-none whitespace-nowrap text-7xl font-[800] tracking-tight text-accent/10 before:content-[attr(data-watermark)] lg:block"
+              />
+              <h2 id={`era-${era}`} class="relative z-10 ml-0 inline-block scroll-mt-6 rounded-full bg-accent px-5 py-2 text-lg font-bold text-on-accent">
+                {eraLabel(era)}
+              </h2>
+            </header>
+            <ol class="relative space-y-12">
+              {items.map(({ event, title, summary, issues, documents }, index) => {
                 const chapter = issues[0] && chapters.get(issues[0].entry.data.slug);
                 const major = event.data.importance === 1;
+                const left = index % 2 === 0; // which side the card sits on (wide screens)
                 return (
-                  <li id={event.id} data-importance={event.data.importance} class="relative scroll-mt-8 pb-10 pl-10 last:pb-2">
-                    <span class="absolute -left-[1.15rem] top-0">
+                  <li id={event.id} data-importance={event.data.importance} class="relative scroll-mt-24 pl-14 lg:grid lg:grid-cols-[1fr_5rem_1fr] lg:items-start lg:pl-0">
+                    {/* Dot on the line */}
+                    <span class="absolute left-5 top-0 -translate-x-1/2 lg:static lg:col-start-2 lg:row-start-1 lg:flex lg:translate-x-0 lg:justify-center">
                       {chapter ? (
-                        <ChapterIcon slug={chapter} size="sm" class="ring-4 ring-bg" />
+                        <ChapterIcon slug={chapter} size={major ? "md" : "sm"} filled={major} class="ring-4 ring-bg" />
                       ) : (
-                        <span aria-hidden="true" class="mt-2 ml-2.5 block size-4 rounded-full bg-accent ring-4 ring-bg" />
+                        <span aria-hidden="true" class:list={["mt-2 block rounded-full bg-accent ring-4 ring-bg", major ? "size-6" : "size-4"]} />
                       )}
                     </span>
-                    <p class="text-sm font-bold text-accent sm:absolute sm:-left-[11rem] sm:top-1.5 sm:w-36 sm:text-right">
+                    {/* Date: opposite side of the card on wide screens */}
+                    <p class:list={[
+                      "mb-1 text-sm font-bold text-accent lg:row-start-1 lg:mb-0 lg:pt-2",
+                      left ? "lg:col-start-3 lg:text-left" : "lg:col-start-1 lg:text-right",
+                    ]}>
                       <time datetime={event.data.date.toISOString().slice(0, 10)}>{formatDate(event.data.date, event.data.dateCertainty)}</time>
                       {event.data.endDate && <> – <time datetime={event.data.endDate.toISOString().slice(0, 10)}>{formatDate(event.data.endDate, event.data.dateCertainty)}</time></>}
                     </p>
-                    <div class="rounded-xl target:bg-panel">
+                    {/* Card */}
+                    <div class:list={[
+                      "rounded-2xl transition target:ring-2 target:ring-accent lg:row-start-1",
+                      left ? "lg:col-start-1" : "lg:col-start-3",
+                      major ? "bg-panel p-6 shadow-sm" : "border border-rule p-5",
+                    ]}>
                       <h3 class:list={["font-bold leading-snug", major ? "text-2xl" : "text-lg"]} lang={title.isFallback ? title.lang : undefined}>
                         <a href={`#${event.id}`} class="hover:underline">{title.text}</a>
                         {event.data.draft && <span class="ml-2 align-middle text-sm font-normal text-muted">({t("draft.label")})</span>}
                       </h3>
-                      <p class="mt-1.5 max-w-prose" lang={summary.isFallback ? summary.lang : undefined}>{summary.text}</p>
+                      <p class="mt-2" lang={summary.isFallback ? summary.lang : undefined}>{summary.text}</p>
                       {(issues.length > 0 || documents.length > 0) && (
-                        <ul class="mt-3 flex flex-wrap gap-2 text-sm">
+                        <ul class="mt-4 flex flex-wrap gap-2 text-sm">
                           {issues.map((i) => (
-                            <li><a href={localizePath(lang, `issues/${i.entry.data.slug}`)} lang={i.isFallback ? i.lang : undefined} class="inline-block rounded-full border border-rule px-3 py-1 font-medium hover:border-accent hover:text-accent">{i.entry.data.title}</a></li>
+                            <li><a href={localizePath(lang, `issues/${i.entry.data.slug}`)} lang={i.isFallback ? i.lang : undefined} class="inline-block rounded-full border border-rule bg-bg px-3 py-1 font-medium hover:border-accent hover:text-accent">{i.entry.data.title}</a></li>
                           ))}
                           {documents.map((d) => {
                             const dt = pickLocalized(d.data.title, lang);
@@ -93,14 +134,15 @@ const alternates = Object.fromEntries(publishedLocales.map((l) => [l, localizePa
                           })}
                         </ul>
                       )}
-                      <div class="mt-2"><SourceLinks sources={event.data.sources} /></div>
+                      <div class="mt-3"><SourceLinks sources={event.data.sources} /></div>
                     </div>
                   </li>
                 );
               })}
-          </ol>
-        </section>
-      ))
+            </ol>
+          </section>
+        );
+      })
     }
   </div>
 </Layout>

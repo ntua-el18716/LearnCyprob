@@ -8,10 +8,12 @@ import { iconFor } from "../lib/chapters";
 interface Props {
   slug: string;
   size?: "sm" | "md" | "lg";
+  /** Solid accent circle (emphasis), instead of the pale panel circle. */
+  filled?: boolean;
   class?: string;
 }
 
-const { slug, size = "md", class: className } = Astro.props;
+const { slug, size = "md", filled = false, class: className } = Astro.props;
 const box = { sm: "size-9", md: "size-14", lg: "size-24 sm:size-28" }[size];
 const glyph = { sm: "size-[1.1rem]", md: "size-7", lg: "size-10 sm:size-12" }[size];
 ---
@@ -19,7 +21,8 @@ const glyph = { sm: "size-[1.1rem]", md: "size-7", lg: "size-10 sm:size-12" }[si
 <span
   aria-hidden="true"
   class:list={[
-    "chapter-icon relative inline-grid shrink-0 place-items-center rounded-full bg-panel text-accent",
+    "chapter-icon relative inline-grid shrink-0 place-items-center rounded-full",
+    filled ? "bg-accent text-on-accent" : "bg-panel text-accent",
     box,
     className,
   ]}

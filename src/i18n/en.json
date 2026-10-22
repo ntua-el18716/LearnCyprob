@@ -177,5 +177,6 @@
   "explore.legend": "Status",
   "home.mapCenter": "{n} chapters",
   "home.mapHint": "Choose a chapter",
-  "glossary.letters": "Jump to letter"
+  "glossary.letters": "Jump to letter",
+  "timeline.overview": "Timeline overview: eras and events by date"
 }

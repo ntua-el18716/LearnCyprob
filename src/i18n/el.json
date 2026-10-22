@@ -93,5 +93,6 @@
   "explore.legend": "Κατάσταση",
   "home.mapCenter": "{n} κεφάλαια",
   "home.mapHint": "Επιλέξτε κεφάλαιο",
-  "glossary.letters": "Μετάβαση σε γράμμα"
+  "glossary.letters": "Μετάβαση σε γράμμα",
+  "timeline.overview": "Επισκόπηση χρονολογίου: περίοδοι και γεγονότα κατά ημερομηνία"
 }

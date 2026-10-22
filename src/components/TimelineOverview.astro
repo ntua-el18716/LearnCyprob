@@ -1,0 +1,102 @@
+---
+// Overview strip for the timeline: a true-scale time axis with the eras as
+// bands and every event as a dot at its date (size = importance). Dots link
+// to their events; while the list scrolls, the event in view is marked.
+// Scrolls sideways on narrow screens.
+import { eras, eraSpan, type Era } from "../lib/eras";
+
+interface Props {
+  events: { id: string; date: Date; importance: 1 | 2 | 3; title: string; lang?: string; era: Era }[];
+  eraLabel: (era: Era) => string;
+  label: string;
+}
+
+const { events, eraLabel, label } = Astro.props;
+// Only eras with events have a section on the page to link to.
+const erasWithEvents = new Set(events.map((e) => e.era));
+const now = new Date().getFullYear() + 1;
+const earliest = Math.min(...events.map((e) => e.date.getUTCFullYear()), 1950);
+const spans = eras.map((era) => ({ era, ...eraSpan(era, earliest, now) }));
+const start = spans[0].start;
+const end = now;
+const x = (year: number) => ((year - start) / (end - start)) * 100;
+const yearOf = (d: Date) => d.getUTCFullYear() + d.getUTCMonth() / 12 + (d.getUTCDate() - 1) / 365;
+const decades = Array.from({ length: Math.floor((end - 1) / 10) - Math.ceil(start / 10) + 1 }, (_, i) => (Math.ceil(start / 10) + i) * 10);
+const dot = { 1: "size-4 bg-accent", 2: "size-3 bg-accent", 3: "size-2.5 border-2 border-accent bg-bg" } as const;
+---
+
+<nav aria-label={label} class="-mx-4 mb-14 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0" data-timeline-overview>
+  <!-- Inner margin so labels at either end are not clipped. -->
+  <div class="relative mx-4 h-28 min-w-[56rem]">
+    <!-- Era bands -->
+    <ol class="absolute inset-x-0 top-0 h-16">
+      {
+        spans.map((s, i) => (
+          <li
+            class:list={["absolute top-0 h-full overflow-hidden border-l border-bg px-1.5 pt-1.5", i % 2 ? "bg-sunken" : "bg-panel"]}
+            style={`left:${x(s.start)}%;width:${x(s.end) - x(s.start)}%`}
+          >
+            {erasWithEvents.has(s.era) ? (
+              <a href={`#era-${s.era}`} title={eraLabel(s.era)} class="block truncate text-xs font-semibold text-muted hover:text-accent">{eraLabel(s.era)}</a>
+            ) : (
+              <span title={eraLabel(s.era)} class="block truncate text-xs text-muted">{eraLabel(s.era)}</span>
+            )}
+          </li>
+        ))
+      }
+    </ol>
+    <!-- Event dots, centred on the band's lower half -->
+    <ul class="absolute inset-x-0 top-9 h-4">
+      {
+        events.map((e) => (
+          <li class="absolute -translate-x-1/2" style={`left:${x(yearOf(e.date))}%`}>
+            <a
+              href={`#${e.id}`}
+              title={e.title}
+              data-overview-dot={e.id}
+              class="group grid size-6 place-items-center rounded-full"
+            >
+              <span aria-hidden="true" class:list={["block rounded-full ring-2 ring-bg transition group-hover:scale-150 group-aria-[current=true]:scale-[1.8] group-aria-[current=true]:ring-accent/30 motion-reduce:transition-none", dot[e.importance]]} />
+              <span class="sr-only" lang={e.lang}>{e.title}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+    <!-- Decade ticks -->
+    <ol aria-hidden="true" class="absolute inset-x-0 top-16 h-12 border-t border-control">
+      {decades.map((d) => (
+        <li class="absolute top-0 -translate-x-1/2 pt-1 text-xs tabular-nums text-muted" style={`left:${x(d)}%`}>
+          <span class="mx-auto block h-1.5 w-px bg-control" />
+          {d}
+        </li>
+      ))}
+    </ol>
+  </div>
+</nav>
+
+<script>
+  // Mark the dot of the event being read: the last one whose top has passed
+  // the middle of the viewport (or the last event once the page bottom is reached).
+  const dots = [...document.querySelectorAll<HTMLAnchorElement>("[data-overview-dot]")];
+  const targets = dots
+    .map((a) => document.getElementById(a.dataset.overviewDot ?? ""))
+    .filter((el): el is HTMLElement => el !== null);
+  if (dots.length && targets.length) {
+    let pending = false;
+    const update = () => {
+      pending = false;
+      const atBottom = innerHeight + scrollY >= document.documentElement.scrollHeight - 2;
+      const passed = targets.filter((el) => el.getBoundingClientRect().top < innerHeight * 0.5);
+      const current = atBottom ? targets.at(-1) : passed.at(-1);
+      dots.forEach((a) => a.setAttribute("aria-current", String(a.dataset.overviewDot === current?.id)));
+    };
+    addEventListener("scroll", () => {
+      if (!pending) {
+        pending = true;
+        requestAnimationFrame(update);
+      }
+    }, { passive: true });
+    update();
+  }
+</script>

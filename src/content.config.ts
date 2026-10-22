@@ -2,6 +2,7 @@ import { defineCollection, reference } from "astro:content";
 import { z } from "astro/zod";
 import { glob } from "astro/loaders";
 import { defaultLocale, locales, type Locale } from "./i18n/locales";
+import { eras } from "./lib/eras";
 
 // ---------------------------------------------------------------------------
 // Shared types (PLAN.md §5)
@@ -39,20 +40,7 @@ const certainty = z.enum([
   "inferred",
 ]);
 
-const era = z.enum([
-  "pre-1955",
-  "1955-1960",
-  "1960-1963",
-  "1963-1974",
-  "1974-1977",
-  "1977-1990",
-  "1990-1999",
-  "1999-2004",
-  "2004-2008",
-  "2008-2013",
-  "2014-2017",
-  "2017-present",
-]);
+const era = z.enum(eras);
 
 const community = z.enum(["gc", "tc", "maronite", "armenian", "latin", "none"]);
 
