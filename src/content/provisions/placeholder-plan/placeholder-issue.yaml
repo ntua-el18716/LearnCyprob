@@ -1,0 +1,8 @@
+plan: placeholder-plan
+issue: placeholder-issue
+summary: { en: "TODO(content): Placeholder provision in the second plan.", el: "TODO(content): Δοκιμαστική διάταξη στο δεύτερο σχέδιο." }
+anchors: [para-1, para-2]
+status: agreed
+sources: [placeholder-source-b]
+isReferenceModel: true
+draft: true

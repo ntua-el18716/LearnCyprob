@@ -1,0 +1,8 @@
+plan: placeholder-plan
+issue: placeholder-child-issue
+summary: { en: "TODO(content): Placeholder provision on the child issue." }
+anchors: []
+status: divergent
+sources: [placeholder-source-a]
+isReferenceModel: false
+draft: true
