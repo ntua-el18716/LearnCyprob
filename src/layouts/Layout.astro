@@ -35,6 +35,21 @@ const canonicalURL = new URL(Astro.url).href;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
+    <script is:inline>
+      // Apply the theme before first paint to avoid a light flash.
+      {
+        let stored = null;
+        try {
+          stored = localStorage.getItem("theme");
+        } catch {
+          // Storage can be unavailable (private mode); use the system preference.
+        }
+        const isDark = stored
+          ? stored === "dark"
+          : matchMedia("(prefers-color-scheme: dark)").matches;
+        document.documentElement.classList.toggle("dark", isDark);
+      }
+    </script>
     <title>{title}</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="canonical" href={canonicalURL} />
@@ -132,103 +147,32 @@ const canonicalURL = new URL(Astro.url).href;
   </body>
 </html>
 
-<!-- <script is:inline async>
-  const darkModeToggle = document.getElementById("dark-mode-toggle");
-  const darkClass = "dark";
-  const htmlTag = document.querySelector("html");
-
-  function applyDarkMode(isDark) {
-    htmlTag.classList.toggle(darkClass, isDark);
-    htmlTag.setAttribute("data-theme", isDark ? "min-dark" : "min-light");
-    const sunIcon = document.querySelector(".sun-icon");
-    const moonIcon = document.querySelector(".moon-icon");
-    sunIcon.classList.toggle("hidden", isDark);
-    moonIcon.classList.toggle("hidden", !isDark);
-  }
-
-  function getCookie(name) {
-    const value = `; `;
-    const parts = document.cookie.split(value);
-    for (let i = 0; i < parts.length; i++) {
-      const part = parts[i].split("=");
-      if (part[0].trim() === name) {
-        return part[1];
-      }
-    }
-    return null;
-  }
-
-  function setCookie(name, value, expirationDays) {
-    const date = new Date();
-    date.setTime(date.getTime() + expirationDays * 24 * 60 * 60 * 1000);
-    const expires = `expires=${date.toUTCString()}`;
-    document.cookie = `${name}=${value}; ${expires}; path=/`;
-  }
-
-  const isDarkMode = getCookie("darkMode") === "true";
-  applyDarkMode(isDarkMode);
-
-  darkModeToggle.addEventListener("click", () => {
-    const isDark = htmlTag.classList.contains(darkClass);
-    applyDarkMode(!isDark);
-    setCookie("darkMode", !isDark, 30);
-  });
-</script> -->
-
-<script is:inline async>
-  document.addEventListener("DOMContentLoaded", function () {
+<script is:inline>
+  // Theme toggle. The choice is kept in localStorage (no cookies, see
+  // CLAUDE.md); without a stored choice the system preference applies.
+  {
     const darkModeToggle = document.getElementById("dark-mode-toggle");
-    const htmlTag = document.querySelector("html");
     const sunIcon = document.querySelector(".sun-icon");
     const moonIcon = document.querySelector(".moon-icon");
-    const darkClass = "dark";
 
-    if (!darkModeToggle || !htmlTag || !sunIcon || !moonIcon) {
-      console.error("One or more required elements not found");
-      return;
-    }
+    const showIcons = (isDark) => {
+      sunIcon?.classList.toggle("hidden", isDark);
+      moonIcon?.classList.toggle("hidden", !isDark);
+      darkModeToggle?.setAttribute("aria-pressed", String(isDark));
+    };
 
-    function applyDarkMode(isDark) {
-      if (htmlTag) {
-        htmlTag.classList.toggle(darkClass, isDark);
-        htmlTag.setAttribute("data-theme", isDark ? "min-dark" : "min-light");
+    showIcons(document.documentElement.classList.contains("dark"));
+
+    darkModeToggle?.addEventListener("click", () => {
+      const isDark = document.documentElement.classList.toggle("dark");
+      showIcons(isDark);
+      try {
+        localStorage.setItem("theme", isDark ? "dark" : "light");
+      } catch {
+        // Storage can be unavailable (private mode); the toggle still works.
       }
-      if (sunIcon) {
-        sunIcon.classList.toggle("hidden", isDark);
-      }
-      if (moonIcon) {
-        moonIcon.classList.toggle("hidden", !isDark);
-      }
-    }
-
-    function getCookie(name) {
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) {
-        const part = parts.pop();
-        if (part) {
-          return part.split(";").shift() || null;
-        }
-      }
-      return null;
-    }
-
-    function setCookie(name, value, expirationDays) {
-      const date = new Date();
-      date.setTime(date.getTime() + expirationDays * 24 * 60 * 60 * 1000);
-      const expires = `expires=${date.toUTCString()}`;
-      document.cookie = `${name}=${value}; ${expires}; path=/`;
-    }
-
-    const isDarkMode = getCookie("darkMode") === "true";
-    applyDarkMode(isDarkMode);
-
-    darkModeToggle.addEventListener("click", () => {
-      const isDark = htmlTag.classList.contains(darkClass);
-      applyDarkMode(!isDark);
-      setCookie("darkMode", !isDark, 30);
     });
-  });
+  }
 </script>
 
 <style>
