@@ -3,8 +3,6 @@ import Layout from "@layouts/Layout.astro";
 import Header from "@components/Header.astro";
 import { getCollection } from "astro:content";
 import Blog from "@components/Cyprob-blog.astro";
-import { Image } from "astro:assets";
-import CarouselImage from "@components/CarouselImage.astro";
 
 const posts = (await getCollection("cyprob")).sort(
   (a, b) =>
