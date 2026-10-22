@@ -1,0 +1,12 @@
+slug: placeholder-document
+title: { en: "TODO(content): Placeholder document" }
+date: 2000-01-01
+dateCertainty: exact
+type: other
+parties: [placeholder-actor-a, placeholder-actor-b]
+issues: [placeholder-issue]
+files:
+  - { lang: en, path: /documents/placeholder-document.pdf, kind: original }
+provenance: { en: "TODO(content): Placeholder provenance." }
+isLeaked: false
+draft: true

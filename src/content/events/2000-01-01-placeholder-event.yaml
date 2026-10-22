@@ -1,0 +1,11 @@
+date: 2000-01-01
+dateCertainty: exact
+title: { en: "TODO(content): Placeholder event" }
+summary: { en: "TODO(content): Placeholder event summary." }
+era: 1999-2004
+importance: 1
+issues: [placeholder-issue]
+actors: [placeholder-actor-a]
+documents: [placeholder-document]
+sources: [placeholder-source-a]
+draft: true

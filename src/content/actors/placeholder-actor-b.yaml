@@ -1,0 +1,7 @@
+slug: placeholder-actor-b
+name: { en: "TODO(content): Placeholder actor B" }
+shortName: { en: "PH-B" }
+type: party
+community: none
+active: { from: 2000-01-01 }
+draft: true

@@ -1,0 +1,8 @@
+slug: placeholder-term
+term: { en: "TODO(content): Placeholder term" }
+definition: { en: "TODO(content): Placeholder definition." }
+usage:
+  - community: international
+    term: { en: "TODO(content): Placeholder usage" }
+sources: [placeholder-source-b]
+draft: true

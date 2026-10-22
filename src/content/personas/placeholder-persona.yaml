@@ -1,0 +1,8 @@
+slug: placeholder-persona
+title: { en: "TODO(content): Placeholder persona" }
+intro: { en: "TODO(content): Placeholder persona intro." }
+steps:
+  - question: { en: "TODO(content): Placeholder question?" }
+    provisions: [placeholder-document/placeholder-issue]
+    explanation: { en: "TODO(content): Placeholder explanation." }
+draft: true

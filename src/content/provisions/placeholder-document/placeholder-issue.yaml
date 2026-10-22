@@ -1,0 +1,8 @@
+plan: placeholder-document
+issue: placeholder-issue
+summary: { en: "TODO(content): Placeholder provision summary." }
+anchors: [para-1]
+status: proposal-only
+sources: [placeholder-source-a]
+isReferenceModel: false
+draft: true
