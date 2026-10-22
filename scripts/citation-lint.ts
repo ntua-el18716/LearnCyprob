@@ -8,6 +8,7 @@
  *   text has no element with that id;
  * - <Status>, <Concern> or <Claim> without `sources`;
  * - a position whose `option` is not one of its issue's options;
+ * - a provision anchor that doesn't exist in its plan's document text;
  * - an issue slug (parent, related, positions, documents, events,
  *   provisions) that matches no issue. Astro validates the other references
  *   at build time; these are plain slugs, so they are checked here.
@@ -167,6 +168,19 @@ for (const file of loadAll("positions", [".yaml"])) {
       );
     }
   });
+}
+
+// --- Provisions ---------------------------------------------------------------------
+
+for (const provision of loadAll("provisions", [".yaml"])) {
+  const plan = String(provision.data.plan);
+  for (const anchor of strings(provision.data.anchors)) {
+    if (!documentIds.get(plan)?.has(anchor)) {
+      errors.push(
+        `${rel(provision.file)}: anchor "${anchor}" not found in documents/${plan}/text.*`,
+      );
+    }
+  }
 }
 
 // --- Site pages -----------------------------------------------------------------
