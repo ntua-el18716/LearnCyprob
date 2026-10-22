@@ -39,5 +39,7 @@
   "documents.text": "Κείμενο",
   "documents.noText": "Δεν υπάρχει ακόμη διαθέσιμο κείμενο για αυτό το έγγραφο.",
   "documents.citedIn": "Αναφέρεται σε",
-  "draft.label": "Πρόχειρο"
+  "draft.label": "Πρόχειρο",
+  "documents.scans": "Σαρωμένες σελίδες",
+  "documents.scanAlt": "Σαρωμένη σελίδα {n}"
 }

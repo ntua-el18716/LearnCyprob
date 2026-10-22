@@ -77,7 +77,7 @@ for (const lang of others) {
 
 // --- Document texts -------------------------------------------------------------
 
-const texts = list("documents", [".md"]).map((f) => ({
+const texts = list("documents", [".md", ".mdx"]).map((f) => ({
   doc: rel(f).split("/").at(-2) ?? "",
   lang: baseName(f).replace(/^text\./, ""),
 }));

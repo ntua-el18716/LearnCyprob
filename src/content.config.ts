@@ -32,7 +32,12 @@ const status = z.enum([
   "not-discussed",
 ]);
 
-const certainty = z.enum(["official", "leader-statement", "reported", "inferred"]);
+const certainty = z.enum([
+  "official",
+  "leader-statement",
+  "reported",
+  "inferred",
+]);
 
 const era = z.enum([
   "pre-1955",
@@ -51,7 +56,9 @@ const era = z.enum([
 
 const community = z.enum(["gc", "tc", "maronite", "armenian", "latin", "none"]);
 
-const slug = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "must be a kebab-case slug");
+const slug = z
+  .string()
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "must be a kebab-case slug");
 
 // Issues are stored per locale, so their entry ids are `{lang}/{slug}`. Other
 // collections point at an issue by its locale-independent slug instead of a
@@ -85,10 +92,14 @@ const issues = defineCollection({
       const [lang, file] = entry.split("/");
       const fileSlug = file.replace(/\.mdx$/, "");
       if (!(locales as readonly string[]).includes(lang)) {
-        throw new Error(`issues/${entry}: folder "${lang}" is not a locale (${locales.join(", ")})`);
+        throw new Error(
+          `issues/${entry}: folder "${lang}" is not a locale (${locales.join(", ")})`,
+        );
       }
       if (data.slug !== fileSlug) {
-        throw new Error(`issues/${entry}: frontmatter slug "${String(data.slug)}" must match the file name`);
+        throw new Error(
+          `issues/${entry}: frontmatter slug "${String(data.slug)}" must match the file name`,
+        );
       }
       return `${lang}/${fileSlug}`;
     },
@@ -173,64 +184,91 @@ const documents = defineCollection({
     base: "./src/content/documents",
     generateId: ({ entry }) => entry.split("/")[0],
   }),
-  schema: z.object({
-    slug,
-    title: localized,
-    originalTitle: z.string().optional(),
-    date,
-    dateCertainty: z.enum(["exact", "month", "year", "approximate"]),
-    type: z.enum([
-      "treaty",
-      "constitution",
-      "un-plan",
-      "un-report",
-      "unsc-resolution",
-      "high-level-agreement",
-      "joint-statement",
-      "set-of-ideas",
-      "leaked",
-      "court-judgment",
-      "eu-act",
-      "proposal",
-      "other",
-    ]),
-    parties: z.array(reference("actors")).default([]),
-    issues: z.array(issueSlug).default([]),
-    versions: z
-      .array(
-        z.object({
-          id: z.string().min(1),
-          label: z.string().min(1),
-          date,
-          file: z.string().min(1),
-          text: z.string().optional(),
-        }),
-      )
-      .optional(),
-    files: z.array(
-      z.object({
-        lang: z.string().min(2),
-        path: z.string().min(1),
-        kind: z.enum(["original", "translation", "scan"]),
+  schema: ({ image }) =>
+    z
+      .object({
+        slug,
+        title: localized,
+        originalTitle: z.string().optional(),
+        date,
+        // dateCertainty, type, provenance and isLeaked are facts only the author
+        // can supply: a draft may leave them out, a published document may not.
+        dateCertainty: z
+          .enum(["exact", "month", "year", "approximate"])
+          .optional(),
+        type: z
+          .enum([
+            "treaty",
+            "constitution",
+            "un-plan",
+            "un-report",
+            "unsc-resolution",
+            "high-level-agreement",
+            "joint-statement",
+            "set-of-ideas",
+            "leaked",
+            "court-judgment",
+            "eu-act",
+            "proposal",
+            "other",
+          ])
+          .optional(),
+        parties: z.array(reference("actors")).default([]),
+        issues: z.array(issueSlug).default([]),
+        versions: z
+          .array(
+            z.object({
+              id: z.string().min(1),
+              label: z.string().min(1),
+              date,
+              file: z.string().min(1),
+              text: z.string().optional(),
+            }),
+          )
+          .optional(),
+        files: z.array(
+          z.object({
+            lang: z.string().min(2),
+            path: z.string().min(1),
+            kind: z.enum(["original", "translation", "scan"]),
+          }),
+        ),
+        // Page images, relative to index.yaml (files/…), in page order.
+        scans: z.array(image()).default([]),
+        provenance: localized.optional(), // where it comes from; for leaks, who published it first
+        isLeaked: z.boolean().optional(),
+        officialUrl: z.url().optional(),
+        archiveUrl: z.url().optional(),
+        copyrightNote: z.string().optional(),
+        draft,
+      })
+      .superRefine((doc, ctx) => {
+        if (doc.draft) return;
+        for (const field of [
+          "dateCertainty",
+          "type",
+          "provenance",
+          "isLeaked",
+        ] as const) {
+          if (doc[field] === undefined) {
+            ctx.addIssue({
+              code: "custom",
+              path: [field],
+              message: `${field} is required unless draft: true`,
+            });
+          }
+        }
       }),
-    ),
-    provenance: localized, // where it comes from; for leaks, who published it first
-    isLeaked: z.boolean(),
-    officialUrl: z.url().optional(),
-    archiveUrl: z.url().optional(),
-    copyrightNote: z.string().optional(),
-    draft,
-  }),
 });
 
-// src/content/documents/{slug}/text.{lang}.md (paragraph-anchored text)
+// src/content/documents/{slug}/text.{lang}.md or .mdx (paragraph-anchored text)
 const documentTexts = defineCollection({
   loader: glob({
-    pattern: "*/text.*.md",
+    pattern: "*/text.*.{md,mdx}",
     base: "./src/content/documents",
     generateId: ({ entry }) => {
       const [doc, file] = entry.split("/");
-      const lang = file.replace(/^text\.|\.md$/g, "");
+      const lang = file.replace(/^text\.|\.mdx?$/g, "");
       return `${doc}/${lang}`;
     },
   }),

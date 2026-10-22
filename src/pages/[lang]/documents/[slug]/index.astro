@@ -1,6 +1,7 @@
 ---
 import Layout from "@layouts/Layout.astro";
 import PageNotice from "@components/PageNotice.astro";
+import ScanGallery from "@components/ScanGallery.astro";
 import { getEntries, render } from "astro:content";
 import { publishedLocales, type Locale } from "../../../../i18n/locales";
 import { localizePath, pickLocalized, useTranslations } from "../../../../lib/i18n";
@@ -24,13 +25,15 @@ const t = useTranslations(lang);
 const { data } = doc;
 
 const title = pickLocalized(data.title, lang);
-const provenance = pickLocalized(data.provenance, lang);
+const provenance = data.provenance && pickLocalized(data.provenance, lang);
 const parties = await getEntries(data.parties);
 const text = await getDocumentText(doc.id, lang);
 const Text = text ? (await render(text.entry)).Content : undefined;
 const citedIn = await getCitingIssues(doc.id, lang);
 
-const typeKey = `documents.type.${data.type}` as const;
+const typeKey = data.type && (`documents.type.${data.type}` as const);
+const hasProvenance =
+  provenance || data.isLeaked || data.officialUrl || data.archiveUrl || data.copyrightNote;
 const langAttr = (r: { isFallback: boolean; lang: string }) => (r.isFallback ? r.lang : undefined);
 const alternates = Object.fromEntries(
   publishedLocales.map((l) => [l, localizePath(l, `documents/${doc.id}`)]),
@@ -63,8 +66,14 @@ const linkClass = "underline decoration-zinc-400 underline-offset-2";
             {formatDocumentDate(data.date, data.dateCertainty, lang, t)}
           </time>
         </dd>
-        <dt class="font-semibold text-zinc-600 dark:text-zinc-400">{t("documents.type")}</dt>
-        <dd lang={t.langOf(typeKey)}>{t(typeKey)}</dd>
+        {
+          typeKey && (
+            <>
+              <dt class="font-semibold text-zinc-600 dark:text-zinc-400">{t("documents.type")}</dt>
+              <dd lang={t.langOf(typeKey)}>{t(typeKey)}</dd>
+            </>
+          )
+        }
         {
           parties.length > 0 && (
             <>
@@ -79,20 +88,26 @@ const linkClass = "underline decoration-zinc-400 underline-offset-2";
             </>
           )
         }
-        <dt class="font-semibold text-zinc-600 dark:text-zinc-400">{t("documents.provenance")}</dt>
-        <dd lang={langAttr(provenance)}>
-          {data.isLeaked && (
-            <strong class="mr-1" lang={t.langOf("documents.leaked")}>{t("documents.leaked")}.</strong>
-          )}
-          {provenance.text}
-          {data.officialUrl && (
-            <> <a href={data.officialUrl} class={linkClass}>{t("documents.officialCopy")}</a>.</>
-          )}
-          {data.archiveUrl && (
-            <> <a href={data.archiveUrl} class={linkClass}>{t("sources.archived")}</a>.</>
-          )}
-          {data.copyrightNote && <span class="block mt-1">{data.copyrightNote}</span>}
-        </dd>
+        {
+          hasProvenance && (
+            <>
+              <dt class="font-semibold text-zinc-600 dark:text-zinc-400">{t("documents.provenance")}</dt>
+              <dd lang={provenance ? langAttr(provenance) : undefined}>
+                {data.isLeaked && (
+                  <strong class="mr-1" lang={t.langOf("documents.leaked")}>{t("documents.leaked")}.</strong>
+                )}
+                {provenance?.text}
+                {data.officialUrl && (
+                  <> <a href={data.officialUrl} class={linkClass}>{t("documents.officialCopy")}</a>.</>
+                )}
+                {data.archiveUrl && (
+                  <> <a href={data.archiveUrl} class={linkClass}>{t("sources.archived")}</a>.</>
+                )}
+                {data.copyrightNote && <span class="block mt-1">{data.copyrightNote}</span>}
+              </dd>
+            </>
+          )
+        }
         {
           data.files.length > 0 && (
             <>
@@ -103,7 +118,12 @@ const linkClass = "underline decoration-zinc-400 underline-offset-2";
                     const kindKey = `documents.file.${file.kind}` as const;
                     return (
                       <li>
-                        <a href={file.path} hreflang={file.lang} class={linkClass}>
+                        <a
+                          href={file.path}
+                          hreflang={file.lang}
+                          download={file.path.endsWith(".pdf") ? "" : undefined}
+                          class={linkClass}
+                        >
                           {t(kindKey)} ({file.lang})
                         </a>
                       </li>
@@ -117,7 +137,9 @@ const linkClass = "underline decoration-zinc-400 underline-offset-2";
       </dl>
     </header>
 
-    <section aria-labelledby="text">
+    <ScanGallery scans={data.scans} />
+
+    <section aria-labelledby="text" class="mt-10">
       <h2 id="text" class="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
         {t("documents.text")}
       </h2>

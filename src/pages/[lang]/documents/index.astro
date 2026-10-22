@@ -31,7 +31,7 @@ const alternates = Object.fromEntries(
     {
       documents.map((doc) => {
         const title = pickLocalized(doc.data.title, lang);
-        const typeKey = `documents.type.${doc.data.type}` as const;
+        const typeKey = doc.data.type && (`documents.type.${doc.data.type}` as const);
         return (
           <li class="py-4">
             <a
@@ -45,7 +45,7 @@ const alternates = Object.fromEntries(
               <time datetime={doc.data.date.toISOString().slice(0, 10)}>
                 {formatDocumentDate(doc.data.date, doc.data.dateCertainty, lang, t)}
               </time>
-              <span lang={t.langOf(typeKey)}>{t(typeKey)}</span>
+              {typeKey && <span lang={t.langOf(typeKey)}>{t(typeKey)}</span>}
               {doc.data.draft && <span>{t("draft.label")}</span>}
             </p>
           </li>

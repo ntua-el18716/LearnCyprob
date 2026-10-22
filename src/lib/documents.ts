@@ -24,7 +24,10 @@ export async function getDocumentText(slug: string, lang: Locale) {
   return undefined;
 }
 
-/** Formats a document date to the precision its `dateCertainty` allows. */
+/**
+ * Formats a document date to the precision its `dateCertainty` allows (drafts
+ * may not have one yet; their date is shown as entered).
+ */
 export function formatDocumentDate(
   date: Date,
   certainty: Document["data"]["dateCertainty"],
@@ -33,6 +36,7 @@ export function formatDocumentDate(
 ) {
   const year = new Intl.DateTimeFormat(lang, { year: "numeric" }).format(date);
   switch (certainty) {
+    case undefined:
     case "exact":
       return new Intl.DateTimeFormat(lang, { dateStyle: "long" }).format(date);
     case "month":

@@ -29,7 +29,7 @@ const issueSlugs = new Set(issues.map((i) => String(i.data.slug)));
 
 // Element ids in each document's texts (any language): <p id="para-1"> etc.
 const documentIds = new Map<string, Set<string>>();
-for (const file of list("documents", [".md"])) {
+for (const file of list("documents", [".md", ".mdx"])) {
   const doc = rel(file).split("/").at(-2) ?? "";
   const ids = documentIds.get(doc) ?? new Set<string>();
   for (const [, id] of load(file).body.matchAll(/\bid=["']([^"']+)["']/g)) ids.add(id);

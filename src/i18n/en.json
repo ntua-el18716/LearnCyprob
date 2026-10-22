@@ -86,5 +86,7 @@
   "documents.type.eu-act": "EU act",
   "documents.type.proposal": "Proposal",
   "documents.type.other": "Other",
-  "draft.label": "Draft"
+  "draft.label": "Draft",
+  "documents.scans": "Scanned pages",
+  "documents.scanAlt": "Scanned page {n}"
 }

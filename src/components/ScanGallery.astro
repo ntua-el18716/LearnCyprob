@@ -1,0 +1,48 @@
+---
+// Scanned pages of a document: optimised thumbnails, each linking to a larger
+// optimised image. Static, no JavaScript.
+import type { ImageMetadata } from "astro";
+import { Image, getImage } from "astro:assets";
+import { localeOf, useTranslations } from "../lib/i18n";
+
+interface Props {
+  scans: ImageMetadata[];
+}
+
+const { scans } = Astro.props;
+const t = useTranslations(localeOf(Astro.currentLocale));
+const pages = await Promise.all(
+  scans.map(async (scan, i) => ({
+    scan,
+    n: i + 1,
+    full: await getImage({ src: scan, width: Math.min(scan.width, 1600), format: "webp" }),
+  })),
+);
+---
+
+{
+  pages.length > 0 && (
+    <section aria-labelledby="scans" class="mt-10">
+      <h2 id="scans" class="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+        {t("documents.scans")}
+      </h2>
+      <ol class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-4">
+        {pages.map(({ scan, n, full }) => (
+          <li>
+            <a
+              href={full.src}
+              class="block rounded-sm border border-zinc-300 dark:border-zinc-700 hover:border-zinc-500 focus-visible:outline-2 focus-visible:outline-offset-2"
+            >
+              <Image
+                src={scan}
+                width={320}
+                alt={t("documents.scanAlt", { n })}
+                class="w-full h-auto"
+              />
+            </a>
+          </li>
+        ))}
+      </ol>
+    </section>
+  )
+}

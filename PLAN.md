@@ -151,7 +151,9 @@ type Certainty = "official" | "leader-statement" | "reported" | "inferred";
 - **Statuses carry sources:** `Issue.statusSources` must be non-empty when `status` is set, and `Provision.sources` needs at least one entry.
 - **Entry ids come from file names:** `sources/{id}.yaml` and `events/{date}-{slug}.yaml` have no `id` field; the file name is the id. Collections with a `slug` field use it as the id.
 - **Position files** are an object `{ issue, positions: Position[], draft }` rather than a bare array, so the issue is explicit.
-- **Document texts** are a separate collection, `documentTexts` (`documents/{slug}/text.{lang}.md`, id `{slug}/{lang}`), since a YAML entry cannot render markdown.
+- **Document texts** are a separate collection, `documentTexts` (`documents/{slug}/text.{lang}.md` or `.mdx`, id `{slug}/{lang}`), since a YAML entry cannot render markdown.
+- **Document scans** are a `scans: image()[]` field (paths relative to `index.yaml`, e.g. `files/page-1.jpg`, in page order) so they are optimised at build time; `files` keeps the downloadable PDFs.
+- **Drafts may omit facts:** a document with `draft: true` may leave out `dateCertainty`, `type`, `provenance` and `isLeaked`; a published one may not. This lets existing records move into the new structure without values being invented.
 
 ### Collections
 
