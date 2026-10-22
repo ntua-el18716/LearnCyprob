@@ -11,7 +11,8 @@
     "check": "astro check && tsc --noEmit",
     "lint:citations": "node scripts/citation-lint.ts",
     "i18n:status": "node scripts/translation-status.ts",
-    "check:links": "node scripts/check-links.ts"
+    "check:links": "node scripts/check-links.ts",
+    "todo": "node scripts/todo.ts"
   },
   "devDependencies": {
     "@astrojs/markdown-remark": "^7.3.4",
