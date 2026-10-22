@@ -143,6 +143,16 @@ type Status =
 type Certainty = "official" | "leader-statement" | "reported" | "inferred";
 ```
 
+### Implementation notes (as built in `src/content.config.ts`)
+
+- **Issue ids are `{lang}/{slug}`** (e.g. `en/bbf`), because each issue exists once per locale. Everything else refers to an issue by its locale-independent **slug string** (`parent`, `related`, `Position` files, `Document.issues`, `Event.issues`, `Provision.issue`), not a `ref<Issue>`. The citation lint checks that these slugs exist. All other `ref<…>` fields are Astro `reference()`s, which the build validates.
+- **Every collection has `draft: boolean`** (default `false`), so placeholder entries can be marked `draft: true` everywhere (CLAUDE.md), not only issues.
+- **`Localized` is strict:** `en` is required, other locales are optional, unknown locale keys are rejected. It is derived from `src/i18n/locales.ts`.
+- **Statuses carry sources:** `Issue.statusSources` must be non-empty when `status` is set, and `Provision.sources` needs at least one entry.
+- **Entry ids come from file names:** `sources/{id}.yaml` and `events/{date}-{slug}.yaml` have no `id` field; the file name is the id. Collections with a `slug` field use it as the id.
+- **Position files** are an object `{ issue, positions: Position[], draft }` rather than a bare array, so the issue is explicit.
+- **Document texts** are a separate collection, `documentTexts` (`documents/{slug}/text.{lang}.md`, id `{slug}/{lang}`), since a YAML entry cannot render markdown.
+
 ### Collections
 
 ```ts
@@ -181,7 +191,7 @@ Actor {
   logo?: string;                 // optional; check usage rights
 }
 
-// positions: src/content/positions/{issue-slug}.yaml (array per issue)
+// positions: src/content/positions/{issue-slug}.yaml ({ issue, positions: Position[], draft })
 Position {
   actor: ref<Actor>;
   option: string;                // IssueOption.id, or "no-stated-position"
@@ -214,9 +224,8 @@ Document {
   copyrightNote?: string;
 }
 
-// sources: src/content/sources/{id}.yaml
+// sources: src/content/sources/{id}.yaml  (id = file name, e.g. "unsg-report-2017-09-28")
 Source {
-  id: string;                    // e.g. "unsg-report-2017-09-28"
   title: string;
   author?: string;
   publisher: string;
