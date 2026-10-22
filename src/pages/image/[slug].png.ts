@@ -3,6 +3,11 @@ import { html } from "satori-html";
 import { Resvg } from "@resvg/resvg-js";
 import InterRegular from "@fontsource/inter/files/inter-latin-400-normal.woff";
 import InterBold from "@fontsource/inter/files/inter-latin-700-normal.woff";
+// Latin-only Inter lacks Turkish (ş, ğ, ı) and Greek glyphs; satori falls back through these.
+import InterExtRegular from "@fontsource/inter/files/inter-latin-ext-400-normal.woff";
+import InterExtBold from "@fontsource/inter/files/inter-latin-ext-700-normal.woff";
+import InterGreekRegular from "@fontsource/inter/files/inter-greek-400-normal.woff";
+import InterGreekBold from "@fontsource/inter/files/inter-greek-700-normal.woff";
 import { getCollection } from "astro:content";
 import type { APIContext } from "astro";
 
@@ -16,13 +21,16 @@ interface Props {
   pubDate: Date;
 }
 
-async function GET(context: APIContext) {
+export async function GET(context: APIContext) {
   const { title, pubDate } = context.props as Props;
   const date = pubDate.toLocaleDateString("en-US", {
     dateStyle: "full",
   });
 
-  const markup = html`<div tw="bg-zinc-900 flex flex-col w-full h-full">
+  const markup = html`<div
+    tw="bg-zinc-900 flex flex-col w-full h-full"
+    style="font-family: Inter, InterLatinExt, InterGreek"
+  >
     <svg
       tw="absolute right-18 [transform:translatex(-50%)]"
       width="495"
@@ -65,18 +73,20 @@ async function GET(context: APIContext) {
 
   const svg = await satori(markup as unknown as React.ReactNode, {
     // const svg = await satori(markup, {
-    fonts: [
-      {
-        name: "Inter",
-        data: Buffer.from(InterRegular),
-        weight: 400,
-      },
-      {
-        name: "Inter",
-        data: Buffer.from(InterBold),
-        weight: 700,
-      },
-    ],
+    fonts: (
+      [
+        ["Inter", InterRegular, 400],
+        ["Inter", InterBold, 700],
+        ["InterLatinExt", InterExtRegular, 400],
+        ["InterLatinExt", InterExtBold, 700],
+        ["InterGreek", InterGreekRegular, 400],
+        ["InterGreek", InterGreekBold, 700],
+      ] as const
+    ).map(([name, data, weight]) => ({
+      name,
+      data: Buffer.from(data),
+      weight,
+    })),
     height: dimensions.height,
     width: dimensions.width,
   });
