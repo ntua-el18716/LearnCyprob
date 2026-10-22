@@ -4,10 +4,13 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "astro check && astro build",
+    "build": "astro build && pagefind --site dist",
     "format": "prettier --write . --plugin=prettier-plugin-astro",
     "preview": "astro preview",
-    "lint": "eslint . --max-warnings 0 --report-unused-disable-directives"
+    "lint": "eslint . --max-warnings 0 --report-unused-disable-directives",
+    "check": "astro check && tsc --noEmit",
+    "lint:citations": "node scripts/citation-lint.ts",
+    "i18n:status": "node scripts/translation-status.ts"
   },
   "devDependencies": {
     "@astrojs/markdown-remark": "^7.3.4",
@@ -26,6 +29,7 @@
     "eslint-plugin-astro": "^3.2.1",
     "globals": "^17.13.0",
     "mdast-util-to-string": "^4.0.0",
+    "pagefind": "^1.5.2",
     "prettier-plugin-astro": "^0.12.3",
     "reading-time": "^1.5.0",
     "rehype-autolink-headings": "^7.1.0",
@@ -54,7 +58,7 @@
     "react-hook-form": "^7.52.1",
     "sharp": "^0.33.4",
     "tailwindcss": "^3.4.4",
-    "typescript": "^5.5.3",
+    "typescript": "^5.9.3",
     "yet-another-react-lightbox": "^3.21.1"
   },
   "engines": {
