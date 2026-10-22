@@ -4,6 +4,7 @@ import { publishedLocales, type Locale } from "../../i18n/locales";
 import { localizePath, useTranslations } from "../../lib/i18n";
 import { getIssue, getIssueSlugs, getIssueTree } from "../../lib/issues";
 import ChapterIcon from "@components/ChapterIcon.astro";
+import ChapterOrbit from "@components/ChapterOrbit.astro";
 import { descendants } from "../../lib/chapters";
 
 export function getStaticPaths() {
@@ -35,7 +36,8 @@ const entries = [
 ---
 
 <Layout lang={lang}>
-  <section class="max-w-3xl">
+  <section class="grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_28rem]">
+    <div class="max-w-3xl">
     <h1 class="text-5xl sm:text-6xl font-[780] tracking-[-0.025em] leading-[1.02]" lang={t.langOf("home.title")}>
       {t("home.title")}
     </h1>
@@ -50,9 +52,14 @@ const entries = [
         {t("documents.title")}
       </a>
     </div>
+    </div>
+    <div class="hidden lg:block">
+      <ChapterOrbit chapters={chapters} lang={lang} />
+    </div>
   </section>
 
-  <section class="mt-16 sm:mt-20" aria-labelledby="topics">
+  <!-- Narrow screens: the chapters as a scrolling row (the map needs width). -->
+  <section class="mt-16 sm:mt-20 lg:hidden" aria-labelledby="topics">
     <h2 id="topics" class="text-2xl font-[720]">{t("explore.title")}</h2>
     <ul class="mt-6 -mx-4 flex snap-x gap-2 overflow-x-auto px-4 pb-4 sm:mx-0 sm:grid sm:grid-cols-4 sm:gap-y-6 sm:overflow-visible sm:px-0 lg:grid-cols-6">
       {

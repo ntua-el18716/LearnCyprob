@@ -16,17 +16,19 @@ const t = useTranslations(lang);
 const key = `status.${status}` as const;
 ---
 
-<span class="inline-flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+<span class="inline-flex flex-wrap items-center gap-x-2 gap-y-1">
   <a
     href={`${localizePath(lang, "methodology")}#status-${status}`}
-    class="inline-flex items-center gap-1 no-underline hover:underline"
+    class="inline-flex items-center gap-2 font-semibold no-underline hover:underline"
   >
-    <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true" set:html={statusGlyphs[status]} />
+    <span aria-hidden="true" class="grid size-7 shrink-0 place-items-center rounded-full border-2 border-accent text-accent">
+      <svg viewBox="0 0 12 12" width="12" height="12" set:html={statusGlyphs[status]} />
+    </span>
     <span lang={t.langOf(key)}>{t(key)}</span>
   </a>
   {
     isReferenceModel && (
-      <span class="rounded-sm border border-control px-1 text-xs" lang={t.langOf("compare.referenceModel")}>
+      <span class="rounded-full bg-accent px-2.5 py-0.5 text-xs font-semibold text-on-accent" lang={t.langOf("compare.referenceModel")}>
         {t("compare.referenceModel")}
       </span>
     )

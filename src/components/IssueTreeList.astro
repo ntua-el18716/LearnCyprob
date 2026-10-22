@@ -1,5 +1,7 @@
 ---
-// Nested list of issues; also the no-JS fallback for the issue explorer.
+// Plain nested list of every issue (/{lang}/issues). Chapters (the top level)
+// carry their icon; deeper levels are a simple indented list.
+import ChapterIcon from "./ChapterIcon.astro";
 import type { IssueNode } from "../lib/issues";
 import { localizePath } from "../lib/i18n";
 import type { Locale } from "../i18n/locales";
@@ -7,23 +9,31 @@ import type { Locale } from "../i18n/locales";
 interface Props {
   nodes: IssueNode[];
   lang: Locale;
+  depth?: number;
 }
 
-const { nodes, lang } = Astro.props;
+const { nodes, lang, depth = 0 } = Astro.props;
 ---
 
-<ul class="list-disc pl-5 space-y-1">
+<ul class:list={[depth === 0 ? "space-y-6" : "mt-2 ml-1 space-y-1.5 border-l-2 border-rule pl-5"]}>
   {
     nodes.map((node) => (
       <li>
-        <a
-          href={localizePath(lang, `issues/${node.slug}`)}
-          lang={node.isFallback ? node.lang : undefined}
-          class="link"
-        >
-          {node.title}
-        </a>
-        {node.children.length > 0 && <Astro.self nodes={node.children} lang={lang} />}
+        <span class="flex items-center gap-3">
+          {depth === 0 && <ChapterIcon slug={node.slug} size="sm" />}
+          <a
+            href={localizePath(lang, `issues/${node.slug}`)}
+            lang={node.isFallback ? node.lang : undefined}
+            class:list={["link", depth === 0 && "text-lg font-bold"]}
+          >
+            {node.title}
+          </a>
+        </span>
+        {node.children.length > 0 && (
+          <div class:list={[depth === 0 && "ml-12"]}>
+            <Astro.self nodes={node.children} lang={lang} depth={depth + 1} />
+          </div>
+        )}
       </li>
     ))
   }

@@ -2,6 +2,7 @@
 import Layout from "@layouts/Layout.astro";
 import PageNotice from "@components/PageNotice.astro";
 import ScanGallery from "@components/ScanGallery.astro";
+import { Icon } from "astro-icon/components";
 import { getEntries, render } from "astro:content";
 import { publishedLocales, type Locale } from "../../../../i18n/locales";
 import { localizePath, pickLocalized, useTranslations } from "../../../../lib/i18n";
@@ -39,6 +40,10 @@ const alternates = Object.fromEntries(
   publishedLocales.map((l) => [l, localizePath(l, `documents/${doc.id}`)]),
 );
 const linkClass = "link";
+// Fact grid cells.
+const cell = "bg-bg p-4";
+const term = "text-sm font-semibold text-muted";
+const value = "mt-1 text-lg font-semibold";
 ---
 
 <Layout
@@ -50,7 +55,7 @@ const linkClass = "link";
   {data.draft && <PageNotice kind="draft">{t("draft.banner")}</PageNotice>}
 
   <article>
-    <header class="mb-8">
+    <header class="mb-10">
       <h1
         lang={langAttr(title)}
         class="page-title max-w-4xl"
@@ -59,42 +64,43 @@ const linkClass = "link";
       </h1>
       {data.originalTitle && <p class="mt-2 text-lg text-ink">{data.originalTitle}</p>}
 
-      <dl class="mt-6 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-[minmax(7rem,auto)_1fr]">
-        <dt class="font-semibold text-muted">{t("documents.date")}</dt>
-        <dd>
-          <time datetime={data.date.toISOString().slice(0, 10)}>
-            {formatDocumentDate(data.date, data.dateCertainty, lang, t)}
-          </time>
-        </dd>
+      <!-- Facts as a grid of cells; 1px gaps over a rule-coloured background draw the dividers. -->
+      <dl class="mt-8 grid gap-px overflow-hidden rounded-xl border border-rule bg-rule sm:grid-cols-[repeat(auto-fit,minmax(13rem,1fr))]">
+        <div class={cell}>
+          <dt class={term}>{t("documents.date")}</dt>
+          <dd class={value}>
+            <time datetime={data.date.toISOString().slice(0, 10)}>{formatDocumentDate(data.date, data.dateCertainty, lang, t)}</time>
+          </dd>
+        </div>
         {
           typeKey && (
-            <>
-              <dt class="font-semibold text-muted">{t("documents.type")}</dt>
-              <dd lang={t.langOf(typeKey)}>{t(typeKey)}</dd>
-            </>
+            <div class={cell}>
+              <dt class={term}>{t("documents.type")}</dt>
+              <dd class={value} lang={t.langOf(typeKey)}>{t(typeKey)}</dd>
+            </div>
           )
         }
         {
           parties.length > 0 && (
-            <>
-              <dt class="font-semibold text-muted">{t("documents.parties")}</dt>
-              <dd>
+            <div class={cell}>
+              <dt class={term}>{t("documents.parties")}</dt>
+              <dd class={value}>
                 {parties.map((actor, i) => {
                   const name = pickLocalized(actor.data.name, lang);
                   // One line: whitespace here would put a space before the comma.
                   return (<>{i > 0 && ", "}<span lang={langAttr(name)}>{name.text}</span></>);
                 })}
               </dd>
-            </>
+            </div>
           )
         }
         {
           hasProvenance && (
-            <>
-              <dt class="font-semibold text-muted">{t("documents.provenance")}</dt>
-              <dd lang={provenance ? langAttr(provenance) : undefined}>
+            <div class:list={[cell, "col-span-full"]}>
+              <dt class={term}>{t("documents.provenance")}</dt>
+              <dd class="mt-1" lang={provenance ? langAttr(provenance) : undefined}>
                 {data.isLeaked && (
-                  <strong class="mr-1" lang={t.langOf("documents.leaked")}>{t("documents.leaked")}.</strong>
+                  <strong class="mr-2 inline-block rounded-full bg-sunken px-2.5 py-0.5 text-sm" lang={t.langOf("documents.leaked")}>{t("documents.leaked")}</strong>
                 )}
                 {provenance?.text}
                 {data.officialUrl && (
@@ -103,44 +109,40 @@ const linkClass = "link";
                 {data.archiveUrl && (
                   <> <a href={data.archiveUrl} class={linkClass}>{t("sources.archived")}</a>.</>
                 )}
-                {data.copyrightNote && <span class="block mt-1">{data.copyrightNote}</span>}
+                {data.copyrightNote && <span class="mt-1 block text-sm text-muted">{data.copyrightNote}</span>}
               </dd>
-            </>
-          )
-        }
-        {
-          data.files.length > 0 && (
-            <>
-              <dt class="font-semibold text-muted">{t("documents.files")}</dt>
-              <dd>
-                <ul>
-                  {data.files.map((file) => {
-                    const kindKey = `documents.file.${file.kind}` as const;
-                    return (
-                      <li>
-                        <a
-                          href={file.path}
-                          hreflang={file.lang}
-                          download={file.path.endsWith(".pdf") ? "" : undefined}
-                          class={linkClass}
-                        >
-                          {t(kindKey)} ({file.lang})
-                        </a>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </dd>
-            </>
+            </div>
           )
         }
       </dl>
+      {
+        data.files.length > 0 && (
+          <ul class="mt-6 flex flex-wrap gap-3" aria-label={t("documents.files")}>
+            {data.files.map((file) => {
+              const kindKey = `documents.file.${file.kind}` as const;
+              return (
+                <li>
+                  <a
+                    href={file.path}
+                    hreflang={file.lang}
+                    download={file.path.endsWith(".pdf") ? "" : undefined}
+                    class="inline-flex items-center gap-2 rounded-md bg-accent px-4 py-2.5 font-semibold text-on-accent hover:bg-accent/90"
+                  >
+                    <Icon name="lucide:download" class="size-5" aria-hidden="true" />
+                    {t(kindKey)} ({file.lang.toUpperCase()}{file.path.endsWith(".pdf") ? ", PDF" : ""})
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        )
+      }
     </header>
 
     <ScanGallery scans={data.scans} />
 
     <section aria-labelledby="text" class="mt-12 max-w-[46rem]">
-      <h2 id="text" class="text-xl font-semibold text-ink">
+      <h2 id="text" class="text-2xl font-[720]">
         {t("documents.text")}
       </h2>
       {text?.isFallback && <PageNotice kind="translation">{t("translation.missing")}</PageNotice>}
@@ -161,13 +163,13 @@ const linkClass = "link";
     {
       citedIn.length > 0 && (
         <nav aria-labelledby="cited-in" class="mt-12">
-          <h2 id="cited-in" class="text-xl font-semibold text-ink">
+          <h2 id="cited-in" class="text-2xl font-[720]">
             {t("documents.citedIn")}
           </h2>
-          <ul class="mt-3 list-disc pl-5">
+          <ul class="mt-4 divide-y divide-rule border-y border-rule">
             {citedIn.map((issue) => (
-              <li lang={langAttr(issue)}>
-                <a href={localizePath(lang, `issues/${issue.entry.data.slug}`)} class={linkClass}>
+              <li class="py-3" lang={langAttr(issue)}>
+                <a href={localizePath(lang, `issues/${issue.entry.data.slug}`)} class="font-semibold link">
                   {issue.entry.data.title}
                 </a>
               </li>

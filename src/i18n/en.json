@@ -174,5 +174,8 @@
   "explore.openChapter": "Open the chapter overview",
   "explore.chooseChapter": "Choose a chapter",
   "explore.results": "Search results",
-  "explore.legend": "Status"
+  "explore.legend": "Status",
+  "home.mapCenter": "{n} chapters",
+  "home.mapHint": "Choose a chapter",
+  "glossary.letters": "Jump to letter"
 }

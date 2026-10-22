@@ -18,43 +18,67 @@ const terms = (await getCollection("glossary", isVisible))
   .map((entry) => ({ entry, term: pickLocalized(entry.data.term, lang), definition: pickLocalized(entry.data.definition, lang) }))
   .sort((a, b) => collator.compare(a.term.text, b.term.text));
 const fallback = (v: { isFallback: boolean; lang: string }) => (v.isFallback ? v.lang : undefined);
+// Group by first letter (locale-aware upper case; skips leading punctuation).
+const letterOf = (text: string) => (text.match(/\p{L}/u)?.[0] ?? "#").toLocaleUpperCase(lang);
+const groups = [...new Set(terms.map((x) => letterOf(x.term.text)))].map((letter) => ({
+  letter,
+  terms: terms.filter((x) => letterOf(x.term.text) === letter),
+}));
 const alternates = Object.fromEntries(publishedLocales.map((l) => [l, localizePath(l, "glossary")]));
 ---
 
 <Layout lang={lang} title={t("glossary.title")} description={t("glossary.description")} alternates={alternates}>
   <PageHeader title={t("glossary.title")} intro={t("glossary.description")} introLang={t.langOf("glossary.description")} />
   <div class="max-w-3xl">
-  <dl class="space-y-8">
-    {
-      terms.map(({ entry, term, definition }) => (
-        <div id={entry.data.slug} class="scroll-mt-8 target:bg-panel rounded-sm">
-          <dt class="text-lg font-semibold text-ink" lang={fallback(term)}>
-            <a href={`#${entry.data.slug}`} class="no-underline hover:underline">{term.text}</a>
-            {entry.data.draft && <span class="ml-2 text-sm font-normal">({t("draft.label")})</span>}
-          </dt>
-          <dd class="mt-1 space-y-2">
-            <p lang={fallback(definition)}>{definition.text}</p>
-            {entry.data.usage && entry.data.usage.length > 0 && (
-              <ul class="text-sm space-y-1">
-                {entry.data.usage.map((u) => {
-                  const usageKey = `glossary.usage.${u.community}` as const;
-                  const usageTerm = pickLocalized(u.term, lang);
-                  const note = u.note && pickLocalized(u.note, lang);
-                  return (
-                    <li>
-                      <span lang={t.langOf(usageKey)}>{t(usageKey)}</span>:{" "}
-                      <strong lang={fallback(usageTerm)}>{usageTerm.text}</strong>
-                      {note && <span lang={fallback(note)}> ({note.text})</span>}
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-            <SourceLinks sources={entry.data.sources} />
-          </dd>
-        </div>
-      ))
-    }
-  </dl>
+  {
+    groups.length > 1 && (
+      <nav aria-label={t("glossary.letters")} class="mb-10">
+        <ul class="flex flex-wrap gap-2">
+          {groups.map((g) => (
+            <li><a href={`#letter-${g.letter}`} class="grid size-10 place-items-center rounded-full bg-panel font-bold text-accent hover:bg-accent hover:text-on-accent">{g.letter}</a></li>
+          ))}
+        </ul>
+      </nav>
+    )
+  }
+  {
+    groups.map((g) => (
+      <section aria-labelledby={`letter-${g.letter}`} class="mb-12 grid gap-6 sm:grid-cols-[4rem_minmax(0,1fr)]">
+        <h2 id={`letter-${g.letter}`} class="grid size-14 scroll-mt-6 place-items-center rounded-full bg-accent text-2xl font-[760] text-on-accent">
+          {g.letter}
+        </h2>
+        <dl class="divide-y divide-rule border-y border-rule">
+          {g.terms.map(({ entry, term, definition }) => (
+            <div id={entry.data.slug} class="scroll-mt-6 py-5 target:bg-panel target:px-4 target:rounded-xl">
+              <dt class="text-xl font-bold" lang={fallback(term)}>
+                <a href={`#${entry.data.slug}`} class="hover:underline">{term.text}</a>
+                {entry.data.draft && <span class="ml-2 align-middle text-sm font-normal text-muted">({t("draft.label")})</span>}
+              </dt>
+              <dd class="mt-2 space-y-3">
+                <p class="max-w-prose" lang={fallback(definition)}>{definition.text}</p>
+                {entry.data.usage && entry.data.usage.length > 0 && (
+                  <ul class="flex flex-wrap gap-2 text-sm">
+                    {entry.data.usage.map((u) => {
+                      const usageKey = `glossary.usage.${u.community}` as const;
+                      const usageTerm = pickLocalized(u.term, lang);
+                      const note = u.note && pickLocalized(u.note, lang);
+                      return (
+                        <li class="rounded-xl border border-rule px-3 py-2">
+                          <span class="block text-xs text-muted" lang={t.langOf(usageKey)}>{t(usageKey)}</span>
+                          <strong lang={fallback(usageTerm)}>{usageTerm.text}</strong>
+                          {note && <span class="text-muted" lang={fallback(note)}> ({note.text})</span>}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+                <SourceLinks sources={entry.data.sources} />
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+    ))
+  }
   </div>
 </Layout>

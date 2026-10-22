@@ -90,5 +90,8 @@
   "explore.openChapter": "Επισκόπηση του κεφαλαίου",
   "explore.chooseChapter": "Επιλέξτε κεφάλαιο",
   "explore.results": "Αποτελέσματα αναζήτησης",
-  "explore.legend": "Κατάσταση"
+  "explore.legend": "Κατάσταση",
+  "home.mapCenter": "{n} κεφάλαια",
+  "home.mapHint": "Επιλέξτε κεφάλαιο",
+  "glossary.letters": "Μετάβαση σε γράμμα"
 }

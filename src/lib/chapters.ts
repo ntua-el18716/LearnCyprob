@@ -31,3 +31,13 @@ export function statusCounts(node: IssueNode, order: StatusValue[]) {
     .map((status) => ({ status, count: all.filter((n) => n.status === status).length }))
     .filter((s) => s.count > 0);
 }
+
+/** Maps every issue slug in the tree to its chapter (top-level) slug. */
+export function chapterOf(tree: IssueNode[]) {
+  const map = new Map<string, string>();
+  for (const chapter of tree) {
+    map.set(chapter.slug, chapter.slug);
+    for (const node of descendants(chapter)) map.set(node.slug, chapter.slug);
+  }
+  return map;
+}

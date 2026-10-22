@@ -2,12 +2,14 @@
 import Layout from "@layouts/Layout.astro";
 import PageHeader from "@components/PageHeader.astro";
 import SourceLinks from "@components/SourceLinks.astro";
+import ChapterIcon from "@components/ChapterIcon.astro";
 import { getCollection, getEntries } from "astro:content";
 import { publishedLocales, type Locale } from "../../i18n/locales";
 import { isVisible } from "../../lib/drafts";
 import { formatDocumentDate } from "../../lib/documents";
 import { localizePath, pickLocalized, useTranslations } from "../../lib/i18n";
-import { getIssue } from "../../lib/issues";
+import { getIssue, getIssueTree } from "../../lib/issues";
+import { chapterOf } from "../../lib/chapters";
 
 export function getStaticPaths() {
   return publishedLocales.map((lang) => ({ params: { lang } }));
@@ -38,57 +40,67 @@ const enriched = await Promise.all(
     documents: await getEntries(event.data.documents),
   })),
 );
+// Each event shows the chapter of its first linked issue.
+const chapters = chapterOf(await getIssueTree(lang));
 const formatDate = (d: Date, c: (typeof events)[number]["data"]["dateCertainty"]) =>
   formatDocumentDate(d, c, lang, t);
-const linkClass = "link";
 const alternates = Object.fromEntries(publishedLocales.map((l) => [l, localizePath(l, "timeline")]));
 ---
 
 <Layout lang={lang} title={t("timeline.title")} description={t("timeline.description")} alternates={alternates}>
   <PageHeader title={t("timeline.title")} intro={t("timeline.description")} introLang={t.langOf("timeline.description")} />
-  <div class="max-w-3xl">
   {events.length === 0 && <p>{t("timeline.empty")}</p>}
-  {
-    eras.map((era) => (
-      <section aria-labelledby={`era-${era}`} class="mb-10">
-        <h2 id={`era-${era}`} class="text-xl font-semibold text-ink border-b border-rule pb-1">
-          {eraLabel(era)}
-        </h2>
-        <ol class="mt-4 space-y-6">
-          {enriched
-            .filter(({ event }) => event.data.era === era)
-            .map(({ event, title, summary, issues, documents }) => (
-              <li id={event.id} data-importance={event.data.importance} class="scroll-mt-8 target:bg-panel rounded-sm">
-                <p class="text-sm text-muted">
-                  <time datetime={event.data.date.toISOString().slice(0, 10)}>{formatDate(event.data.date, event.data.dateCertainty)}</time>
-                  {event.data.endDate && <> – <time datetime={event.data.endDate.toISOString().slice(0, 10)}>{formatDate(event.data.endDate, event.data.dateCertainty)}</time></>}
-                </p>
-                <h3 class="font-semibold text-ink" lang={title.isFallback ? title.lang : undefined}>
-                  <a href={`#${event.id}`} class="no-underline hover:underline">{title.text}</a>
-                  {event.data.draft && <span class="ml-2 text-sm font-normal">({t("draft.label")})</span>}
-                </h3>
-                <p class="mt-1" lang={summary.isFallback ? summary.lang : undefined}>{summary.text}</p>
-                {issues.length > 0 && (
-                  <p class="mt-1 text-sm">
-                    {t("related.issues")}:{" "}
-                    {issues.map((i, n) => (<>{n > 0 && ", "}<a href={localizePath(lang, `issues/${i.entry.data.slug}`)} lang={i.isFallback ? i.lang : undefined} class={linkClass}>{i.entry.data.title}</a></>))}
-                  </p>
-                )}
-                {documents.length > 0 && (
-                  <p class="mt-1 text-sm">
-                    {t("related.documents")}:{" "}
-                    {documents.map((d, n) => {
-                      const dt = pickLocalized(d.data.title, lang);
-                      return (<>{n > 0 && ", "}<a href={localizePath(lang, `documents/${d.id}`)} lang={dt.isFallback ? dt.lang : undefined} class={linkClass}>{dt.text}</a></>);
-                    })}
-                  </p>
-                )}
-                <div class="mt-1"><SourceLinks sources={event.data.sources} /></div>
-              </li>
-            ))}
-        </ol>
-      </section>
-    ))
-  }
+  <div class="max-w-4xl">
+    {
+      eras.map((era) => (
+        <section aria-labelledby={`era-${era}`} class="relative">
+          <h2 id={`era-${era}`} class="relative z-10 mb-6 ml-0 inline-block rounded-full bg-panel px-4 py-1.5 text-lg font-bold text-accent sm:ml-[9.5rem]">
+            {eraLabel(era)}
+          </h2>
+          <ol class="relative mb-12 ml-5 border-l-2 border-rule sm:ml-[11rem]">
+            {enriched
+              .filter(({ event }) => event.data.era === era)
+              .map(({ event, title, summary, issues, documents }) => {
+                const chapter = issues[0] && chapters.get(issues[0].entry.data.slug);
+                const major = event.data.importance === 1;
+                return (
+                  <li id={event.id} data-importance={event.data.importance} class="relative scroll-mt-8 pb-10 pl-10 last:pb-2">
+                    <span class="absolute -left-[1.15rem] top-0">
+                      {chapter ? (
+                        <ChapterIcon slug={chapter} size="sm" class="ring-4 ring-bg" />
+                      ) : (
+                        <span aria-hidden="true" class="mt-2 ml-2.5 block size-4 rounded-full bg-accent ring-4 ring-bg" />
+                      )}
+                    </span>
+                    <p class="text-sm font-bold text-accent sm:absolute sm:-left-[11rem] sm:top-1.5 sm:w-36 sm:text-right">
+                      <time datetime={event.data.date.toISOString().slice(0, 10)}>{formatDate(event.data.date, event.data.dateCertainty)}</time>
+                      {event.data.endDate && <> – <time datetime={event.data.endDate.toISOString().slice(0, 10)}>{formatDate(event.data.endDate, event.data.dateCertainty)}</time></>}
+                    </p>
+                    <div class="rounded-xl target:bg-panel">
+                      <h3 class:list={["font-bold leading-snug", major ? "text-2xl" : "text-lg"]} lang={title.isFallback ? title.lang : undefined}>
+                        <a href={`#${event.id}`} class="hover:underline">{title.text}</a>
+                        {event.data.draft && <span class="ml-2 align-middle text-sm font-normal text-muted">({t("draft.label")})</span>}
+                      </h3>
+                      <p class="mt-1.5 max-w-prose" lang={summary.isFallback ? summary.lang : undefined}>{summary.text}</p>
+                      {(issues.length > 0 || documents.length > 0) && (
+                        <ul class="mt-3 flex flex-wrap gap-2 text-sm">
+                          {issues.map((i) => (
+                            <li><a href={localizePath(lang, `issues/${i.entry.data.slug}`)} lang={i.isFallback ? i.lang : undefined} class="inline-block rounded-full border border-rule px-3 py-1 font-medium hover:border-accent hover:text-accent">{i.entry.data.title}</a></li>
+                          ))}
+                          {documents.map((d) => {
+                            const dt = pickLocalized(d.data.title, lang);
+                            return <li><a href={localizePath(lang, `documents/${d.id}`)} lang={dt.isFallback ? dt.lang : undefined} class="inline-block rounded-full bg-sunken px-3 py-1 font-medium hover:text-accent">{dt.text}</a></li>;
+                          })}
+                        </ul>
+                      )}
+                      <div class="mt-2"><SourceLinks sources={event.data.sources} /></div>
+                    </div>
+                  </li>
+                );
+              })}
+          </ol>
+        </section>
+      ))
+    }
   </div>
 </Layout>

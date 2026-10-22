@@ -22,22 +22,22 @@ const pages = await Promise.all(
 
 {
   pages.length > 0 && (
-    <section aria-labelledby="scans" class="mt-10">
-      <h2 id="scans" class="text-xl font-semibold text-ink">
+    <section aria-labelledby="scans" class="mt-12">
+      <h2 id="scans" class="text-2xl font-[720]">
         {t("documents.scans")}
       </h2>
-      <ol class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <ol class="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-6">
         {pages.map(({ scan, n, full }) => (
           <li>
             <a
               href={full.src}
-              class="block rounded-sm border border-rule hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-2"
+              class="group relative block overflow-hidden rounded-lg border border-rule bg-sunken shadow-sm transition hover:-translate-y-0.5 hover:border-accent hover:shadow-md motion-reduce:transition-none"
             >
               <Image
                 src={scan}
                 width={320}
                 alt={t("documents.scanAlt", { n })}
-                class="w-full h-auto"
+                class="h-auto w-full"
               />
             </a>
           </li>
