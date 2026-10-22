@@ -1,5 +1,5 @@
-import RotatingPresidencyCalculator from "./RotatingPresidencyCalculator.jsx";
-import RotatingPresidencyOptionBar from "./RotatingPresidencyOptionBar.jsx";
+import Calculator from "./Calculator.jsx";
+import OptionBar from "./OptionBar.jsx";
 import { useState } from "react";
 
 const candidatesGC = [
@@ -64,24 +64,30 @@ const candidatesTC = [
   },
 ];
 
-function RotatingPresidency() {
+// Interactive part of the rotating-presidency article: two weighted
+// cross-voting calculators (GC and TC candidates). `strings` are the UI texts,
+// translated server-side by RotatingPresidencyTool.astro.
+function RotatingPresidency({ strings }) {
   const [crossVotingPercentage, setCrossVotingPercentage] = useState(0.2);
   const [electionRound, setElectionRound] = useState(1);
   return (
-    <div>
-      <RotatingPresidencyOptionBar
+    <div className="not-prose font-sans space-y-10">
+      <OptionBar
+        strings={strings}
         onCrossVotingPercentage={setCrossVotingPercentage}
         onElectionRound={setElectionRound}
       />
-
-      <RotatingPresidencyCalculator
+      <Calculator
+        heading={strings.gcCandidates}
+        strings={strings}
         candidates={candidatesGC}
         mode="GC"
         crossVotingPercentage={crossVotingPercentage}
         electionRound={electionRound}
       />
-
-      <RotatingPresidencyCalculator
+      <Calculator
+        heading={strings.tcCandidates}
+        strings={strings}
         candidates={candidatesTC}
         mode="TC"
         crossVotingPercentage={crossVotingPercentage}

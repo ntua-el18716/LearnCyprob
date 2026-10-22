@@ -1,5 +1,35 @@
 ---
-import RotatingPresidency from "./RotatingPresidency.jsx";
+// Rotating-presidency calculator for the article. The React island gets its
+// UI strings pre-translated; text that fell back to EN is marked lang="en".
+import RotatingPresidency from "./islands/rotating-presidency/RotatingPresidency.jsx";
+import { localeOf, useTranslations } from "../lib/i18n";
+
+const t = useTranslations(localeOf(Astro.currentLocale));
+const keys = {
+  round: "rp.round",
+  round1: "rp.round1",
+  round2: "rp.round2",
+  crossVoting: "rp.crossVoting",
+  gcCandidates: "rp.gcCandidates",
+  tcCandidates: "rp.tcCandidates",
+  candidate: "rp.candidate",
+  candidateColumn: "rp.candidateColumn",
+  choose: "rp.choose",
+  required: "rp.required",
+  gcVote: "rp.gcVote",
+  tcVote: "rp.tcVote",
+  percentRange: "rp.percentRange",
+  calculate: "rp.calculate",
+  results: "rp.results",
+  weighted: "rp.weighted",
+} as const;
+// {n} stays a placeholder for the island to fill in.
+const strings = Object.fromEntries(
+  Object.entries(keys).map(([name, key]) => [name, t(key, { n: "{n}" })]),
+);
 ---
 
-<RotatingPresidency client:load />
+<div class="my-10" lang={t.langOf("rp.calculate")}>
+  <RotatingPresidency client:visible strings={strings} />
+  <noscript><p>{t("rp.noscript")}</p></noscript>
+</div>

@@ -88,5 +88,22 @@
   "documents.type.other": "Other",
   "draft.label": "Draft",
   "documents.scans": "Scanned pages",
-  "documents.scanAlt": "Scanned page {n}"
+  "documents.scanAlt": "Scanned page {n}",
+  "rp.round": "Election round",
+  "rp.round1": "Round 1",
+  "rp.round2": "Round 2",
+  "rp.crossVoting": "Weighted cross-voting contribution (%)",
+  "rp.gcCandidates": "Candidates from the GC federated state",
+  "rp.tcCandidates": "Candidates from the TC federated state",
+  "rp.candidate": "Candidate {n}",
+  "rp.candidateColumn": "Candidate",
+  "rp.choose": "Choose candidate",
+  "rp.required": "This field is required.",
+  "rp.gcVote": "Percentage in the GC federated state",
+  "rp.tcVote": "Percentage in the TC federated state",
+  "rp.percentRange": "This field is required and should be between 0 and 100.",
+  "rp.calculate": "Calculate results",
+  "rp.results": "Results",
+  "rp.weighted": "Weighted result",
+  "rp.noscript": "The calculator needs JavaScript."
 }
