@@ -6,7 +6,7 @@ type Props = CollectionEntry<"document"> & {
   minimal?: true;
 };
 
-const { data, slug, minimal = false } = Astro.props;
+const { data, id, minimal = false } = Astro.props;
 
 const fullDate = data.pubDate.toLocaleDateString("en", {
   year: "numeric",
@@ -23,7 +23,7 @@ const fullDate = data.pubDate.toLocaleDateString("en", {
   }}
 >
   <a
-    href={`/document/${slug}/`}
+    href={`/document/${id}/`}
     class="relative group flex flex-col sm:flex-row gap-0.5 border-b border-spacing-y-2 border-zinc-300 dark:border-zinc-800 pb-6"
   >
     <Image

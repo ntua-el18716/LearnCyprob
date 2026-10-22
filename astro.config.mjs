@@ -1,19 +1,13 @@
-import { defineConfig, sharpImageService } from "astro/config";
+import { defineConfig } from "astro/config";
 import tailwind from "@astrojs/tailwind";
 import sitemap from "@astrojs/sitemap";
 import { readFileSync } from "node:fs";
 import icon from "astro-icon";
-import expressiveCode from "astro-expressive-code";
 import mdx from "@astrojs/mdx";
 import rehypeSlug from "rehype-slug";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import { remarkReadingTime } from "./remark-reading-time.mjs";
 import react from "@astrojs/react";
-/** @type {import('astro-expressive-code').AstroExpressiveCodeOptions} */
-import netlify from "@astrojs/netlify";
-const astroExpressiveCodeOptions = {
-  themes: ["min-dark", "min-light"],
-};
 
 // https://astro.build/config
 export default defineConfig({
@@ -40,20 +34,12 @@ export default defineConfig({
     ],
   },
   integrations: [
-    (await import("astro-compress")).default({
-      CSS: false,
-      SVG: false,
-    }),
     tailwind(),
     sitemap(),
-    expressiveCode(astroExpressiveCodeOptions),
     icon(),
     mdx(),
     react(),
   ],
-  image: {
-    service: sharpImageService(),
-  },
   // TODO: site name and domain are still open (PLAN.md §14).
   site: "https://astrozinc.exylons.com",
   vite: {
@@ -62,8 +48,7 @@ export default defineConfig({
       exclude: ["@resvg/resvg-js"],
     },
   },
-  output: "hybrid",
-  adapter: netlify(),
+  output: "static",
 });
 
 // vite plugin to import fonts

@@ -5,7 +5,9 @@ import { getCollection } from "astro:content";
 import Blog from "@components/Document-blog.astro";
 
 const posts = (await getCollection("document")).sort(
-  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+  (a, b) =>
+    b.data.pubDate.valueOf() - a.data.pubDate.valueOf() ||
+    a.id.localeCompare(b.id),
 );
 
 const title = "Cyprob";

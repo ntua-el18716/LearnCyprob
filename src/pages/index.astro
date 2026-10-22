@@ -7,7 +7,9 @@ import Blog from "@components/Cyprob-blog.astro";
 import { Icon } from "astro-icon/components";
 
 const posts = (await getCollection("cyprob")).sort(
-  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+  (a, b) =>
+    b.data.pubDate.valueOf() - a.data.pubDate.valueOf() ||
+    a.id.localeCompare(b.id),
 );
 ---
 

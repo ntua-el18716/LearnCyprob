@@ -7,7 +7,9 @@ import { Image } from "astro:assets";
 import CarouselImage from "@components/CarouselImage.astro";
 
 const posts = (await getCollection("cyprob")).sort(
-  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+  (a, b) =>
+    b.data.pubDate.valueOf() - a.data.pubDate.valueOf() ||
+    a.id.localeCompare(b.id),
 );
 
 const title = "Cyprob";
