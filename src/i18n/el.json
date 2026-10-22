@@ -41,5 +41,17 @@
   "documents.citedIn": "Αναφέρεται σε",
   "draft.label": "Πρόχειρο",
   "documents.scans": "Σαρωμένες σελίδες",
-  "documents.scanAlt": "Σαρωμένη σελίδα {n}"
+  "documents.scanAlt": "Σαρωμένη σελίδα {n}",
+  "nav.timeline": "Χρονολόγιο",
+  "nav.glossary": "Γλωσσάριο",
+  "footer.about": "Σχετικά",
+  "footer.methodology": "Μεθοδολογία",
+  "footer.corrections": "Διορθώσεις",
+  "timeline.title": "Χρονολόγιο",
+  "timeline.empty": "Δεν υπάρχουν ακόμη γεγονότα.",
+  "era.before": "Πριν από το {year}",
+  "era.since": "Από το {year} έως σήμερα",
+  "glossary.title": "Γλωσσάριο",
+  "related.issues": "Θέματα",
+  "related.documents": "Έγγραφα"
 }

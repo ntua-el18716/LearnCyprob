@@ -1,0 +1,59 @@
+---
+import Layout from "@layouts/Layout.astro";
+import Header from "@components/Header.astro";
+import SourceLinks from "@components/SourceLinks.astro";
+import { getCollection } from "astro:content";
+import { publishedLocales, type Locale } from "../../i18n/locales";
+import { isVisible } from "../../lib/drafts";
+import { localizePath, pickLocalized, useTranslations } from "../../lib/i18n";
+
+export function getStaticPaths() {
+  return publishedLocales.map((lang) => ({ params: { lang } }));
+}
+
+const lang = Astro.params.lang as Locale;
+const t = useTranslations(lang);
+const collator = new Intl.Collator(lang);
+const terms = (await getCollection("glossary", isVisible))
+  .map((entry) => ({ entry, term: pickLocalized(entry.data.term, lang), definition: pickLocalized(entry.data.definition, lang) }))
+  .sort((a, b) => collator.compare(a.term.text, b.term.text));
+const fallback = (v: { isFallback: boolean; lang: string }) => (v.isFallback ? v.lang : undefined);
+const alternates = Object.fromEntries(publishedLocales.map((l) => [l, localizePath(l, "glossary")]));
+---
+
+<Layout lang={lang} title={t("glossary.title")} description={t("glossary.description")} alternates={alternates}>
+  <Header title={t("glossary.title")} />
+  <p class="mb-8 text-center" lang={t.langOf("glossary.description")}>{t("glossary.description")}</p>
+  <dl class="space-y-8">
+    {
+      terms.map(({ entry, term, definition }) => (
+        <div id={entry.data.slug} class="scroll-mt-8 target:bg-zinc-200/60 dark:target:bg-zinc-800/60 rounded-sm">
+          <dt class="text-lg font-semibold text-zinc-900 dark:text-zinc-100" lang={fallback(term)}>
+            <a href={`#${entry.data.slug}`} class="no-underline hover:underline">{term.text}</a>
+            {entry.data.draft && <span class="ml-2 text-sm font-normal">({t("draft.label")})</span>}
+          </dt>
+          <dd class="mt-1 space-y-2">
+            <p lang={fallback(definition)}>{definition.text}</p>
+            {entry.data.usage && entry.data.usage.length > 0 && (
+              <ul class="text-sm space-y-1">
+                {entry.data.usage.map((u) => {
+                  const usageKey = `glossary.usage.${u.community}` as const;
+                  const usageTerm = pickLocalized(u.term, lang);
+                  const note = u.note && pickLocalized(u.note, lang);
+                  return (
+                    <li>
+                      <span lang={t.langOf(usageKey)}>{t(usageKey)}</span>:{" "}
+                      <strong lang={fallback(usageTerm)}>{usageTerm.text}</strong>
+                      {note && <span lang={fallback(note)}> ({note.text})</span>}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+            <SourceLinks sources={entry.data.sources} />
+          </dd>
+        </div>
+      ))
+    }
+  </dl>
+</Layout>

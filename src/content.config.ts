@@ -83,27 +83,32 @@ const issueOption = z.object({
   description: localized,
 });
 
-// src/content/issues/{lang}/{slug}.mdx
-const issues = defineCollection({
-  loader: glob({
+// Per-locale MDX: src/content/{dir}/{lang}/{slug}.mdx, id `{lang}/{slug}`.
+// Rejects folders that aren't locales and slugs that don't match the file.
+const localizedMdx = (dir: string) =>
+  glob({
     pattern: "*/*.mdx",
-    base: "./src/content/issues",
+    base: `./src/content/${dir}`,
     generateId: ({ entry, data }) => {
       const [lang, file] = entry.split("/");
       const fileSlug = file.replace(/\.mdx$/, "");
       if (!(locales as readonly string[]).includes(lang)) {
         throw new Error(
-          `issues/${entry}: folder "${lang}" is not a locale (${locales.join(", ")})`,
+          `${dir}/${entry}: folder "${lang}" is not a locale (${locales.join(", ")})`,
         );
       }
       if (data.slug !== fileSlug) {
         throw new Error(
-          `issues/${entry}: frontmatter slug "${String(data.slug)}" must match the file name`,
+          `${dir}/${entry}: frontmatter slug "${String(data.slug)}" must match the file name`,
         );
       }
       return `${lang}/${fileSlug}`;
     },
-  }),
+  });
+
+// src/content/issues/{lang}/{slug}.mdx
+const issues = defineCollection({
+  loader: localizedMdx("issues"),
   schema: z
     .object({
       slug: issueSlug,
@@ -125,6 +130,21 @@ const issues = defineCollection({
       error: "statusSources is required when status is set",
       path: ["statusSources"],
     }),
+});
+
+// Site pages (about, methodology, corrections): src/content/pages/{lang}/{slug}.mdx
+const pages = defineCollection({
+  loader: localizedMdx("pages"),
+  schema: z.object({
+    slug,
+    title: z.string().min(1),
+    description: z.string().min(1).optional(),
+    lastReviewed: date,
+    translationOf: z
+      .object({ lang: z.literal(defaultLocale), revision: z.string().min(1) })
+      .optional(),
+    draft,
+  }),
 });
 
 // src/content/actors/{slug}.yaml
@@ -380,6 +400,7 @@ const personas = defineCollection({
 
 export const collections = {
   issues,
+  pages,
   actors,
   positions,
   documents,

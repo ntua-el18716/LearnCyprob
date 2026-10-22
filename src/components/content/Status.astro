@@ -2,11 +2,9 @@
 // <Status value="converged" sources={["source-id"]} />. A status always carries
 // sources (CLAUDE.md). Each value has its own glyph shape plus a text label, so
 // nothing depends on colour; the label links to its methodology definition.
-import type { CollectionEntry } from "astro:content";
 import CitationMarks from "./CitationMarks.astro";
+import { statusGlyphs, type StatusValue } from "./status-glyphs";
 import { localeOf, localizePath, useTranslations } from "../../lib/i18n";
-
-type StatusValue = NonNullable<CollectionEntry<"issues">["data"]["status"]>;
 
 interface Props {
   value: StatusValue;
@@ -26,20 +24,6 @@ const key = `status.${value}` as const;
 const label = t(key);
 const href = `${localizePath(lang, "methodology")}#status-${value}`;
 
-// Fill level reads left to right: agreed (full) → divergent (empty).
-const glyphs: Record<StatusValue, string> = {
-  agreed: '<circle cx="6" cy="6" r="5" fill="currentColor"/>',
-  converged:
-    '<circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6 1a5 5 0 1 1-5 5h5z" fill="currentColor"/>',
-  "partially-converged":
-    '<circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6 1a5 5 0 0 1 0 10z" fill="currentColor"/>',
-  "convergence-disputed":
-    '<circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6 1a5 5 0 0 1 0 10z" fill="currentColor"/><path d="M1.5 10.5l9-9" stroke="currentColor" stroke-width="1.5"/>',
-  divergent: '<circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/>',
-  "proposal-only":
-    '<path d="M6 1l5 5-5 5-5-5z" fill="none" stroke="currentColor" stroke-width="1.5"/>',
-  "not-discussed": '<path d="M2 6h8" stroke="currentColor" stroke-width="1.5"/>',
-};
 ---
 
 <span
@@ -51,7 +35,7 @@ const glyphs: Record<StatusValue, string> = {
     height="12"
     aria-hidden="true"
     class="self-center shrink-0"
-    set:html={glyphs[value]}
+    set:html={statusGlyphs[value]}
   />
   <span class="sr-only">{t("status.label")}:</span>
   <a

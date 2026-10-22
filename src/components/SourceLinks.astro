@@ -1,0 +1,27 @@
+---
+// "Sources: A; B" for structured entries (events, glossary terms). Articles
+// use numbered <Cite> + <SourcesList> instead.
+import { getEntries } from "astro:content";
+import type { CollectionEntry } from "astro:content";
+import { localeOf, localizePath, useTranslations } from "../lib/i18n";
+
+interface Props {
+  sources: { collection: "sources"; id: string }[];
+}
+
+const lang = localeOf(Astro.currentLocale);
+const t = useTranslations(lang);
+const sources: CollectionEntry<"sources">[] = await getEntries(Astro.props.sources);
+const href = (s: CollectionEntry<"sources">) =>
+  s.data.url ?? (s.data.document ? localizePath(lang, `documents/${s.data.document.id}`) : undefined);
+---
+
+{
+  sources.length > 0 && (
+    <p class="text-sm text-zinc-600 dark:text-zinc-400">
+      {t("sources.heading")}:{" "}
+      {/* One line per item: whitespace here would show before the separators. */}
+      {sources.map((s, i) => (<>{i > 0 && "; "}{href(s) ? (<a href={href(s)} lang={s.data.lang} class="underline decoration-zinc-400 underline-offset-2">{s.data.title}</a>) : (<span lang={s.data.lang}>{s.data.title}</span>)}</>))}
+    </p>
+  )
+}

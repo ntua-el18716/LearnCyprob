@@ -3,6 +3,7 @@ import Link from "@components/Link.astro";
 import { Icon } from "astro-icon/components";
 import { author, defaultMeta, repoUrl } from "@data/constants";
 import { localizePath, useTranslations } from "../lib/i18n";
+import { getPageSlugs } from "../lib/pages";
 import {
   defaultLocale,
   localeMeta,
@@ -47,11 +48,19 @@ const {
   ogImage = defaultMeta.ogImage,
 } = Astro.props;
 
+const pageSlugs = await getPageSlugs();
 const navigation = [
   { href: localizePath(lang), text: t("nav.home"), exact: true },
   { href: localizePath(lang, "issues"), text: t("nav.issues") },
   { href: localizePath(lang, "documents"), text: t("nav.documents") },
+  { href: localizePath(lang, "timeline"), text: t("nav.timeline") },
+  { href: localizePath(lang, "glossary"), text: t("nav.glossary") },
 ];
+
+// Footer: site pages that exist (about, methodology, corrections), in this order.
+const footerPages = (["about", "methodology", "corrections"] as const).filter((slug) =>
+  pageSlugs.includes(slug),
+);
 
 const ogImageURL = new URL(ogImage.src, Astro.site).href;
 const canonicalURL = new URL(Astro.url).href;
@@ -132,7 +141,7 @@ const canonicalURL = new URL(Astro.url).href;
         "max-w-3xl": !wide,
       }}
     >
-      <ul class="flex justify-evenly space-x-6">
+      <ul class="flex flex-wrap gap-x-6">
         {
           navigation.map((item) => (
             <li>
@@ -193,6 +202,19 @@ const canonicalURL = new URL(Astro.url).href;
       <div
         class="mx-auto max-w-4xl px-6 lg:px-2 text-center text-xs lg:text-sm dark:text-zinc-400 text-zinc-600"
       >
+        {
+          footerPages.length > 0 && (
+            <ul class="mb-3 flex flex-wrap justify-center gap-x-6">
+              {footerPages.map((slug) => (
+                <li>
+                  <a href={localizePath(lang, slug)} class="hover:underline">
+                    {t(`footer.${slug}`)}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )
+        }
         <p>
           {t("footer.copyright", { year: new Date().getFullYear(), author })}
           <a

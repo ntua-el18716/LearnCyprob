@@ -105,5 +105,22 @@
   "rp.calculate": "Calculate results",
   "rp.results": "Results",
   "rp.weighted": "Weighted result",
-  "rp.noscript": "The calculator needs JavaScript."
+  "rp.noscript": "The calculator needs JavaScript.",
+  "nav.timeline": "Timeline",
+  "nav.glossary": "Glossary",
+  "footer.about": "About",
+  "footer.methodology": "Methodology",
+  "footer.corrections": "Corrections",
+  "timeline.title": "Timeline",
+  "timeline.description": "Events in the negotiations, by era.",
+  "timeline.empty": "No events yet.",
+  "era.before": "Before {year}",
+  "era.since": "{year} to the present",
+  "glossary.title": "Glossary",
+  "glossary.description": "Terms used in the negotiations, including how each community names things.",
+  "glossary.usage.gc": "Greek Cypriot usage",
+  "glossary.usage.tc": "Turkish Cypriot usage",
+  "glossary.usage.international": "International usage",
+  "related.issues": "Issues",
+  "related.documents": "Documents"
 }

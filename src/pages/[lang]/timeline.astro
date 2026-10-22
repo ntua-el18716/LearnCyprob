@@ -1,0 +1,93 @@
+---
+import Layout from "@layouts/Layout.astro";
+import Header from "@components/Header.astro";
+import SourceLinks from "@components/SourceLinks.astro";
+import { getCollection, getEntries } from "astro:content";
+import { publishedLocales, type Locale } from "../../i18n/locales";
+import { isVisible } from "../../lib/drafts";
+import { formatDocumentDate } from "../../lib/documents";
+import { localizePath, pickLocalized, useTranslations } from "../../lib/i18n";
+import { getIssue } from "../../lib/issues";
+
+export function getStaticPaths() {
+  return publishedLocales.map((lang) => ({ params: { lang } }));
+}
+
+const lang = Astro.params.lang as Locale;
+const t = useTranslations(lang);
+const events = (await getCollection("events", isVisible)).sort(
+  (a, b) => a.data.date.valueOf() - b.data.date.valueOf() || a.id.localeCompare(b.id),
+);
+
+// Eras in schema order; label "1960-1963" as "1960–1963", and the open ends
+// in words.
+const eraLabel = (era: string) => {
+  const [from, to] = era.split("-");
+  if (from === "pre") return t("era.before", { year: to });
+  if (to === "present") return t("era.since", { year: from });
+  return `${from}–${to}`;
+};
+const eras = [...new Set(events.map((e) => e.data.era))];
+
+const enriched = await Promise.all(
+  events.map(async (event) => ({
+    event,
+    title: pickLocalized(event.data.title, lang),
+    summary: pickLocalized(event.data.summary, lang),
+    issues: (await Promise.all(event.data.issues.map((s) => getIssue(s, lang)))).filter((i) => i !== undefined),
+    documents: await getEntries(event.data.documents),
+  })),
+);
+const formatDate = (d: Date, c: (typeof events)[number]["data"]["dateCertainty"]) =>
+  formatDocumentDate(d, c, lang, t);
+const linkClass = "underline decoration-zinc-400 underline-offset-2";
+const alternates = Object.fromEntries(publishedLocales.map((l) => [l, localizePath(l, "timeline")]));
+---
+
+<Layout lang={lang} title={t("timeline.title")} description={t("timeline.description")} alternates={alternates}>
+  <Header title={t("timeline.title")} />
+  <p class="mb-8 text-center" lang={t.langOf("timeline.description")}>{t("timeline.description")}</p>
+  {events.length === 0 && <p>{t("timeline.empty")}</p>}
+  {
+    eras.map((era) => (
+      <section aria-labelledby={`era-${era}`} class="mb-10">
+        <h2 id={`era-${era}`} class="text-xl font-semibold text-zinc-900 dark:text-zinc-100 border-b border-zinc-300 dark:border-zinc-700 pb-1">
+          {eraLabel(era)}
+        </h2>
+        <ol class="mt-4 space-y-6">
+          {enriched
+            .filter(({ event }) => event.data.era === era)
+            .map(({ event, title, summary, issues, documents }) => (
+              <li id={event.id} data-importance={event.data.importance} class="scroll-mt-8 target:bg-zinc-200/60 dark:target:bg-zinc-800/60 rounded-sm">
+                <p class="text-sm text-zinc-600 dark:text-zinc-400">
+                  <time datetime={event.data.date.toISOString().slice(0, 10)}>{formatDate(event.data.date, event.data.dateCertainty)}</time>
+                  {event.data.endDate && <> – <time datetime={event.data.endDate.toISOString().slice(0, 10)}>{formatDate(event.data.endDate, event.data.dateCertainty)}</time></>}
+                </p>
+                <h3 class="font-semibold text-zinc-900 dark:text-zinc-100" lang={title.isFallback ? title.lang : undefined}>
+                  <a href={`#${event.id}`} class="no-underline hover:underline">{title.text}</a>
+                  {event.data.draft && <span class="ml-2 text-sm font-normal">({t("draft.label")})</span>}
+                </h3>
+                <p class="mt-1" lang={summary.isFallback ? summary.lang : undefined}>{summary.text}</p>
+                {issues.length > 0 && (
+                  <p class="mt-1 text-sm">
+                    {t("related.issues")}:{" "}
+                    {issues.map((i, n) => (<>{n > 0 && ", "}<a href={localizePath(lang, `issues/${i.entry.data.slug}`)} lang={i.isFallback ? i.lang : undefined} class={linkClass}>{i.entry.data.title}</a></>))}
+                  </p>
+                )}
+                {documents.length > 0 && (
+                  <p class="mt-1 text-sm">
+                    {t("related.documents")}:{" "}
+                    {documents.map((d, n) => {
+                      const dt = pickLocalized(d.data.title, lang);
+                      return (<>{n > 0 && ", "}<a href={localizePath(lang, `documents/${d.id}`)} lang={dt.isFallback ? dt.lang : undefined} class={linkClass}>{dt.text}</a></>);
+                    })}
+                  </p>
+                )}
+                <div class="mt-1"><SourceLinks sources={event.data.sources} /></div>
+              </li>
+            ))}
+        </ol>
+      </section>
+    ))
+  }
+</Layout>

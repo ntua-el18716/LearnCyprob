@@ -1,0 +1,68 @@
+---
+// Site pages from the `pages` collection: /{lang}/about, /methodology, …
+import Layout from "@layouts/Layout.astro";
+import PageNotice from "@components/PageNotice.astro";
+import Analysis from "@components/content/Analysis.astro";
+import Cite from "@components/content/Cite.astro";
+import Claim from "@components/content/Claim.astro";
+import Concern from "@components/content/Concern.astro";
+import SourcesList from "@components/content/SourcesList.astro";
+import Status from "@components/content/Status.astro";
+import StatusTerm from "@components/content/StatusTerm.astro";
+import { render } from "astro:content";
+import { repoUrl } from "@data/constants";
+import { publishedLocales, type Locale } from "../../i18n/locales";
+import { localizePath, useTranslations } from "../../lib/i18n";
+import { getPage, getPageSlugs } from "../../lib/pages";
+import type { Citation } from "../../lib/remark-citations";
+
+export async function getStaticPaths() {
+  const slugs = await getPageSlugs();
+  return publishedLocales.flatMap((lang) => slugs.map((page) => ({ params: { lang, page } })));
+}
+
+const lang = Astro.params.lang as Locale;
+const t = useTranslations(lang);
+const resolved = await getPage(Astro.params.page ?? "", lang);
+if (!resolved) return Astro.redirect(localizePath(lang));
+const { entry, lang: contentLang, isFallback } = resolved;
+const { data } = entry;
+const { Content, remarkPluginFrontmatter } = await render(entry);
+const citations = (remarkPluginFrontmatter.citations ?? []) as Citation[];
+const contentLangAttr = isFallback ? contentLang : undefined;
+const formatDate = new Intl.DateTimeFormat(lang, { dateStyle: "long" });
+const alternates = Object.fromEntries(
+  publishedLocales.map((l) => [l, localizePath(l, data.slug)]),
+);
+---
+
+<Layout
+  lang={lang}
+  title={data.title}
+  description={data.description}
+  alternates={alternates}
+  noindex={data.draft}
+>
+  {data.draft && <PageNotice kind="draft">{t("draft.banner")}</PageNotice>}
+  {isFallback && <PageNotice kind="translation">{t("translation.missing")}</PageNotice>}
+
+  <article>
+    <header class="mb-8">
+      <h1 lang={contentLangAttr} class="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-950 dark:text-zinc-100">
+        {data.title}
+      </h1>
+      <p class="mt-4 flex flex-wrap gap-x-4 text-sm text-zinc-600 dark:text-zinc-400">
+        <time datetime={data.lastReviewed.toISOString().slice(0, 10)}>
+          {t("issue.lastReviewed", { date: formatDate.format(data.lastReviewed) })}
+        </time>
+        <a href={`${repoUrl}/commits/main/${entry.filePath}`} class="underline decoration-zinc-400 underline-offset-2">
+          {t("issue.history")}
+        </a>
+      </p>
+    </header>
+    <div lang={contentLangAttr} class="prose prose-zinc dark:prose-invert max-w-none font-serif prose-headings:font-sans">
+      <Content components={{ Analysis, Cite, Claim, Concern, Status, StatusTerm }} />
+    </div>
+    <SourcesList citations={citations} />
+  </article>
+</Layout>

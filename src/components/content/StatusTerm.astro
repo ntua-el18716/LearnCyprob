@@ -1,0 +1,24 @@
+---
+// Methodology: <StatusTerm value="converged">definition…</StatusTerm>. Gives
+// the #status-{value} anchor that every <Status> badge links to.
+import { statusGlyphs, type StatusValue } from "./status-glyphs";
+import { localeOf, useTranslations } from "../../lib/i18n";
+
+interface Props {
+  value: StatusValue;
+}
+
+const { value } = Astro.props;
+const t = useTranslations(localeOf(Astro.currentLocale));
+const key = `status.${value}` as const;
+---
+
+<section id={`status-${value}`} class="status-term not-prose my-6 scroll-mt-8">
+  <h3 class="flex items-center gap-2 font-sans text-lg font-semibold" lang={t.langOf(key)}>
+    <svg viewBox="0 0 12 12" width="14" height="14" aria-hidden="true" set:html={statusGlyphs[value]} />
+    {t(key)}
+  </h3>
+  <div class="prose dark:prose-invert max-w-none mt-1">
+    <slot />
+  </div>
+</section>
