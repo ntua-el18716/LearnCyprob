@@ -85,5 +85,6 @@
   "documents.type.court-judgment": "Court judgment",
   "documents.type.eu-act": "EU act",
   "documents.type.proposal": "Proposal",
-  "documents.type.other": "Other"
+  "documents.type.other": "Other",
+  "draft.label": "Draft"
 }

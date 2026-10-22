@@ -38,5 +38,6 @@
   "documents.file.scan": "Σάρωση",
   "documents.text": "Κείμενο",
   "documents.noText": "Δεν υπάρχει ακόμη διαθέσιμο κείμενο για αυτό το έγγραφο.",
-  "documents.citedIn": "Αναφέρεται σε"
+  "documents.citedIn": "Αναφέρεται σε",
+  "draft.label": "Πρόχειρο"
 }

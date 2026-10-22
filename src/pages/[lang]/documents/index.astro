@@ -1,0 +1,56 @@
+---
+import Layout from "@layouts/Layout.astro";
+import Header from "@components/Header.astro";
+import { publishedLocales, type Locale } from "../../../i18n/locales";
+import { localizePath, pickLocalized, useTranslations } from "../../../lib/i18n";
+import { formatDocumentDate, getDocuments } from "../../../lib/documents";
+
+export function getStaticPaths() {
+  return publishedLocales.map((lang) => ({ params: { lang } }));
+}
+
+const lang = Astro.params.lang as Locale;
+const t = useTranslations(lang);
+const documents = await getDocuments();
+const alternates = Object.fromEntries(
+  publishedLocales.map((l) => [l, localizePath(l, "documents")]),
+);
+---
+
+<Layout
+  lang={lang}
+  title={t("documents.title")}
+  description={t("documents.description")}
+  alternates={alternates}
+>
+  <Header title={t("documents.title")} />
+  <p class="mb-8 text-center" lang={t.langOf("documents.description")}>
+    {t("documents.description")}
+  </p>
+  <ul class="divide-y divide-zinc-300 dark:divide-zinc-700">
+    {
+      documents.map((doc) => {
+        const title = pickLocalized(doc.data.title, lang);
+        const typeKey = `documents.type.${doc.data.type}` as const;
+        return (
+          <li class="py-4">
+            <a
+              href={localizePath(lang, `documents/${doc.id}`)}
+              lang={title.isFallback ? title.lang : undefined}
+              class="font-semibold text-zinc-900 dark:text-zinc-100 underline decoration-zinc-400 underline-offset-2"
+            >
+              {title.text}
+            </a>
+            <p class="mt-1 flex flex-wrap gap-x-4 text-sm text-zinc-600 dark:text-zinc-400">
+              <time datetime={doc.data.date.toISOString().slice(0, 10)}>
+                {formatDocumentDate(doc.data.date, doc.data.dateCertainty, lang, t)}
+              </time>
+              <span lang={t.langOf(typeKey)}>{t(typeKey)}</span>
+              {doc.data.draft && <span>{t("draft.label")}</span>}
+            </p>
+          </li>
+        );
+      })
+    }
+  </ul>
+</Layout>
