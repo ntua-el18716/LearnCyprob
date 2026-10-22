@@ -153,5 +153,16 @@
   "explore.noStatus": "No status yet",
   "explore.search": "Filter by name",
   "explore.noMatches": "No issues match these filters.",
-  "explore.plainList": "Plain list of issues"
+  "explore.plainList": "Plain list of issues",
+  "nav.compare": "Compare",
+  "compare.title": "Compare plans",
+  "compare.description": "How each plan or framework treats each issue, and the status of each provision.",
+  "compare.issue": "Issue",
+  "compare.notCovered": "Not covered",
+  "compare.referenceModel": "Reference model",
+  "compare.details": "All plans on this issue",
+  "compare.issueTitle": "{issue}: across plans",
+  "compare.paragraphs": "Paragraphs",
+  "compare.empty": "No provisions recorded yet.",
+  "compare.backToMatrix": "Back to the comparison"
 }

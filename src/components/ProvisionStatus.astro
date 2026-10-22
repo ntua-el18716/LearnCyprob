@@ -1,0 +1,34 @@
+---
+// A provision's status (glyph + text, linked to its definition) and, when
+// set, the reference-model marker. Provisions are structured data, so their
+// sources appear as a list rather than numbered citations.
+import { statusGlyphs, type StatusValue } from "./content/status-glyphs";
+import { localeOf, localizePath, useTranslations } from "../lib/i18n";
+
+interface Props {
+  status: StatusValue;
+  isReferenceModel: boolean;
+}
+
+const { status, isReferenceModel } = Astro.props;
+const lang = localeOf(Astro.currentLocale);
+const t = useTranslations(lang);
+const key = `status.${status}` as const;
+---
+
+<span class="inline-flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+  <a
+    href={`${localizePath(lang, "methodology")}#status-${status}`}
+    class="inline-flex items-center gap-1 no-underline hover:underline"
+  >
+    <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true" set:html={statusGlyphs[status]} />
+    <span lang={t.langOf(key)}>{t(key)}</span>
+  </a>
+  {
+    isReferenceModel && (
+      <span class="rounded-sm border border-zinc-500 px-1 text-xs" lang={t.langOf("compare.referenceModel")}>
+        {t("compare.referenceModel")}
+      </span>
+    )
+  }
+</span>

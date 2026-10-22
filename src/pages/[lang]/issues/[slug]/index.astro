@@ -8,11 +8,12 @@ import Claim from "@components/content/Claim.astro";
 import Concern from "@components/content/Concern.astro";
 import SourcesList from "@components/content/SourcesList.astro";
 import Status from "@components/content/Status.astro";
-import { render } from "astro:content";
+import { getCollection, render } from "astro:content";
 import { repoUrl } from "@data/constants";
 import { publishedLocales, type Locale } from "../../../../i18n/locales";
 import { localizePath, useTranslations } from "../../../../lib/i18n";
 import { getIssue, getIssueSlugs } from "../../../../lib/issues";
+import { isVisible } from "../../../../lib/drafts";
 import type { Citation } from "../../../../lib/remark-citations";
 
 export async function getStaticPaths() {
@@ -36,6 +37,7 @@ const statusCitation = remarkPluginFrontmatter.statusCitation as
   | undefined;
 
 const parent = data.parent ? await getIssue(data.parent, lang) : undefined;
+const hasProvisions = (await getCollection("provisions", (p) => p.data.issue === slug && isVisible(p))).length > 0;
 const related = (
   await Promise.all(data.related.map((s) => getIssue(s, lang)))
 ).filter((r) => r !== undefined);
@@ -138,6 +140,16 @@ const alternates = Object.fromEntries(
     </div>
 
     <PositionBoard issue={slug} linkToFullPage />
+
+    {
+      hasProvisions && (
+        <p class="mt-8">
+          <a href={localizePath(lang, `compare/${slug}`)} class="underline decoration-zinc-400 underline-offset-2">
+            {t("compare.details")}
+          </a>
+        </p>
+      )
+    }
 
     {
       related.length > 0 && (
