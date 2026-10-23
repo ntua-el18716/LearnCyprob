@@ -332,6 +332,46 @@ const events = defineCollection({
   }),
 });
 
+// Bicommunal peace events (talks, concerts, workshops) listed on /events.
+// Announcements, not history: they need no sources, but link to the
+// organiser's page. src/content/community-events/{yyyy-mm-dd}-{slug}.yaml
+const time = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "must be HH:MM (24-hour, Cyprus time)");
+const communityEvents = defineCollection({
+  loader: glob({ pattern: "*.yaml", base: "./src/content/community-events" }),
+  schema: z
+    .object({
+      title: localized,
+      summary: localized,
+      date, // first day
+      startTime: time.optional(), // local time in Cyprus
+      endDate: date.optional(), // last day, for multi-day events
+      endTime: time.optional(),
+      kind: z.enum([
+        "dialogue", // talks, panels, discussions
+        "culture", // music, theatre, film, exhibitions
+        "education", // workshops, classes, lectures
+        "commemoration",
+        "volunteering",
+        "sport",
+        "other",
+      ]),
+      place: localized, // venue, e.g. a hall at a named crossing point
+      city: localized.optional(),
+      online: z.boolean().default(false),
+      mapUrl: z.url().optional(),
+      organisers: z.array(z.string().min(1)).min(1), // names as the organisers write them
+      languages: z.array(z.string().min(2)).default([]), // spoken at the event: "en", "el", "tr"
+      url: z.url(), // the organiser's announcement
+      registrationUrl: z.url().optional(),
+      cancelled: z.boolean().default(false),
+      draft,
+    })
+    .refine((e) => !e.endDate || e.endDate >= e.date, {
+      error: "endDate must not be before date",
+      path: ["endDate"],
+    }),
+});
+
 // src/content/provisions/{plan-slug}/{issue-slug}.yaml
 const provisions = defineCollection({
   loader: glob({ pattern: "*/*.yaml", base: "./src/content/provisions" }),
@@ -395,6 +435,7 @@ export const collections = {
   documentTexts,
   sources: sourcesCollection,
   events,
+  communityEvents,
   provisions,
   glossary,
   personas,

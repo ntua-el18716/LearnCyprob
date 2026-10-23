@@ -55,7 +55,9 @@ Every provision shown in the reference model links to the paragraph of the basis
 /{lang}/actors/{slug}            An actor's positions across all issues, over time
 /{lang}/after-a-solution         "What would it mean for me?" personas, phase 3
 /{lang}/glossary                 Terms, including how each community names things
-/{lang}/sources                  All sources (searchable)
+/{lang}/sources                  All sources (searchable), with where each is cited
+/{lang}/events                   Bicommunal events (upcoming and past), with calendar files
+/{lang}/search                   Site search (Pagefind)
 /{lang}/about                    Who, why, the stance
 /{lang}/methodology              Sourcing rules, status definitions, how positions are coded
 /{lang}/corrections              Public corrections log
@@ -278,6 +280,28 @@ Term {
   sources: ref<Source>[];
 }
 
+// community events: src/content/community-events/{yyyy-mm-dd}-{slug}.yaml
+// Bicommunal events listed on /events. Announcements, not history: no
+// sources, but `url` links to the organiser's page.
+CommunityEvent {
+  title: Localized;
+  summary: Localized;
+  date: date;                    // first day
+  startTime?: "HH:MM";           // Cyprus local time
+  endDate?: date;                // last day (multi-day events)
+  endTime?: "HH:MM";
+  kind: "dialogue" | "culture" | "education" | "commemoration" | "volunteering" | "sport" | "other";
+  place: Localized;              // venue
+  city?: Localized;
+  online: boolean;               // default false
+  mapUrl?: url;
+  organisers: string[];          // as the organisers write their names
+  languages: string[];           // spoken at the event, e.g. ["en", "el", "tr"]
+  url: url;                      // the organiser's announcement
+  registrationUrl?: url;
+  cancelled: boolean;            // default false
+}
+
 // personas (phase 3): src/content/personas/{slug}.yaml
 Persona {
   slug: string;
@@ -319,6 +343,7 @@ Document text is stored with **paragraph anchors** (`#art-3-para-2`, `#para-14`)
 | Plan comparison | Issue × plan matrix; each cell shows provision summary, status and source anchor | 2 |
 | Version diff | Side-by-side or inline diff between document versions (Annan I→V) | 2 |
 | Search | Pagefind, multilingual (verify quality of Greek stemming) | 2 |
+| Bicommunal events | Upcoming/past listing, kind filter, per-event and full-calendar `.ics` files, home-page teaser. Added by the author, no reader submissions | 2 |
 | After a solution | Persona walkthroughs built only on reference-model provisions, each step tagged with basis + status | 3 |
 | Turkish locale | Full UI + content translation pipeline | 3 |
 | Contributor CMS | Keystatic (Git-based, PR approval) **or** migration to headless CMS (Payload). Decide in phase 3 | 3 |
