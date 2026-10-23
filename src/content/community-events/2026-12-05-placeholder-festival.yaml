@@ -1,0 +1,15 @@
+# Placeholder to exercise the events page (multi-day). Replace with a real event.
+title:
+  en: "TODO(content): Placeholder two-day cultural event"
+summary:
+  en: "TODO(content): one or two sentences on what happens and who it is for."
+date: 2026-12-05
+endDate: 2026-12-06
+kind: culture
+place:
+  en: "TODO(content): venue"
+organisers:
+  - "TODO(content): organiser A"
+  - "TODO(content): organiser B"
+url: https://example.org/placeholder-festival
+draft: true

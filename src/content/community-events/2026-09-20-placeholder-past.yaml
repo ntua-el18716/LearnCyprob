@@ -1,0 +1,15 @@
+# Placeholder to exercise the "past events" list.
+title:
+  en: "TODO(content): Placeholder past volunteering day"
+summary:
+  en: "TODO(content): one or two sentences on what happens and who it is for."
+date: 2026-09-20
+startTime: "09:00"
+endTime: "13:00"
+kind: volunteering
+place:
+  en: "TODO(content): venue"
+organisers:
+  - "TODO(content): organiser"
+url: https://example.org/placeholder-past
+draft: true

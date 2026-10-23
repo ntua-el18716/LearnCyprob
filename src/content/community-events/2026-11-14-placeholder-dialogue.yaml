@@ -1,0 +1,19 @@
+# Placeholder to exercise the events page. Replace with a real event.
+title:
+  en: "TODO(content): Placeholder dialogue event"
+summary:
+  en: "TODO(content): one or two sentences on what happens and who it is for."
+date: 2026-11-14
+startTime: "18:30"
+endTime: "20:30"
+kind: dialogue
+place:
+  en: "TODO(content): venue"
+city:
+  en: "TODO(content): city"
+organisers:
+  - "TODO(content): organiser"
+languages: [en, el, tr]
+url: https://example.org/placeholder-dialogue
+registrationUrl: https://example.org/placeholder-dialogue/register
+draft: true

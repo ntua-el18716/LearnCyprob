@@ -1,0 +1,17 @@
+# Placeholder to exercise the "cancelled" state and online events.
+title:
+  en: "TODO(content): Placeholder online workshop (cancelled)"
+summary:
+  en: "TODO(content): one or two sentences on what happens and who it is for."
+date: 2026-11-28
+startTime: "10:00"
+kind: education
+place:
+  en: "TODO(content): online"
+online: true
+organisers:
+  - "TODO(content): organiser"
+languages: [en]
+url: https://example.org/placeholder-workshop
+cancelled: true
+draft: true
