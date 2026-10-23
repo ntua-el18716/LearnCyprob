@@ -1,0 +1,69 @@
+---
+// Actors (leaders, parties, governments, organisations), grouped as on the
+// position boards.
+import Layout from "@layouts/Layout.astro";
+import PageHeader from "@components/PageHeader.astro";
+import { getCollection } from "astro:content";
+import { publishedLocales, type Locale } from "../../../i18n/locales";
+import { isVisible } from "../../../lib/drafts";
+import { localizePath, pickLocalized, useTranslations } from "../../../lib/i18n";
+import { actorGroups } from "../../../lib/positions";
+import { getActors } from "../../../lib/actors";
+
+export function getStaticPaths() {
+  return publishedLocales.map((lang) => ({ params: { lang } }));
+}
+
+const lang = Astro.params.lang as Locale;
+const t = useTranslations(lang);
+const actors = await getActors(lang);
+// Issues each actor has a recorded position on.
+const files = await getCollection("positions", isVisible);
+const issueCount = (id: string) => files.filter((f) => f.data.positions.some((p) => p.actor.id === id)).length;
+const plural = new Intl.PluralRules(lang);
+const year = (d: Date) => d.getUTCFullYear();
+const alternates = Object.fromEntries(publishedLocales.map((l) => [l, localizePath(l, "actors")]));
+---
+
+<Layout lang={lang} title={t("actors.title")} description={t("actors.description")} alternates={alternates}>
+  <PageHeader title={t("actors.title")} intro={t("actors.description")} introLang={t.langOf("actors.description")} />
+  {actors.length === 0 && <p>{t("actors.empty")}</p>}
+  {
+    actorGroups
+      .filter((group) => actors.some((a) => a.group === group))
+      .map((group) => (
+        <section aria-labelledby={`group-${group}`} class="mb-12">
+          <h2 id={`group-${group}`} class="mb-5 flex items-center gap-4 text-2xl font-[720]" lang={t.langOf(`board.group.${group}`)}>
+            {t(`board.group.${group}`)}
+            <span aria-hidden="true" class="h-px flex-1 bg-rule" />
+          </h2>
+          <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {actors
+              .filter((a) => a.group === group)
+              .map(({ actor, name }) => {
+                const short = pickLocalized(actor.data.shortName, lang);
+                const n = issueCount(actor.id);
+                const { from, to } = actor.data.active;
+                return (
+                  <li>
+                    <a href={localizePath(lang, `actors/${actor.id}`)} class="group flex h-full flex-col rounded-2xl border border-rule p-5 transition hover:-translate-y-0.5 hover:border-accent hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+                      <span class="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-accent">
+                        {actor.data.color && <span aria-hidden="true" class="size-2.5 rounded-sm" style={{ background: actor.data.color }} />}
+                        <span lang={short.isFallback ? short.lang : undefined}>{short.text}</span>
+                        <span class="font-semibold normal-case tracking-normal text-muted" lang={t.langOf(`actors.type.${actor.data.type}`)}>· {t(`actors.type.${actor.data.type}`)}</span>
+                      </span>
+                      <span class="mt-2 text-lg font-bold leading-snug group-hover:underline" lang={name.lang}>{name.text}</span>
+                      {actor.data.draft && <span class="mt-1 text-sm text-muted">({t("draft.label")})</span>}
+                      <span class="mt-auto pt-4 text-sm text-muted">
+                        {to ? `${year(from)}–${year(to)}` : t("actors.since", { year: year(from) })}
+                        {n > 0 && <> · {t(plural.select(n) === "one" ? "actors.issueCountOne" : "actors.issueCount", { n })}</>}
+                      </span>
+                    </a>
+                  </li>
+                );
+              })}
+          </ul>
+        </section>
+      ))
+  }
+</Layout>

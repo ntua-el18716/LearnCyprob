@@ -10,7 +10,7 @@ type Actor = CollectionEntry<"actors">;
 export const actorGroups = ["gc", "tc", "states", "international", "other"] as const;
 export type ActorGroup = (typeof actorGroups)[number];
 
-function groupOf(actor: Actor): ActorGroup {
+export function groupOf(actor: Actor): ActorGroup {
   const { community, type } = actor.data;
   if (community === "gc" || community === "tc") return community;
   if (type === "government" || type === "guarantor") return "states";
@@ -45,6 +45,7 @@ export async function getPositionBoard(issueSlug: string, lang: Locale) {
     shortName: textOf(pickLocalized(a.data.shortName, lang)),
     group: groupOf(a),
     color: a.data.color,
+    href: localizePath(lang, `actors/${a.id}`),
   }));
   const collator = new Intl.Collator(lang);
   actors.sort(

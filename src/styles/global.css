@@ -72,4 +72,12 @@
   .page-intro {
     @apply mt-3 max-w-2xl text-xl leading-snug text-muted;
   }
+  /* Site menu (narrow screens): swap the menu and close icons. */
+  .site-menu .menu-close-icon,
+  .site-menu[open] .menu-open-icon {
+    display: none;
+  }
+  .site-menu[open] .menu-close-icon {
+    display: block;
+  }
 }

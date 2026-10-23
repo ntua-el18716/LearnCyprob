@@ -1,0 +1,144 @@
+---
+// Every source, newest first, with where the site cites it. Each source has
+// an anchor (#source-id) so citations elsewhere can link here. With
+// JavaScript, search by title, author or publisher and filter by type.
+import Layout from "@layouts/Layout.astro";
+import PageHeader from "@components/PageHeader.astro";
+import { getCollection } from "astro:content";
+import { publishedLocales, type Locale } from "../../i18n/locales";
+import { isVisible } from "../../lib/drafts";
+import { localizePath, useTranslations } from "../../lib/i18n";
+import { getSourceUses } from "../../lib/sources";
+
+export function getStaticPaths() {
+  return publishedLocales.map((lang) => ({ params: { lang } }));
+}
+
+const lang = Astro.params.lang as Locale;
+const t = useTranslations(lang);
+const sources = (await getCollection("sources", isVisible)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf() || a.id.localeCompare(b.id),
+);
+const uses = await getSourceUses(lang);
+const types = [...new Set(sources.map((s) => s.data.type))];
+const formatDate = new Intl.DateTimeFormat(lang, { dateStyle: "long", timeZone: "UTC" });
+const plural = new Intl.PluralRules(lang);
+const count = (n: number) => t(plural.select(n) === "one" ? "sourcesPage.countOne" : "sourcesPage.count", { n });
+const alternates = Object.fromEntries(publishedLocales.map((l) => [l, localizePath(l, "sources")]));
+const chipBase =
+  "rounded-full border border-rule px-3.5 py-1.5 text-sm font-semibold transition hover:border-accent aria-pressed:border-accent aria-pressed:bg-accent aria-pressed:text-on-accent";
+---
+
+<Layout lang={lang} title={t("sourcesPage.title")} description={t("sourcesPage.description")} alternates={alternates}>
+  <PageHeader title={t("sourcesPage.title")} intro={t("sourcesPage.description")} introLang={t.langOf("sourcesPage.description")}>
+    <p class="mt-4 text-sm font-semibold text-muted">{count(sources.length)}</p>
+  </PageHeader>
+
+  <div data-src-controls hidden>
+    <div class="mb-8 flex flex-wrap items-end gap-x-6 gap-y-4">
+      <label class="block w-full max-w-sm text-sm font-semibold">
+        {t("sourcesPage.search")}
+        <input type="search" data-src-search class="control mt-1 w-full font-normal" />
+      </label>
+      {types.length > 1 && (
+        <div role="group" aria-label={t("sourcesPage.filterType")} class="flex flex-wrap gap-2">
+          <button type="button" data-src-type="" aria-pressed="true" class={chipBase}>{t("documents.allTypes")}</button>
+          {types.map((type) => (
+            <button type="button" data-src-type={type} aria-pressed="false" class={chipBase} lang={t.langOf(`sourcesPage.type.${type}`)}>
+              {t(`sourcesPage.type.${type}`)}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+
+  {sources.length === 0 && <p>{t("sourcesPage.empty")}</p>}
+  <ol class="divide-y divide-rule border-y border-rule">
+    {
+      sources.map((source) => {
+        const s = source.data;
+        const cited = uses.get(source.id) ?? [];
+        const doc = s.document && localizePath(lang, `documents/${s.document.id}`);
+        return (
+          <li
+            id={source.id}
+            data-source
+            data-type={s.type}
+            data-text={[s.title, s.author, s.publisher].filter(Boolean).join(" ").toLocaleLowerCase(lang)}
+            class="scroll-mt-24 py-5 target:bg-panel sm:grid sm:grid-cols-[9rem_minmax(0,1fr)] sm:gap-6"
+          >
+            <p class="text-sm font-semibold text-muted">
+              <time datetime={s.date.toISOString().slice(0, 10)}>{formatDate.format(s.date)}</time>
+            </p>
+            <div class="mt-1 sm:mt-0">
+              <p class="text-xs font-bold uppercase tracking-wide text-accent">
+                <span lang={t.langOf(`sourcesPage.type.${s.type}`)}>{t(`sourcesPage.type.${s.type}`)}</span>
+                {s.draft && <span class="ml-2 font-normal normal-case tracking-normal text-muted">({t("draft.label")})</span>}
+              </p>
+              <p class="mt-1 text-lg font-semibold leading-snug" lang={s.lang}>
+                {s.url ? <a href={s.url} class="link">{s.title}</a> : s.title}
+              </p>
+              <p class="mt-1 text-muted">
+                {s.author && <>{s.author} · </>}
+                {s.publisher}
+              </p>
+              {(doc || s.archiveUrl) && (
+                <p class="mt-2 flex flex-wrap gap-x-4 text-sm">
+                  {doc && <a href={doc} class="link">{t("sources.inLibrary")}</a>}
+                  {s.archiveUrl && <a href={s.archiveUrl} class="link">{t("sources.archived")}</a>}
+                </p>
+              )}
+              {cited.length > 0 && (
+                <div class="mt-3 text-sm">
+                  <p class="font-semibold">{t("documents.citedIn")}</p>
+                  <ul class="mt-1 flex flex-wrap gap-2">
+                    {cited.map((use) => (
+                      <li>
+                        <a href={use.href} class="inline-block rounded-full border border-rule px-3 py-1 hover:border-accent hover:text-accent">
+                          <span class="text-muted">{t(`sourcesPage.use.${use.kind}`)}:</span>{" "}
+                          <span lang={use.lang}>{use.label}</span>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </li>
+        );
+      })
+    }
+  </ol>
+  <p data-src-empty hidden class="mt-6 rounded-2xl border border-rule p-6">{t("sourcesPage.noMatches")}</p>
+</Layout>
+
+<script>
+  const controls = document.querySelector<HTMLElement>("[data-src-controls]");
+  const search = document.querySelector<HTMLInputElement>("[data-src-search]");
+  const empty = document.querySelector<HTMLElement>("[data-src-empty]");
+  const items = [...document.querySelectorAll<HTMLElement>("[data-source]")];
+  const buttons = [...document.querySelectorAll<HTMLButtonElement>("[data-src-type]")];
+
+  if (controls && search && empty && items.length) {
+    controls.hidden = false;
+    let type = "";
+    const apply = () => {
+      const query = search.value.trim().toLocaleLowerCase(document.documentElement.lang);
+      items.forEach((item) => {
+        item.hidden =
+          (type !== "" && item.dataset.type !== type) ||
+          (query !== "" && !(item.dataset.text ?? "").includes(query));
+      });
+      empty.hidden = items.some((item) => !item.hidden);
+    };
+    search.addEventListener("input", apply);
+    buttons.forEach((button) =>
+      button.addEventListener("click", () => {
+        type = button.dataset.srcType ?? "";
+        buttons.forEach((b) => b.setAttribute("aria-pressed", String(b === button)));
+        apply();
+      }),
+    );
+  }
+</script>

@@ -1,0 +1,127 @@
+---
+// Bicommunal events: upcoming soonest first, then past ones. The split is
+// made at build time and redone in the browser, since a static page goes
+// stale. With JavaScript, filter by kind.
+import Layout from "@layouts/Layout.astro";
+import PageHeader from "@components/PageHeader.astro";
+import CommunityEventCard from "@components/CommunityEventCard.astro";
+import { Icon } from "astro-icon/components";
+import { publishedLocales, type Locale } from "../../../i18n/locales";
+import { localizePath, useTranslations } from "../../../lib/i18n";
+import { getCommunityEvents, splitByDate, todayInCyprus } from "../../../lib/community-events";
+
+export function getStaticPaths() {
+  return publishedLocales.map((lang) => ({ params: { lang } }));
+}
+
+const lang = Astro.params.lang as Locale;
+const t = useTranslations(lang);
+const events = await getCommunityEvents();
+const { upcoming, past } = splitByDate(events, todayInCyprus());
+const kinds = [...new Set(events.map((e) => e.data.kind))];
+const alternates = Object.fromEntries(publishedLocales.map((l) => [l, localizePath(l, "events")]));
+const calendar = localizePath(lang, "events/calendar.ics").replace(/\/$/, "");
+const chipBase =
+  "rounded-full border border-rule px-3.5 py-1.5 text-sm font-semibold transition hover:border-accent aria-pressed:border-accent aria-pressed:bg-accent aria-pressed:text-on-accent";
+---
+
+<Layout lang={lang} title={t("communityEvents.title")} description={t("communityEvents.description")} alternates={alternates}>
+  <PageHeader title={t("communityEvents.title")} intro={t("communityEvents.description")} introLang={t.langOf("communityEvents.description")}>
+    <div class="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm">
+      <p class="flex max-w-xl gap-2 text-muted" lang={t.langOf("communityEvents.disclaimer")}>
+        <Icon name="lucide:info" class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+        {t("communityEvents.disclaimer")}
+      </p>
+      {events.length > 0 && (
+        <a href={calendar} download class="inline-flex items-center gap-1.5 font-semibold link">
+          <Icon name="lucide:calendar-plus" class="size-4" aria-hidden="true" />{t("communityEvents.calendarAll")}
+        </a>
+      )}
+    </div>
+  </PageHeader>
+
+  {
+    kinds.length > 1 && (
+      <div data-ce-controls hidden>
+        <div role="group" aria-label={t("communityEvents.filterKind")} class="mb-10 flex flex-wrap gap-2">
+          <button type="button" data-ce-kind="" aria-pressed="true" class={chipBase}>{t("communityEvents.allKinds")}</button>
+          {kinds.map((kind) => (
+            <button type="button" data-ce-kind={kind} aria-pressed="false" class={chipBase} lang={t.langOf(`communityEvents.kind.${kind}`)}>
+              {t(`communityEvents.kind.${kind}`)}
+            </button>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  <section aria-labelledby="upcoming" class="mb-16">
+    <h2 id="upcoming" class="mb-6 text-2xl font-[720]">{t("communityEvents.upcoming")}</h2>
+    <ol class="grid gap-5 lg:grid-cols-2" data-ce-upcoming>
+      {upcoming.map((event) => <CommunityEventCard event={event} lang={lang} />)}
+    </ol>
+    <p data-ce-none-upcoming hidden={upcoming.length > 0} class="rounded-2xl border border-dashed border-rule p-6 text-muted">
+      {t("communityEvents.noneUpcoming")}
+    </p>
+  </section>
+
+  <section aria-labelledby="past" data-ce-past-section hidden={past.length === 0} class="past-events">
+    <h2 id="past" class="mb-6 text-2xl font-[720]">{t("communityEvents.past")}</h2>
+    <ol class="grid gap-4 lg:grid-cols-2" data-ce-past>
+      {past.map((event) => <CommunityEventCard event={event} lang={lang} compact />)}
+    </ol>
+  </section>
+  <p data-ce-empty hidden class="rounded-2xl border border-rule p-6">{t("communityEvents.noMatches")}</p>
+</Layout>
+
+<style>
+  /* Past events are quieter; the calendar link only makes sense ahead. */
+  .past-events :global([data-tile]) {
+    background: rgb(var(--sunken));
+  }
+  .past-events :global(.upcoming-only) {
+    display: none;
+  }
+</style>
+
+<script>
+  const upcoming = document.querySelector<HTMLOListElement>("[data-ce-upcoming]");
+  const past = document.querySelector<HTMLOListElement>("[data-ce-past]");
+  const pastSection = document.querySelector<HTMLElement>("[data-ce-past-section]");
+  const noneUpcoming = document.querySelector<HTMLElement>("[data-ce-none-upcoming]");
+  const empty = document.querySelector<HTMLElement>("[data-ce-empty]");
+
+  if (upcoming && past && pastSection && noneUpcoming && empty) {
+    // Move events that ended since the build to the top of "past" (both
+    // lists are in date order, so prepending keeps past newest first).
+    const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Nicosia" }).format(new Date());
+    for (const item of [...upcoming.querySelectorAll<HTMLElement>("[data-community-event]")]) {
+      if ((item.dataset.last ?? "") < today) past.prepend(item);
+    }
+
+    const controls = document.querySelector<HTMLElement>("[data-ce-controls]");
+    const buttons = [...document.querySelectorAll<HTMLButtonElement>("[data-ce-kind]")];
+    let kind = "";
+    const apply = () => {
+      const all = [...document.querySelectorAll<HTMLElement>("[data-community-event]")];
+      all.forEach((item) => (item.hidden = kind !== "" && item.dataset.kind !== kind));
+      const visibleIn = (list: HTMLElement) => [...list.children].some((c) => !(c as HTMLElement).hidden);
+      const anyUpcoming = visibleIn(upcoming);
+      const anyPast = visibleIn(past);
+      noneUpcoming.hidden = anyUpcoming;
+      pastSection.hidden = !anyPast;
+      empty.hidden = kind === "" || anyUpcoming || anyPast;
+    };
+    if (controls) {
+      controls.hidden = false;
+      buttons.forEach((button) =>
+        button.addEventListener("click", () => {
+          kind = button.dataset.ceKind ?? "";
+          buttons.forEach((b) => b.setAttribute("aria-pressed", String(b === button)));
+          apply();
+        }),
+      );
+    }
+    apply();
+  }
+</script>

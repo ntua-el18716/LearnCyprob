@@ -144,7 +144,7 @@ export default function PositionBoard({ data, strings, dateLabels, today }) {
                           {actor.color && (
                             <span aria-hidden="true" className="inline-block h-2.5 w-2.5 rounded-sm" style={{ background: actor.color }} />
                           )}
-                          <span lang={actor.name.lang}>{actor.name.text}</span>
+                          <a href={actor.href} className="link" lang={actor.name.lang}>{actor.name.text}</a>
                         </span>
                       </th>
                       {mine.length === 0 ? (

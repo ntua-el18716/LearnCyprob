@@ -12,6 +12,7 @@ const { kind, lang } = Astro.props;
 <p
   role="note"
   lang={lang}
+  data-pagefind-ignore
   class:list={[
     "mb-8 rounded-md px-4 py-3 text-sm",
     kind === "draft" ? "border-2 border-dashed border-control" : "bg-sunken",

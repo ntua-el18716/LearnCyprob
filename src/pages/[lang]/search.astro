@@ -1,0 +1,159 @@
+---
+// Site search, with Pagefind. The index is built by `npm run build`, so in
+// `npm run dev` the page explains that search needs a build. The query is
+// kept in ?q= so results can be linked to.
+import Layout from "@layouts/Layout.astro";
+import PageHeader from "@components/PageHeader.astro";
+import { Icon } from "astro-icon/components";
+import { publishedLocales, type Locale } from "../../i18n/locales";
+import { localizePath, useTranslations } from "../../lib/i18n";
+
+export function getStaticPaths() {
+  return publishedLocales.map((lang) => ({ params: { lang } }));
+}
+
+const lang = Astro.params.lang as Locale;
+const t = useTranslations(lang);
+const alternates = Object.fromEntries(publishedLocales.map((l) => [l, localizePath(l, "search")]));
+
+// Result labels by the first path segment after the locale.
+const sections = {
+  issues: t("nav.issues"),
+  explore: t("nav.issues"),
+  documents: t("nav.documents"),
+  compare: t("nav.compare"),
+  positions: t("board.title"),
+  timeline: t("nav.timeline"),
+  events: t("nav.events"),
+  glossary: t("nav.glossary"),
+  actors: t("nav.actors"),
+  sources: t("nav.sources"),
+};
+const strings = {
+  count: t("search.count"),
+  countOne: t("search.countOne"),
+  none: t("search.none"),
+  unavailable: t("search.unavailable"),
+  more: t("search.more"),
+};
+---
+
+<Layout lang={lang} title={t("search.title")} description={t("search.description")} alternates={alternates} unsearchable>
+  <PageHeader title={t("search.title")} intro={t("search.description")} introLang={t.langOf("search.description")} />
+
+  <form role="search" action={localizePath(lang, "search")} class="max-w-2xl" data-search-form>
+    <label for="search-input" class="sr-only">{t("search.label")}</label>
+    <div class="relative">
+      <Icon name="lucide:search" class="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-muted" aria-hidden="true" />
+      <input
+        id="search-input"
+        name="q"
+        type="search"
+        autocomplete="off"
+        placeholder={t("search.placeholder")}
+        class="control w-full rounded-xl py-3.5 pl-12 text-lg"
+        data-search-input
+      />
+    </div>
+  </form>
+  <noscript><p class="mt-6 max-w-2xl rounded-md bg-sunken px-4 py-3">{t("search.noscript")}</p></noscript>
+
+  <div class="mt-8 max-w-3xl" data-search-results data-sections={JSON.stringify(sections)} data-strings={JSON.stringify(strings)}>
+    <p role="status" class="text-sm font-semibold text-muted" data-search-status></p>
+    <ol class="mt-4 divide-y divide-rule" data-search-list></ol>
+    <button type="button" hidden class="control mt-6 font-semibold hover:border-accent" data-search-more></button>
+  </div>
+</Layout>
+
+<script>
+  type Result = { url: string; excerpt: string; meta: { title?: string } };
+  type Pagefind = {
+    init: () => Promise<void>;
+    debouncedSearch: (q: string, opts?: object, ms?: number) => Promise<{ results: { data: () => Promise<Result> }[] } | null>;
+  };
+
+  const form = document.querySelector<HTMLFormElement>("[data-search-form]");
+  const input = document.querySelector<HTMLInputElement>("[data-search-input]");
+  const box = document.querySelector<HTMLElement>("[data-search-results]");
+  const status = box?.querySelector<HTMLElement>("[data-search-status]");
+  const list = box?.querySelector<HTMLOListElement>("[data-search-list]");
+  const more = box?.querySelector<HTMLButtonElement>("[data-search-more]");
+
+  if (form && input && box && status && list && more) {
+    const sections: Record<string, string> = JSON.parse(box.dataset.sections ?? "{}");
+    const strings: Record<string, string> = JSON.parse(box.dataset.strings ?? "{}");
+    const pageSize = 10;
+    let pagefind: Pagefind | undefined;
+    let found: { data: () => Promise<Result> }[] = [];
+    let shown = 0;
+
+    const sectionOf = (url: string) => sections[url.split("/").filter(Boolean)[1] ?? ""];
+
+    const render = async () => {
+      const batch = await Promise.all(found.slice(shown, shown + pageSize).map((r) => r.data()));
+      for (const result of batch) {
+        const li = document.createElement("li");
+        li.className = "py-5";
+        const section = sectionOf(result.url);
+        if (section) {
+          const label = document.createElement("p");
+          label.className = "text-xs font-bold uppercase tracking-wide text-accent";
+          label.textContent = section;
+          li.append(label);
+        }
+        const link = document.createElement("a");
+        link.href = result.url;
+        link.className = "mt-1 block text-lg font-semibold link";
+        link.textContent = result.meta.title ?? result.url;
+        const excerpt = document.createElement("p");
+        excerpt.className = "mt-1 text-muted [&_mark]:rounded-sm [&_mark]:bg-accent/15 [&_mark]:px-0.5 [&_mark]:text-ink";
+        // Pagefind's excerpt is escaped page text with <mark> around matches.
+        excerpt.innerHTML = result.excerpt;
+        li.append(link, excerpt);
+        list.append(li);
+      }
+      shown += batch.length;
+      more.hidden = shown >= found.length;
+    };
+
+    const search = async (query: string) => {
+      const url = new URL(location.href);
+      if (query) url.searchParams.set("q", query);
+      else url.searchParams.delete("q");
+      history.replaceState(null, "", url);
+      if (!pagefind) return;
+      const response = await pagefind.debouncedSearch(query, {}, 250);
+      if (response === null) return; // superseded by a newer query
+      found = query ? response.results : [];
+      shown = 0;
+      list.replaceChildren();
+      status.textContent = !query
+        ? ""
+        : found.length === 0
+          ? strings.none
+          : (found.length === 1 ? strings.countOne : strings.count).replace("{n}", String(found.length));
+      more.textContent = strings.more;
+      await render();
+    };
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      void search(input.value.trim());
+    });
+    input.addEventListener("input", () => void search(input.value.trim()));
+    more.addEventListener("click", () => void render());
+
+    input.value = new URLSearchParams(location.search).get("q") ?? "";
+    input.focus();
+    try {
+      // Built by `npm run build`; absent in `npm run dev`. The variable keeps
+      // Vite from trying to resolve the path at build time.
+      const path = "/pagefind/pagefind.js";
+      pagefind = (await import(/* @vite-ignore */ path)) as Pagefind;
+      await pagefind.init();
+      if (input.value) void search(input.value.trim());
+    } catch {
+      status.textContent = strings.unavailable;
+    }
+  }
+</script>

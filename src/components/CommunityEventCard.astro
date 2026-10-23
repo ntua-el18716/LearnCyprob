@@ -1,0 +1,130 @@
+---
+// One bicommunal event on /events (and the home page): a date tile, then
+// what, when, where and who, with links to the organiser's page and a
+// calendar file.
+import { Icon } from "astro-icon/components";
+import { localizePath, pickLocalized, useTranslations } from "../lib/i18n";
+import { isoDay, lastDay, type CommunityEvent } from "../lib/community-events";
+import type { Locale } from "../i18n/locales";
+
+interface Props {
+  event: CommunityEvent;
+  lang: Locale;
+  /** Heading level of the title (h2 on the home page, h3 on /events). */
+  level?: 2 | 3;
+  /** Title, date and place only. */
+  compact?: boolean;
+}
+
+const { event, lang, level = 3, compact = false } = Astro.props;
+const t = useTranslations(lang);
+const { data } = event;
+const loc = (v: Parameters<typeof pickLocalized>[0]) => {
+  const p = pickLocalized(v, lang);
+  return { text: p.text, lang: p.isFallback ? p.lang : undefined };
+};
+const title = loc(data.title);
+const summary = loc(data.summary);
+const place = loc(data.place);
+const city = data.city && loc(data.city);
+
+// Stored dates are UTC midnight of the calendar day.
+const fmt = (opts: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat(lang, { timeZone: "UTC", ...opts });
+const month = fmt({ month: "short" }).format(data.date);
+const weekday = fmt({ weekday: "short" }).format(data.date);
+// Tile: month, day (or "5–6"), weekday. Across months: start day, then the end.
+const sameMonth = !data.endDate || data.endDate.getUTCMonth() === data.date.getUTCMonth();
+const days =
+  data.endDate && sameMonth
+    ? `${data.date.getUTCDate()}–${data.endDate.getUTCDate()}`
+    : String(data.date.getUTCDate());
+const tileFoot = !data.endDate
+  ? weekday
+  : sameMonth
+    ? ""
+    : `–${fmt({ day: "numeric", month: "short" }).format(data.endDate)}`;
+const fullDate = data.endDate
+  ? fmt({ day: "numeric", month: "long", year: "numeric" }).formatRange(data.date, data.endDate)
+  : fmt({ weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(data.date);
+const time = data.startTime
+  ? data.endTime
+    ? `${data.startTime}–${data.endTime}`
+    : data.startTime
+  : undefined;
+const languages = new Intl.DisplayNames([lang], { type: "language" });
+const Heading = `h${level}` as const;
+const ics = localizePath(lang, `events/${event.id}.ics`).replace(/\/$/, "");
+const button =
+  "inline-flex items-center gap-1.5 rounded-md border border-control px-3 py-1.5 text-sm font-semibold hover:border-accent hover:text-accent";
+---
+
+<li id={event.id} data-community-event data-kind={data.kind} data-last={lastDay(event)} class="scroll-mt-24">
+  <article class:list={[
+    "grid grid-cols-[4.25rem_minmax(0,1fr)] gap-4 rounded-2xl border border-rule transition target:ring-2 target:ring-accent sm:grid-cols-[5rem_minmax(0,1fr)] sm:gap-6",
+    compact ? "p-4" : "p-4 sm:p-6",
+  ]}>
+    <!-- Date tile; the full date follows as text for screen readers. -->
+    <div aria-hidden="true" data-tile class="self-start rounded-xl bg-panel px-1 py-2 text-center">
+      <p class="text-xs font-bold uppercase tracking-wide text-accent">{month}</p>
+      <p class:list={["font-[800] leading-none tracking-tight", days.length > 2 ? "text-xl sm:text-2xl" : "text-3xl sm:text-4xl"]}>{days}</p>
+      {tileFoot && <p class="mt-1 text-xs text-muted">{tileFoot}</p>}
+    </div>
+    <div class="min-w-0">
+      <p class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-bold uppercase tracking-wide text-accent">
+        <span lang={t.langOf(`communityEvents.kind.${data.kind}`)}>{t(`communityEvents.kind.${data.kind}`)}</span>
+        {data.cancelled && (
+          <span class="inline-flex items-center gap-1 rounded-full border border-ink px-2 py-0.5 text-ink">
+            <Icon name="lucide:ban" class="size-3.5" aria-hidden="true" />{t("communityEvents.cancelled")}
+          </span>
+        )}
+        {data.draft && <span class="font-normal normal-case tracking-normal text-muted">({t("draft.label")})</span>}
+      </p>
+      <Heading class:list={["mt-1 font-bold leading-snug", compact ? "text-lg" : "text-xl", data.cancelled && "line-through decoration-1"]} lang={title.lang}>
+        <a href={data.url} class="hover:underline">{title.text}</a>
+      </Heading>
+      <ul class="mt-2 space-y-1 text-sm text-muted">
+        <li class="flex gap-2">
+          <Icon name="lucide:calendar" class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          <span><time datetime={isoDay(data.date)}>{fullDate}</time>{time ? `, ${time}` : ""}</span>
+        </li>
+        <li class="flex gap-2">
+          <Icon name={data.online ? "lucide:monitor" : "lucide:map-pin"} class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          <span>
+            <span lang={place.lang}>{place.text}</span>{city && <>, <span lang={city.lang}>{city.text}</span></>}
+            {data.mapUrl && <> · <a href={data.mapUrl} class="link">{t("communityEvents.map")}</a></>}
+          </span>
+        </li>
+        {!compact && (
+          <li class="flex gap-2">
+            <Icon name="lucide:users" class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+            <span><span class="sr-only">{t("communityEvents.organisers")}: </span>{data.organisers.join(", ")}</span>
+          </li>
+        )}
+        {!compact && data.languages.length > 0 && (
+          <li class="flex gap-2">
+            <Icon name="lucide:languages" class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+            <span><span class="sr-only">{t("communityEvents.languages")}: </span>{data.languages.map((l) => languages.of(l) ?? l).join(", ")}</span>
+          </li>
+        )}
+      </ul>
+      {!compact && <p class="mt-3" lang={summary.lang}>{summary.text}</p>}
+      {!compact && (
+        <div class="mt-4 flex flex-wrap gap-2" data-actions>
+          <a href={data.url} class={button}>
+            {t("communityEvents.details")}<Icon name="lucide:external-link" class="size-4" aria-hidden="true" />
+          </a>
+          {data.registrationUrl && !data.cancelled && (
+            <a href={data.registrationUrl} class={button}>
+              {t("communityEvents.register")}<Icon name="lucide:external-link" class="size-4" aria-hidden="true" />
+            </a>
+          )}
+          {!data.cancelled && (
+            <a href={ics} download class:list={[button, "upcoming-only"]}>
+              <Icon name="lucide:calendar-plus" class="size-4" aria-hidden="true" />{t("communityEvents.addToCalendar")}
+            </a>
+          )}
+        </div>
+      )}
+    </div>
+  </article>
+</li>

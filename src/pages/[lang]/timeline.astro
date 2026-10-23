@@ -43,8 +43,16 @@ const enriched = await Promise.all(
     documents: await getEntries(event.data.documents),
   })),
 );
-// Each event shows the chapter of its first linked issue.
-const chapters = chapterOf(await getIssueTree(lang));
+// Each event shows the chapter of its first linked issue, and is filtered by
+// the chapters of all of them.
+const tree = await getIssueTree(lang);
+const chapters = chapterOf(tree);
+const chaptersOf = (issues: (typeof enriched)[number]["issues"]) => [
+  ...new Set(issues.map((i) => chapters.get(i.entry.data.slug)).filter((c) => c !== undefined)),
+];
+const usedChapters = new Set(enriched.flatMap(({ issues }) => chaptersOf(issues)));
+const chapterFilters = tree.filter((c) => usedChapters.has(c.slug));
+const chipBase = "rounded-full border border-rule px-3.5 py-1.5 text-sm font-semibold transition hover:border-accent aria-pressed:border-accent aria-pressed:bg-accent aria-pressed:text-on-accent";
 const formatDate = (d: Date, c: (typeof events)[number]["data"]["dateCertainty"]) =>
   formatDocumentDate(d, c, lang, t);
 const alternates = Object.fromEntries(publishedLocales.map((l) => [l, localizePath(l, "timeline")]));
@@ -70,14 +78,45 @@ const alternates = Object.fromEntries(publishedLocales.map((l) => [l, localizePa
     )
   }
 
-  <div class="relative">
+  <!-- `hidden` on a wrapper without a display class; filters need JavaScript. -->
+  {
+    events.length > 0 && (
+      <div data-tl-controls data-shown={t("timeline.shown")} hidden>
+        <div class="mb-10 space-y-4 rounded-2xl border border-rule p-4 sm:p-5">
+          <div class="flex flex-wrap items-end gap-x-6 gap-y-4">
+            <label class="block w-full max-w-xs text-sm font-semibold">
+              {t("timeline.search")}
+              <input type="search" data-tl-search class="control mt-1 w-full font-normal" />
+            </label>
+            <label class="flex items-center gap-2 pb-2 text-sm font-semibold">
+              <input type="checkbox" data-tl-major class="size-4 accent-[rgb(var(--accent))]" />
+              {t("timeline.majorOnly")}
+            </label>
+          </div>
+          {chapterFilters.length > 0 && (
+            <div role="group" aria-label={t("timeline.filterChapter")} class="flex flex-wrap gap-2">
+              <button type="button" data-tl-chapter="" aria-pressed="true" class={chipBase}>{t("timeline.allChapters")}</button>
+              {chapterFilters.map((c) => (
+                <button type="button" data-tl-chapter={c.slug} aria-pressed="false" class={chipBase} lang={c.isFallback ? c.lang : undefined}>{c.title}</button>
+              ))}
+            </div>
+          )}
+          <p role="status" class="text-sm text-muted" data-tl-status></p>
+        </div>
+      </div>
+    )
+  }
+
+  <p data-tl-empty hidden class="rounded-2xl border border-rule p-6">{t("timeline.noMatches")}</p>
+
+  <div class="relative" data-tl-body>
     <!-- The line: left on phones, centred on wide screens. -->
     <span aria-hidden="true" class="absolute bottom-0 left-5 top-0 w-0.5 bg-rule lg:left-1/2 lg:-translate-x-1/2" />
     {
       eras.map((era) => {
         const items = enriched.filter(({ event }) => event.data.era === era);
         return (
-          <section aria-labelledby={`era-${era}`} class="relative pb-6">
+          <section aria-labelledby={`era-${era}`} class="relative pb-6" data-tl-era>
             <header class="relative mb-10 pt-4 lg:text-center">
               {/* Decorative watermark, drawn by CSS (content: attr()) so it is not page text. */}
               <span
@@ -95,7 +134,7 @@ const alternates = Object.fromEntries(publishedLocales.map((l) => [l, localizePa
                 const major = event.data.importance === 1;
                 const left = index % 2 === 0; // which side the card sits on (wide screens)
                 return (
-                  <li id={event.id} data-importance={event.data.importance} class="relative scroll-mt-24 pl-14 lg:grid lg:grid-cols-[1fr_5rem_1fr] lg:items-start lg:pl-0">
+                  <li id={event.id} data-importance={event.data.importance} data-chapters={chaptersOf(issues).join(" ")} data-text={`${title.text} ${summary.text}`.toLocaleLowerCase(lang)} class="relative scroll-mt-24 pl-14 lg:grid lg:grid-cols-[1fr_5rem_1fr] lg:items-start lg:pl-0">
                     {/* Dot on the line */}
                     <span class="absolute left-5 top-0 -translate-x-1/2 lg:static lg:col-start-2 lg:row-start-1 lg:flex lg:translate-x-0 lg:justify-center">
                       {chapter ? (
@@ -146,3 +185,49 @@ const alternates = Object.fromEntries(publishedLocales.map((l) => [l, localizePa
     }
   </div>
 </Layout>
+
+<script>
+  const controls = document.querySelector<HTMLElement>("[data-tl-controls]");
+  const search = document.querySelector<HTMLInputElement>("[data-tl-search]");
+  const major = document.querySelector<HTMLInputElement>("[data-tl-major]");
+  const status = document.querySelector<HTMLElement>("[data-tl-status]");
+  const empty = document.querySelector<HTMLElement>("[data-tl-empty]");
+  const body = document.querySelector<HTMLElement>("[data-tl-body]");
+  const items = [...document.querySelectorAll<HTMLElement>("[data-tl-body] li[data-importance]")];
+  const chapterButtons = [...document.querySelectorAll<HTMLButtonElement>("[data-tl-chapter]")];
+
+  if (controls && search && major && status && empty && body && items.length) {
+    controls.hidden = false;
+    const template = controls.dataset;
+    let chapter = "";
+    const apply = () => {
+      const query = search.value.trim().toLocaleLowerCase(document.documentElement.lang);
+      let visible = 0;
+      items.forEach((item) => {
+        item.hidden =
+          (major.checked && item.dataset.importance !== "1") ||
+          (chapter !== "" && !(item.dataset.chapters ?? "").split(" ").includes(chapter)) ||
+          (query !== "" && !(item.dataset.text ?? "").includes(query));
+        if (!item.hidden) visible++;
+      });
+      document.querySelectorAll<HTMLElement>("[data-tl-era]").forEach((era) => {
+        era.hidden = ![...era.querySelectorAll<HTMLElement>("li[data-importance]")].some((i) => !i.hidden);
+      });
+      const filtered = visible < items.length;
+      status.textContent = filtered
+        ? (template.shown ?? "").replace("{n}", String(visible)).replace("{total}", String(items.length))
+        : "";
+      empty.hidden = visible > 0;
+      body.hidden = visible === 0;
+    };
+    search.addEventListener("input", apply);
+    major.addEventListener("change", apply);
+    chapterButtons.forEach((button) =>
+      button.addEventListener("click", () => {
+        chapter = button.dataset.tlChapter ?? "";
+        chapterButtons.forEach((b) => b.setAttribute("aria-pressed", String(b === button)));
+        apply();
+      }),
+    );
+  }
+</script>

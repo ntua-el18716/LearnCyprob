@@ -24,6 +24,8 @@ interface Props {
   lang?: Locale;
   /** Keep the page out of search engines (drafts). */
   noindex?: boolean;
+  /** Leave the page out of the site search index (search page, 404). */
+  unsearchable?: boolean;
   /** This page in other languages; defaults to each language's home page. */
   alternates?: Partial<Record<Locale, string>>;
 }
@@ -31,6 +33,7 @@ interface Props {
 const {
   lang = defaultLocale,
   noindex = false,
+  unsearchable = false,
   pubDate,
   alternates = Object.fromEntries(
     publishedLocales.map((l) => [l, localizePath(l)]),
@@ -44,19 +47,25 @@ const {
 } = Astro.props;
 
 const pageSlugs = await getPageSlugs();
+// Main sections, in the header. Reference pages go in the menu and footer.
 const navigation = [
-  { href: localizePath(lang), text: t("nav.home"), exact: true },
   { href: localizePath(lang, "explore"), text: t("nav.issues") },
   { href: localizePath(lang, "documents"), text: t("nav.documents") },
   { href: localizePath(lang, "compare"), text: t("nav.compare") },
   { href: localizePath(lang, "timeline"), text: t("nav.timeline") },
+  { href: localizePath(lang, "events"), text: t("nav.events") },
+];
+const reference = [
   { href: localizePath(lang, "glossary"), text: t("nav.glossary") },
+  { href: localizePath(lang, "actors"), text: t("nav.actors") },
+  { href: localizePath(lang, "sources"), text: t("nav.sources") },
 ];
 
 // Footer: site pages that exist (about, methodology, corrections), in this order.
-const footerPages = (["about", "methodology", "corrections"] as const).filter((slug) =>
-  pageSlugs.includes(slug),
-);
+const footerPages = (["about", "methodology", "corrections"] as const)
+  .filter((slug) => pageSlugs.includes(slug))
+  .map((slug) => ({ href: localizePath(lang, slug), text: t(`footer.${slug}`) }));
+const searchHref = localizePath(lang, "search");
 
 const ogImageURL = new URL(ogImage.src, Astro.site).href;
 const canonicalURL = new URL(Astro.url).href;
@@ -127,76 +136,110 @@ const canonicalURL = new URL(Astro.url).href;
       class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-bg focus:px-4 focus:py-2 focus:text-ink focus:shadow"
       >{t("a11y.skipToContent")}</a
     >
-    <header class="bg-accent text-on-accent dark:border-b dark:border-accent/40 dark:bg-panel dark:text-ink">
-      <div class="mx-auto max-w-6xl px-4 sm:px-8">
-        <div class="flex items-center gap-x-6 pt-3 md:py-3">
-          <a href={localizePath(lang)} class="text-lg font-[760] tracking-tight whitespace-nowrap">
-            {t("site.title")}
-          </a>
-          <nav aria-label={t("nav.label")} class="hidden md:block">
-            <ul class="flex gap-x-5">
-              {navigation.map((item) => <li><Link {...item} /></li>)}
-            </ul>
-          </nav>
-          <div class="ml-auto flex items-center gap-3">
-            <ul class="flex items-center gap-1 text-sm font-semibold" aria-label={t("nav.language")}>
-              {
-                publishedLocales.map((l) => (
-                  <li>
-                    <a
-                      href={alternates[l] ?? localizePath(l)}
-                      hreflang={l}
-                      lang={l}
-                      aria-current={l === lang ? "true" : undefined}
-                      class:list={[
-                        "block rounded px-2 py-1",
-                        l === lang ? "bg-white/20 dark:bg-white/10" : "opacity-80 hover:opacity-100",
-                      ]}
-                    >
-                      {localeMeta[l].short}<span class="sr-only"> {localeMeta[l].name}</span>
-                    </a>
-                  </li>
-                ))
-              }
-            </ul>
-            <button id="dark-mode-toggle" class="rounded p-1.5 hover:bg-white/20 dark:hover:bg-white/10" aria-label={t("theme.toggle")}>
-              <Icon name="moon" class="w-5 h-5 sun-icon" />
-              <Icon name="sun" class="w-5 h-5 moon-icon" />
-            </button>
-          </div>
-        </div>
-        <!-- Narrow screens: links on their own scrollable row. -->
-        <nav aria-label={t("nav.label")} class="md:hidden -mx-4 overflow-x-auto px-4 pb-2 pt-1">
-          <ul class="flex gap-x-5 whitespace-nowrap">
+    <header class="relative z-30 bg-accent text-on-accent dark:border-b dark:border-accent/40 dark:bg-panel dark:text-ink">
+      <div class="mx-auto flex max-w-6xl items-center gap-x-6 px-4 py-2.5 sm:px-8 lg:py-3">
+        <a href={localizePath(lang)} class="text-lg font-[760] tracking-tight whitespace-nowrap">
+          {t("site.title")}
+        </a>
+        <nav aria-label={t("nav.label")} class="hidden lg:block">
+          <ul class="flex gap-x-5">
             {navigation.map((item) => <li><Link {...item} /></li>)}
           </ul>
         </nav>
+        <div class="ml-auto flex items-center gap-1 sm:gap-2">
+          <a href={searchHref} class="rounded p-2 hover:bg-white/20 dark:hover:bg-white/10" aria-label={t("search.title")}>
+            <Icon name="lucide:search" class="size-5" />
+          </a>
+          <ul class="flex items-center gap-1 text-sm font-semibold" aria-label={t("nav.language")}>
+            {
+              publishedLocales.map((l) => (
+                <li>
+                  <a
+                    href={alternates[l] ?? localizePath(l)}
+                    hreflang={l}
+                    lang={l}
+                    aria-current={l === lang ? "true" : undefined}
+                    class:list={[
+                      "block rounded px-2 py-1.5",
+                      l === lang ? "bg-white/20 dark:bg-white/10" : "opacity-80 hover:opacity-100",
+                    ]}
+                  >
+                    {localeMeta[l].short}<span class="sr-only"> {localeMeta[l].name}</span>
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+          <button id="dark-mode-toggle" class="rounded p-2 hover:bg-white/20 dark:hover:bg-white/10" aria-label={t("theme.toggle")}>
+            <Icon name="moon" class="w-5 h-5 sun-icon" />
+            <Icon name="sun" class="w-5 h-5 moon-icon" />
+          </button>
+          <!-- Narrow screens: a menu. <details> opens without JavaScript. -->
+          <details class="site-menu lg:hidden" data-site-menu>
+            <summary class="flex cursor-pointer list-none items-center gap-1.5 rounded px-2 py-1.5 font-semibold hover:bg-white/20 dark:hover:bg-white/10 [&::-webkit-details-marker]:hidden">
+              <Icon name="lucide:menu" class="size-5 menu-open-icon" />
+              <Icon name="lucide:x" class="size-5 menu-close-icon" />
+              <span>{t("nav.menu")}</span>
+            </summary>
+            <div class="absolute inset-x-0 top-full border-b border-rule bg-bg text-ink shadow-lg">
+              <nav aria-label={t("nav.label")} class="mx-auto max-w-6xl px-4 py-4 sm:px-8">
+                <ul class="grid gap-1 sm:grid-cols-2">
+                  {navigation.map((item) => (
+                    <li>
+                      <a href={item.href} aria-current={Astro.url.pathname.startsWith(item.href) ? "page" : undefined} class="block rounded-md px-3 py-3 text-lg font-semibold hover:bg-sunken aria-[current=page]:bg-panel aria-[current=page]:text-accent">
+                        {item.text}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+                <ul class="mt-3 flex flex-wrap gap-x-1 gap-y-1 border-t border-rule pt-3">
+                  {[...reference, ...footerPages].map((item) => (
+                    <li>
+                      <a href={item.href} aria-current={Astro.url.pathname.startsWith(item.href) ? "page" : undefined} class="block rounded-md px-3 py-2 font-medium text-muted hover:bg-sunken hover:text-ink aria-[current=page]:text-accent">
+                        {item.text}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            </div>
+          </details>
+        </div>
       </div>
     </header>
-    <main id="main-content" class="mx-auto w-full max-w-6xl flex-1 px-4 sm:px-8 py-10 sm:py-14">
+    <main id="main-content" class="mx-auto w-full max-w-6xl flex-1 px-4 sm:px-8 py-10 sm:py-14" data-pagefind-body={unsearchable ? undefined : ""}>
       <noscript>
-        <p class="mb-8 rounded-md bg-sunken px-4 py-3 text-sm">{t("noscript.body")}</p>
+        <p class="mb-8 rounded-md bg-sunken px-4 py-3 text-sm" data-pagefind-ignore>{t("noscript.body")}</p>
       </noscript>
       <slot />
     </main>
-    <footer class="border-t border-rule">
-      <div class="mx-auto max-w-6xl px-4 sm:px-8 py-8 text-sm text-muted flex flex-wrap items-baseline gap-x-8 gap-y-3">
-        <span class="font-[760] text-ink">{t("site.title")}</span>
+    <footer class="mt-8 border-t border-rule bg-sunken/60">
+      <div class="mx-auto grid max-w-6xl grid-cols-2 gap-8 px-4 py-10 text-sm sm:grid-cols-[1fr_auto_auto_auto] sm:gap-12 sm:px-8">
+        <div class="col-span-2 sm:col-span-1">
+          <a href={localizePath(lang)} class="text-base font-[760] text-ink">{t("site.title")}</a>
+          <p class="mt-2 max-w-xs text-muted">
+            {t("footer.copyright", { year: new Date().getFullYear(), author })}
+            <a href={repoUrl} class="link">{t("footer.source")}</a>
+          </p>
+        </div>
         {
-          footerPages.length > 0 && (
-            <ul class="flex flex-wrap gap-x-6">
-              {footerPages.map((slug) => (
-                <li>
-                  <a href={localizePath(lang, slug)} class="link">{t(`footer.${slug}`)}</a>
-                </li>
-              ))}
-            </ul>
-          )
+          [
+            { heading: t("footer.sections"), items: navigation },
+            { heading: t("footer.reference"), items: reference },
+            { heading: t("footer.site"), items: footerPages },
+          ]
+            .filter((group) => group.items.length > 0)
+            .map((group) => (
+              <nav aria-label={group.heading}>
+                <h2 class="font-bold text-ink">{group.heading}</h2>
+                <ul class="mt-2 space-y-1.5">
+                  {group.items.map((item) => (
+                    <li><a href={item.href} class="text-muted hover:text-ink hover:underline">{item.text}</a></li>
+                  ))}
+                </ul>
+              </nav>
+            ))
         }
-        <p class="sm:ml-auto">
-          {t("footer.copyright", { year: new Date().getFullYear(), author })}
-          <a href={repoUrl} class="link">{t("footer.source")}</a>
-        </p>
       </div>
     </footer>
   </body>
@@ -227,5 +270,21 @@ const canonicalURL = new URL(Astro.url).href;
         // Storage can be unavailable (private mode); the toggle still works.
       }
     });
+
+    // Menu: close it with Escape, on a click outside, or when a link in it
+    // is followed (back/forward cache would otherwise show it open).
+    const menu = document.querySelector("[data-site-menu]");
+    if (menu) {
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && menu.open) {
+          menu.open = false;
+          menu.querySelector("summary")?.focus();
+        }
+      });
+      document.addEventListener("click", (event) => {
+        if (menu.open && !menu.contains(event.target)) menu.open = false;
+      });
+      addEventListener("pageshow", () => (menu.open = false));
+    }
   }
 </script>
