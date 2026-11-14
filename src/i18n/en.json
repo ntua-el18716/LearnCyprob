@@ -281,5 +281,9 @@
   "actors.type.government": "Government",
   "actors.type.guarantor": "Guarantor power",
   "actors.type.international-org": "International organisation",
-  "actors.type.person": "Person"
+  "actors.type.person": "Person",
+  "home.start": "Start",
+  "home.stat.chapters": "Chapters",
+  "home.stat.issues": "Issues",
+  "home.stat.documents": "Documents"
 }

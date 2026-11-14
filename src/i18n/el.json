@@ -196,5 +196,9 @@
   "actors.type.government": "Κυβέρνηση",
   "actors.type.guarantor": "Εγγυήτρια δύναμη",
   "actors.type.international-org": "Διεθνής οργανισμός",
-  "actors.type.person": "Πρόσωπο"
+  "actors.type.person": "Πρόσωπο",
+  "home.start": "Ξεκινήστε",
+  "home.stat.chapters": "Κεφάλαια",
+  "home.stat.issues": "Θέματα",
+  "home.stat.documents": "Έγγραφα"
 }

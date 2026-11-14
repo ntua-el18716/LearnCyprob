@@ -3,10 +3,12 @@ import Layout from "@layouts/Layout.astro";
 import { publishedLocales, type Locale } from "../../i18n/locales";
 import { localizePath, useTranslations } from "../../lib/i18n";
 import { getIssue, getIssueSlugs, getIssueTree } from "../../lib/issues";
+import { Icon } from "astro-icon/components";
+import IslandDots from "@components/IslandDots.astro";
 import ChapterIcon from "@components/ChapterIcon.astro";
-import ChapterOrbit from "@components/ChapterOrbit.astro";
 import CommunityEventCard from "@components/CommunityEventCard.astro";
 import { descendants } from "../../lib/chapters";
+import { getDocuments } from "../../lib/documents";
 import { getCommunityEvents, splitByDate, todayInCyprus } from "../../lib/community-events";
 
 export function getStaticPaths() {
@@ -30,6 +32,13 @@ const chapters = await getIssueTree(lang);
 // A few upcoming events; the browser hides any that ended since the build.
 const upcomingEvents = splitByDate(await getCommunityEvents(), todayInCyprus()).upcoming.slice(0, 4);
 
+// What the site holds right now; a zero is left out.
+const stats = [
+  { key: "home.stat.chapters", n: chapters.length },
+  { key: "home.stat.issues", n: chapters.reduce((sum, c) => sum + descendants(c).length, 0) },
+  { key: "home.stat.documents", n: (await getDocuments()).length },
+].filter((s) => s.n > 0) as { key: "home.stat.chapters" | "home.stat.issues" | "home.stat.documents"; n: number }[];
+
 // Entry points: the author's four "why use" lines, each leading to its section.
 const entries = [
   { key: "home.benefit.aspects", href: localizePath(lang, "explore") },
@@ -40,96 +49,186 @@ const entries = [
 ---
 
 <Layout lang={lang}>
-  <section class="grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_28rem]">
-    <div class="max-w-3xl">
-    <h1 class="text-5xl sm:text-6xl font-[780] tracking-[-0.025em] leading-[1.02]" lang={t.langOf("home.title")}>
-      {t("home.title")}
-    </h1>
-    <p class="mt-5 text-xl sm:text-2xl leading-snug text-muted" lang={t.langOf("home.intro")}>
-      {t("home.intro")}
-    </p>
-    <div class="mt-8 flex flex-wrap gap-3">
-      <a href={localizePath(lang, "explore")} class="rounded-md bg-accent px-5 py-3 font-semibold text-on-accent hover:bg-accent/90">
-        {t("explore.title")}
-      </a>
-      <a href={localizePath(lang, "documents")} class="rounded-md border-2 border-ink px-5 py-3 font-semibold hover:bg-sunken">
-        {t("documents.title")}
-      </a>
-    </div>
-    </div>
-    <div class="hidden lg:block">
-      <ChapterOrbit chapters={chapters} lang={lang} />
+  <!-- Hero: tinted band, bled to the window edges with a clipped shadow. -->
+  <section class="hero -mt-10 sm:-mt-14" data-hero>
+    <div class="grid items-center gap-x-10 gap-y-3 pb-10 pt-5 sm:gap-y-6 sm:py-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:py-24">
+      <div class="max-w-2xl">
+        <h1 class="hero-rise text-[2.6rem] font-[800] leading-[0.98] tracking-[-0.035em] sm:text-7xl" lang={t.langOf("home.title")}>
+          {t("home.title")}
+        </h1>
+        <p class="hero-rise mt-4 leading-normal text-muted sm:mt-6 sm:text-xl sm:leading-relaxed" style="--rise: 1" lang={t.langOf("home.intro")}>
+          {t("home.intro")}
+        </p>
+        <div class="hero-rise mt-6 flex flex-wrap gap-3 sm:mt-8" style="--rise: 2">
+          <a
+            href="#topics"
+            data-island-start
+            class="group inline-flex items-center gap-2.5 rounded-full bg-accent py-3.5 pl-7 pr-5 text-lg font-semibold text-on-accent shadow-lg shadow-accent/25 transition hover:shadow-xl hover:shadow-accent/30 active:scale-[0.97]"
+            lang={t.langOf("home.start")}
+          >
+            {t("home.start")}
+            <span class="grid size-7 place-items-center rounded-full bg-on-accent/15 transition-transform duration-300 group-hover:translate-y-0.5">
+              <Icon name="lucide:arrow-down" class="size-4" aria-hidden="true" />
+            </span>
+          </a>
+          <a href={localizePath(lang, "documents")} class="inline-flex items-center rounded-full border-2 border-ink/80 px-6 py-3.5 text-lg font-semibold transition hover:bg-ink hover:text-bg active:scale-[0.97]">
+            {t("documents.title")}
+          </a>
+        </div>
+        {
+          stats.length > 0 && (
+            <dl class="hero-rise mt-10 flex flex-wrap gap-x-10 gap-y-4" style="--rise: 3">
+              {stats.map((s) => (
+                <div class="flex flex-col-reverse">
+                  <dt class="text-sm font-medium text-muted" lang={t.langOf(s.key)}>{t(s.key)}</dt>
+                  <dd class="text-3xl font-[760] tabular-nums tracking-tight sm:text-4xl">{s.n}</dd>
+                </div>
+              ))}
+            </dl>
+          )
+        }
+      </div>
+      <IslandDots class="order-first mx-auto w-[86%] max-w-md sm:w-full lg:order-none lg:max-w-none lg:scale-110" />
     </div>
   </section>
 
-  <!-- Narrow screens: the chapters as a grid (the map needs width). -->
-  <section class="mt-16 sm:mt-20 lg:hidden" aria-labelledby="topics">
-    <h2 id="topics" class="text-2xl font-[720]">{t("explore.title")}</h2>
-    <ul class="mt-6 grid grid-cols-3 gap-x-2 gap-y-4 sm:grid-cols-4 sm:gap-y-6">
+  <section class="mt-14 sm:mt-20" aria-labelledby="topics">
+    <h2 id="topics" tabindex="-1" class="scroll-mt-6 text-3xl font-[760] tracking-[-0.02em] outline-none sm:text-4xl">{t("explore.title")}</h2>
+    <p class="mt-3 max-w-2xl text-lg text-muted" lang={t.langOf("explore.description")}>{t("explore.description")}</p>
+    <ul class="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
       {
-        chapters.map((chapter) => (
-          <li class="relative">
-            <a href={`${localizePath(lang, "explore")}#chapter-${chapter.slug}`} class="group flex h-full flex-col items-center gap-2.5 rounded-2xl p-2 text-center hover:bg-sunken">
-              <ChapterIcon slug={chapter.slug} size="md" class="transition duration-200 group-hover:scale-110 group-hover:bg-accent group-hover:text-on-accent motion-reduce:transition-none" />
-              <span class="text-sm font-semibold leading-tight hyphens-auto" lang={chapter.isFallback ? chapter.lang : undefined}>{chapter.title}</span>
-              <span class="sr-only">({descendants(chapter).length})</span>
-            </a>
-          </li>
-        ))
+        chapters.map((chapter, i) => {
+          const n = descendants(chapter).length;
+          return (
+            <li data-reveal style={`--i:${i % 4}`}>
+              <a
+                href={`${localizePath(lang, "explore")}#chapter-${chapter.slug}`}
+                class="group flex h-full flex-col gap-4 rounded-2xl border border-rule bg-bg p-4 transition duration-200 hover:-translate-y-1 hover:border-accent hover:shadow-lg hover:shadow-accent/10 motion-reduce:hover:translate-y-0 sm:p-5"
+              >
+                <span class="flex items-start justify-between">
+                  <ChapterIcon slug={chapter.slug} size="md" class="transition duration-200 group-hover:bg-accent group-hover:text-on-accent" />
+                  <Icon name="lucide:arrow-up-right" class="size-5 text-control transition duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent" aria-hidden="true" />
+                </span>
+                <span class="mt-auto">
+                  <span class="block font-semibold leading-tight hyphens-auto sm:text-lg sm:leading-tight" lang={chapter.isFallback ? chapter.lang : undefined}>{chapter.title}</span>
+                  <span class="mt-1 block text-sm text-muted">
+                    {n === 0 ? t("explore.noIssues") : t(n === 1 ? "explore.issueCountOne" : "explore.issueCount", { n })}
+                  </span>
+                </span>
+              </a>
+            </li>
+          );
+        })
       }
     </ul>
   </section>
 
-  <section class="mt-16 sm:mt-20" aria-labelledby="why">
-    <h2 id="why" class="text-2xl font-[720]" lang={t.langOf("home.why")}>{t("home.why")}</h2>
-    <ul class="mt-6 grid gap-x-10 gap-y-2 sm:grid-cols-2">
+  <section class="mt-16 sm:mt-24" aria-labelledby="why">
+    <h2 id="why" class="text-3xl font-[760] tracking-[-0.02em] sm:text-4xl" lang={t.langOf("home.why")}>{t("home.why")}</h2>
+    <ol class="mt-8 grid gap-3 sm:grid-cols-2 sm:gap-4">
       {
-        entries.map((e) => (
-          <li class="border-t-2 border-accent">
-            <a href={e.href} class="block py-4 text-lg font-semibold leading-snug hover:underline hover:underline-offset-4" lang={t.langOf(e.key)}>
-              {t(e.key)}
+        entries.map((e, i) => (
+          <li data-reveal style={`--i:${i % 2}`}>
+            <a href={e.href} class="group flex h-full items-center gap-4 rounded-2xl bg-panel p-5 transition duration-200 hover:bg-accent hover:text-on-accent sm:p-6">
+              <span class="text-sm font-bold tabular-nums text-accent transition-colors group-hover:text-on-accent" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+              <span class="flex-1 text-lg font-semibold leading-snug" lang={t.langOf(e.key)}>{t(e.key)}</span>
+              <Icon name="lucide:arrow-right" class="size-5 shrink-0 transition-transform duration-200 group-hover:translate-x-1" aria-hidden="true" />
             </a>
           </li>
         ))
       }
-    </ul>
+    </ol>
   </section>
 
   {
     upcomingEvents.length > 0 && (
-      <section class="mt-16 sm:mt-20" aria-labelledby="home-events" data-home-events>
+      <section class="mt-16 sm:mt-24" aria-labelledby="home-events" data-home-events>
         <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
-          <h2 id="home-events" class="text-2xl font-[720]" lang={t.langOf("home.events")}>{t("home.events")}</h2>
+          <h2 id="home-events" class="text-3xl font-[760] tracking-[-0.02em] sm:text-4xl" lang={t.langOf("home.events")}>{t("home.events")}</h2>
           <a href={localizePath(lang, "events")} class="font-semibold link" lang={t.langOf("home.allEvents")}>{t("home.allEvents")}</a>
         </div>
-        <ol class="mt-6 grid gap-4 md:grid-cols-2">
+        <ol class="mt-8 grid gap-4 md:grid-cols-2" data-reveal>
           {upcomingEvents.map((event) => <CommunityEventCard event={event} lang={lang} compact />)}
         </ol>
       </section>
     )
   }
 
-  <section class="mt-16 sm:mt-20" aria-labelledby="recent">
-    <h2 id="recent" class="text-2xl font-[720]" lang={t.langOf("home.recent")}>{t("home.recent")}</h2>
-    <ul class="mt-4 divide-y divide-rule border-y border-rule">
+  <section class="mt-16 sm:mt-24" aria-labelledby="recent">
+    <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+      <h2 id="recent" class="text-3xl font-[760] tracking-[-0.02em] sm:text-4xl" lang={t.langOf("home.recent")}>{t("home.recent")}</h2>
+      <a href={localizePath(lang, "issues")} class="font-semibold link" lang={t.langOf("home.viewAll")}>{t("home.viewAll")}</a>
+    </div>
+    <ul class="mt-8 grid gap-3 sm:gap-4 md:grid-cols-3">
       {
-        recent.map(({ entry, lang: entryLang, isFallback }) => (
-          <li class="py-4" lang={isFallback ? entryLang : undefined}>
-            <a href={localizePath(lang, `issues/${entry.data.slug}`)} class="text-lg font-semibold link">
-              {entry.data.title}
+        recent.map(({ entry, lang: entryLang, isFallback }, i) => (
+          <li data-reveal style={`--i:${i}`} lang={isFallback ? entryLang : undefined}>
+            <a href={localizePath(lang, `issues/${entry.data.slug}`)} class="group flex h-full flex-col rounded-2xl border border-rule p-5 transition duration-200 hover:-translate-y-1 hover:border-accent hover:shadow-lg hover:shadow-accent/10 motion-reduce:hover:translate-y-0 sm:p-6">
+              <span class="text-xl font-[720] leading-tight tracking-[-0.01em] group-hover:underline group-hover:decoration-accent group-hover:underline-offset-4">{entry.data.title}</span>
+              <span class="mt-2 text-muted">{entry.data.summary}</span>
             </a>
-            <p class="mt-1 text-muted">{entry.data.summary}</p>
           </li>
         ))
       }
     </ul>
-    <a href={localizePath(lang, "issues")} class="mt-5 inline-block font-semibold link" lang={t.langOf("home.viewAll")}>
-      {t("home.viewAll")}
-    </a>
   </section>
 </Layout>
 
+<style>
+  .hero {
+    background-color: rgb(var(--panel));
+    box-shadow: 0 0 0 100vmax rgb(var(--panel));
+    clip-path: inset(0 -100vmax);
+  }
+  /* Hero text rises into place, one block after another. */
+  .hero-rise {
+    animation: hero-rise 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) calc(var(--rise, 0) * 110ms) backwards;
+  }
+  @keyframes hero-rise {
+    from {
+      opacity: 0;
+      transform: translateY(1.25rem);
+    }
+  }
+  /* Blocks below the fold fade up as they scroll into view. The script marks
+     only blocks that start off-screen, so nothing is hidden without it. */
+  [data-reveal] {
+    transition:
+      opacity 0.6s ease-out,
+      transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition-delay: calc(var(--i, 0) * 80ms);
+  }
+  [data-reveal="waiting"] {
+    opacity: 0;
+    transform: translateY(1.5rem);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-rise {
+      animation: none;
+    }
+  }
+</style>
+
 <script>
+  // Fade-up on scroll, for blocks that start below the window.
+  if ("IntersectionObserver" in window && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          (entry.target as HTMLElement).dataset.reveal = "";
+          observer.unobserve(entry.target);
+        }
+      },
+      { rootMargin: "0px 0px -8% 0px" },
+    );
+    for (const el of document.querySelectorAll<HTMLElement>("[data-reveal]")) {
+      if (el.getBoundingClientRect().top < window.innerHeight) continue;
+      el.dataset.reveal = "waiting";
+      observer.observe(el);
+    }
+  }
+
   // Hide events that ended since the build; drop the section if none remain.
   const section = document.querySelector<HTMLElement>("[data-home-events]");
   if (section) {

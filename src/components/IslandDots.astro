@@ -1,0 +1,231 @@
+---
+// Home-page hero art: the island of Cyprus drawn as a field of dots (the
+// site's circle motif) with a thin outline. Decorative, hidden from assistive
+// technology. The dots gather into place on load, swell under a mouse pointer
+// and carry a ripple when the island is tapped or `[data-island-start]` is
+// activated. All motion is skipped under prefers-reduced-motion, and the
+// drawing is complete without JavaScript.
+import { cyprusDots, cyprusOutline, cyprusViewBox } from "../data/cyprus-shape";
+
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+const { width, height } = cyprusViewBox;
+
+// Deterministic pseudo-random numbers, so every build draws the same island.
+const rand = (i: number, salt: number) => {
+  const x = Math.sin(i * 127.1 + salt * 311.7) * 43758.5453;
+  return x - Math.floor(x);
+};
+
+const dots = cyprusDots.map(([x, y], i) => {
+  // Size and strength vary in slow waves across the island (a halftone feel).
+  const wave = 0.5 + 0.5 * Math.sin(x / 120 + y / 70);
+  return {
+    x,
+    y,
+    r: (3.4 + 3.4 * wave).toFixed(2),
+    style: [
+      `--o:${(0.35 + 0.65 * wave).toFixed(2)}`,
+      `--dx:${Math.round((rand(i, 1) - 0.5) * 260)}px`,
+      `--dy:${Math.round((rand(i, 2) - 0.5) * 260)}px`,
+      `--d:${Math.round((x / width) * 700 + rand(i, 3) * 350)}ms`,
+    ].join(";"),
+  };
+});
+---
+
+<div class:list={["island", className]} data-island aria-hidden="true">
+  <svg viewBox={`0 0 ${width} ${height}`} class="block h-auto w-full overflow-visible" focusable="false">
+    <path class="island-outline" d={cyprusOutline} pathLength="1" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"></path>
+    <g fill="currentColor">
+      {dots.map((d) => <circle class="island-dot" cx={d.x} cy={d.y} r={d.r} style={d.style} />)}
+    </g>
+  </svg>
+</div>
+
+<style>
+  .island {
+    position: relative;
+    color: rgb(var(--accent));
+    /* --p: how far the hero has scrolled away (0 to 1), set by the script. */
+    transform: translateY(calc(var(--p, 0) * 2.5rem)) scale(calc(1 - var(--p, 0) * 0.06));
+    opacity: calc(1 - var(--p, 0) * 0.7);
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* A soft glow behind the island. */
+  .island::before {
+    content: "";
+    position: absolute;
+    inset: 5% 8%;
+    z-index: -1;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgb(var(--accent) / 0.16), transparent);
+  }
+  .island-outline {
+    opacity: 0.35;
+    stroke-dasharray: 1;
+    animation: island-draw 1.8s 0.5s ease-in-out both;
+  }
+  .island-dot {
+    opacity: var(--o);
+    transform-box: fill-box;
+    transform-origin: center;
+    transform: scale(var(--s, 1));
+    transition: transform 0.25s ease-out;
+    animation: island-gather 1s cubic-bezier(0.2, 0.8, 0.2, 1) var(--d) backwards;
+  }
+  /* Once gathered, the entrance animation is dropped so a ripple can run. */
+  .island[data-arrived] .island-dot {
+    animation: none;
+  }
+  .island[data-arrived][data-rippling] .island-dot {
+    animation: island-ripple 0.6s ease-out var(--rd, 0ms);
+  }
+  @keyframes island-gather {
+    from {
+      opacity: 0;
+      transform: translate(var(--dx), var(--dy)) scale(0.2);
+    }
+  }
+  @keyframes island-draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+  }
+  @keyframes island-ripple {
+    35% {
+      opacity: 1;
+      transform: scale(1.9);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .island {
+      transform: none;
+      opacity: 1;
+    }
+    .island-outline,
+    .island-dot,
+    .island[data-arrived][data-rippling] .island-dot {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  for (const island of document.querySelectorAll<HTMLElement>("[data-island]")) {
+    const svg = island.querySelector("svg");
+    if (!svg) continue;
+    const box = svg.viewBox.baseVal;
+    const dots = [...svg.querySelectorAll<SVGCircleElement>(".island-dot")].map((el) => ({
+      el,
+      x: el.cx.baseVal.value,
+      y: el.cy.baseVal.value,
+    }));
+
+    // The entrance animation is over (longest delay + duration, with margin).
+    setTimeout(() => island.setAttribute("data-arrived", ""), 2300);
+
+    // Pointer position in the drawing's own coordinates.
+    const toLocal = (clientX: number, clientY: number) => {
+      const rect = svg.getBoundingClientRect();
+      return {
+        x: ((clientX - rect.left) / rect.width) * box.width,
+        y: ((clientY - rect.top) / rect.height) * box.height,
+      };
+    };
+
+    // A ring of swelling dots spreading out from a point.
+    let rippleTimer = 0;
+    const ripple = (ox: number, oy: number) => {
+      if (reduced.matches) return;
+      island.setAttribute("data-arrived", "");
+      island.removeAttribute("data-rippling");
+      let longest = 0;
+      for (const d of dots) {
+        const delay = Math.hypot(d.x - ox, d.y - oy) * 0.75;
+        longest = Math.max(longest, delay);
+        d.el.style.setProperty("--rd", `${Math.round(delay)}ms`);
+      }
+      void svg.getBoundingClientRect(); // restart the animation
+      island.setAttribute("data-rippling", "");
+      clearTimeout(rippleTimer);
+      rippleTimer = window.setTimeout(() => island.removeAttribute("data-rippling"), longest + 700);
+    };
+
+    island.addEventListener("click", (event) => {
+      const p = toLocal(event.clientX, event.clientY);
+      ripple(p.x, p.y);
+    });
+
+    // "Start": ripple across the island, then scroll to the target section.
+    for (const start of document.querySelectorAll<HTMLAnchorElement>("a[data-island-start]")) {
+      start.addEventListener("click", (event) => {
+        const target = document.getElementById(decodeURIComponent(start.hash.slice(1)));
+        if (!target || reduced.matches || event.metaKey || event.ctrlKey || event.shiftKey) return;
+        event.preventDefault();
+        ripple(0, box.height / 2);
+        setTimeout(() => {
+          history.pushState(null, "", start.hash);
+          target.scrollIntoView({ behavior: "smooth", block: "start" });
+          target.focus({ preventScroll: true });
+        }, 450);
+      });
+    }
+
+    // With a mouse: dots swell near the pointer.
+    if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+      const reach = 95;
+      let swollen: typeof dots = [];
+      let frame = 0;
+      let point: { x: number; y: number } | null = null;
+      const paint = () => {
+        frame = 0;
+        for (const d of swollen) d.el.style.removeProperty("--s");
+        swollen = [];
+        if (!point || reduced.matches) return;
+        for (const d of dots) {
+          const dist = Math.hypot(d.x - point.x, d.y - point.y);
+          if (dist > reach) continue;
+          d.el.style.setProperty("--s", (1 + 0.9 * (1 - dist / reach)).toFixed(2));
+          swollen.push(d);
+        }
+      };
+      const schedule = () => (frame ||= requestAnimationFrame(paint));
+      island.addEventListener("pointermove", (event) => {
+        point = toLocal(event.clientX, event.clientY);
+        schedule();
+      });
+      island.addEventListener("pointerleave", () => {
+        point = null;
+        schedule();
+      });
+    }
+
+    // Drift and fade slightly as the hero scrolls away.
+    const hero = island.closest<HTMLElement>("[data-hero]");
+    if (hero) {
+      let ticking = false;
+      const update = () => {
+        ticking = false;
+        const rect = hero.getBoundingClientRect();
+        const p = Math.min(1, Math.max(0, -rect.top / Math.max(1, rect.height)));
+        island.style.setProperty("--p", p.toFixed(3));
+      };
+      window.addEventListener(
+        "scroll",
+        () => {
+          if (ticking) return;
+          ticking = true;
+          requestAnimationFrame(update);
+        },
+        { passive: true },
+      );
+      update();
+    }
+  }
+</script>
