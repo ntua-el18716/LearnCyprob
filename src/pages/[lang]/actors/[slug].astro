@@ -37,9 +37,8 @@ const alternates = Object.fromEntries(publishedLocales.map((l) => [l, localizePa
 ---
 
 <Layout lang={lang} title={name.text} alternates={alternates} noindex={data.draft}>
-  {data.draft && <PageNotice kind="draft">{t("draft.banner")}</PageNotice>}
-
-  <header class="mb-10 sm:mb-12">
+  <header class="page-band">
+    {data.draft && <PageNotice kind="draft">{t("draft.banner")}</PageNotice>}
     <p class="text-sm font-semibold">
       <a href={localizePath(lang, "actors")} class="link">{t("actors.title")}</a>
       <span class="text-muted"> / <span lang={t.langOf(`board.group.${group}`)}>{t(`board.group.${group}`)}</span></span>

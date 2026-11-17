@@ -59,7 +59,7 @@ const alternates = Object.fromEntries(publishedLocales.map((l) => [l, localizePa
 ---
 
 <Layout lang={lang} title={t("timeline.title")} description={t("timeline.description")} alternates={alternates}>
-  <PageHeader title={t("timeline.title")} intro={t("timeline.description")} introLang={t.langOf("timeline.description")} />
+  <PageHeader icon="lucide:milestone" title={t("timeline.title")} intro={t("timeline.description")} introLang={t.langOf("timeline.description")} />
   {events.length === 0 && <p>{t("timeline.empty")}</p>}
   {
     events.length > 0 && (

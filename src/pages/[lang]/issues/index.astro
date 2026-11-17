@@ -19,7 +19,7 @@ const alternates = Object.fromEntries(
 ---
 
 <Layout lang={lang} title={t("issues.title")} description={t("issues.description")} alternates={alternates}>
-  <PageHeader title={t("issues.title")} intro={t("issues.description")} introLang={t.langOf("issues.description")} />
+  <PageHeader icon="lucide:list-tree" title={t("issues.title")} intro={t("issues.description")} introLang={t.langOf("issues.description")} />
   <div class="max-w-3xl">
   <IssueTreeList nodes={tree} lang={lang} />
   </div>

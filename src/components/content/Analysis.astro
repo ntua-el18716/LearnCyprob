@@ -6,7 +6,7 @@ import { localeOf, useTranslations } from "../../lib/i18n";
 const t = useTranslations(localeOf(Astro.currentLocale));
 ---
 
-<aside class="analysis not-prose my-8 rounded-lg bg-panel px-5 py-4 sm:px-6 sm:py-5">
+<aside class="analysis not-prose my-8 rounded-2xl bg-panel px-5 py-4 sm:px-6 sm:py-5">
   <p class="font-sans text-sm">
     <span class="font-bold text-accent" lang={t.langOf("analysis.label")}>{t("analysis.label")}</span>
     <span class="text-muted" lang={t.langOf("analysis.note")}>{t("analysis.note")}</span>

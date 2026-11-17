@@ -21,7 +21,7 @@ const alternates = Object.fromEntries(publishedLocales.map((l) => [l, localizePa
 ---
 
 <Layout lang={lang} title={t("compare.title")} description={t("compare.description")} alternates={alternates}>
-  <PageHeader title={t("compare.title")} intro={t("compare.description")} introLang={t.langOf("compare.description")} />
+  <PageHeader icon="lucide:columns-3" title={t("compare.title")} intro={t("compare.description")} introLang={t.langOf("compare.description")} />
   {
     issues.length === 0 ? (
       <p>{t("compare.empty")}</p>

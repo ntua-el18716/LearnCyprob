@@ -28,7 +28,7 @@ const alternates = Object.fromEntries(publishedLocales.map((l) => [l, localizePa
 ---
 
 <Layout lang={lang} title={t("glossary.title")} description={t("glossary.description")} alternates={alternates}>
-  <PageHeader title={t("glossary.title")} intro={t("glossary.description")} introLang={t.langOf("glossary.description")} />
+  <PageHeader icon="lucide:book-a" title={t("glossary.title")} intro={t("glossary.description")} introLang={t.langOf("glossary.description")} />
   <div class="max-w-3xl">
   {
     groups.length > 1 && (
@@ -43,7 +43,7 @@ const alternates = Object.fromEntries(publishedLocales.map((l) => [l, localizePa
   }
   {
     groups.map((g) => (
-      <section aria-labelledby={`letter-${g.letter}`} class="mb-12 grid gap-6 sm:grid-cols-[4rem_minmax(0,1fr)]">
+      <section aria-labelledby={`letter-${g.letter}`} data-reveal class="mb-12 grid gap-6 sm:grid-cols-[4rem_minmax(0,1fr)]">
         <h2 id={`letter-${g.letter}`} class="grid size-14 scroll-mt-6 place-items-center rounded-full bg-accent text-2xl font-[760] text-on-accent">
           {g.letter}
         </h2>

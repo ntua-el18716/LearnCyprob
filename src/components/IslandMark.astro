@@ -1,0 +1,35 @@
+---
+// The island of Cyprus as a small decorative mark: a solid silhouette (logo)
+// or an outline filled with a dot pattern (footer, 404). One whole shape, as
+// in the home-page hero. Always decorative: hidden from assistive technology.
+import { cyprusOutline, cyprusViewBox } from "../data/cyprus-shape";
+
+interface Props {
+  variant?: "solid" | "dotted";
+  /** Unique on the page; names the dot pattern of a dotted mark. */
+  id?: string;
+  class?: string;
+}
+
+const { variant = "solid", id = "island-dots", class: className } = Astro.props;
+const { width, height } = cyprusViewBox;
+---
+
+<svg viewBox={`0 0 ${width} ${height}`} aria-hidden="true" focusable="false" class={className}>
+  {
+    variant === "solid" ? (
+      <path d={cyprusOutline} fill="currentColor" />
+    ) : (
+      <>
+        <defs>
+          <pattern id={id} width="21" height="36.4" patternUnits="userSpaceOnUse">
+            <circle cx="5" cy="5" r="4.6" fill="currentColor" />
+            <circle cx="15.5" cy="23.2" r="4.6" fill="currentColor" />
+          </pattern>
+        </defs>
+        <path d={cyprusOutline} fill={`url(#${id})`} />
+        <path d={cyprusOutline} fill="none" stroke="currentColor" stroke-width="1.5" stroke-opacity="0.5" vector-effect="non-scaling-stroke" />
+      </>
+    )
+  }
+</svg>

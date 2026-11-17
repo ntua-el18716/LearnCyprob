@@ -21,7 +21,7 @@ const t = useTranslations(localeOf(Astro.currentLocale));
 const origin = `concern.community.${community}` as const;
 ---
 
-<aside class="concern not-prose my-6 rounded-lg border border-rule bg-sunken px-5 py-4 sm:px-6">
+<aside class="concern not-prose my-6 rounded-2xl border border-rule bg-sunken px-5 py-4 sm:px-6">
   <p class="font-sans text-sm">
     <span class="font-bold" lang={t.langOf("concern.label")}>{t("concern.label")}</span>
     <span class="text-muted" lang={t.langOf(origin)}>{t(origin)}</span>

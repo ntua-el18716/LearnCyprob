@@ -26,7 +26,7 @@ const alternates = Object.fromEntries(publishedLocales.map((l) => [l, localizePa
 ---
 
 <Layout lang={lang} title={t("actors.title")} description={t("actors.description")} alternates={alternates}>
-  <PageHeader title={t("actors.title")} intro={t("actors.description")} introLang={t.langOf("actors.description")} />
+  <PageHeader icon="lucide:users" title={t("actors.title")} intro={t("actors.description")} introLang={t.langOf("actors.description")} />
   {actors.length === 0 && <p>{t("actors.empty")}</p>}
   {
     actorGroups
@@ -45,8 +45,8 @@ const alternates = Object.fromEntries(publishedLocales.map((l) => [l, localizePa
                 const n = issueCount(actor.id);
                 const { from, to } = actor.data.active;
                 return (
-                  <li>
-                    <a href={localizePath(lang, `actors/${actor.id}`)} class="group flex h-full flex-col rounded-2xl border border-rule p-5 transition hover:-translate-y-0.5 hover:border-accent hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+                  <li data-reveal>
+                    <a href={localizePath(lang, `actors/${actor.id}`)} class="group flex h-full flex-col rounded-2xl border border-rule p-5 transition hover:-translate-y-1 hover:border-accent hover:shadow-lg hover:shadow-accent/10 motion-reduce:transition-none motion-reduce:hover:translate-y-0">
                       <span class="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-accent">
                         {actor.data.color && <span aria-hidden="true" class="size-2.5 rounded-sm" style={{ background: actor.data.color }} />}
                         <span lang={short.isFallback ? short.lang : undefined}>{short.text}</span>

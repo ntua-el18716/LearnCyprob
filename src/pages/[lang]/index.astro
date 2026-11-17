@@ -190,18 +190,6 @@ const entries = [
       transform: translateY(1.25rem);
     }
   }
-  /* Blocks below the fold fade up as they scroll into view. The script marks
-     only blocks that start off-screen, so nothing is hidden without it. */
-  [data-reveal] {
-    transition:
-      opacity 0.6s ease-out,
-      transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
-    transition-delay: calc(var(--i, 0) * 80ms);
-  }
-  [data-reveal="waiting"] {
-    opacity: 0;
-    transform: translateY(1.5rem);
-  }
   @media (prefers-reduced-motion: reduce) {
     .hero-rise {
       animation: none;
@@ -210,25 +198,6 @@ const entries = [
 </style>
 
 <script>
-  // Fade-up on scroll, for blocks that start below the window.
-  if ("IntersectionObserver" in window && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (!entry.isIntersecting) continue;
-          (entry.target as HTMLElement).dataset.reveal = "";
-          observer.unobserve(entry.target);
-        }
-      },
-      { rootMargin: "0px 0px -8% 0px" },
-    );
-    for (const el of document.querySelectorAll<HTMLElement>("[data-reveal]")) {
-      if (el.getBoundingClientRect().top < window.innerHeight) continue;
-      el.dataset.reveal = "waiting";
-      observer.observe(el);
-    }
-  }
-
   // Hide events that ended since the build; drop the section if none remain.
   const section = document.querySelector<HTMLElement>("[data-home-events]");
   if (section) {

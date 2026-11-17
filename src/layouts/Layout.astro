@@ -1,5 +1,6 @@
 ---
 import Link from "@components/Link.astro";
+import IslandMark from "@components/IslandMark.astro";
 import { Icon } from "astro-icon/components";
 import { author, defaultMeta, repoUrl } from "@data/constants";
 import { localizePath, useTranslations } from "../lib/i18n";
@@ -137,8 +138,9 @@ const canonicalURL = new URL(Astro.url).href;
       >{t("a11y.skipToContent")}</a
     >
     <header class="relative z-30 bg-accent text-on-accent dark:border-b dark:border-accent/40 dark:bg-panel dark:text-ink">
-      <div class="mx-auto flex max-w-6xl items-center gap-x-6 px-4 py-2.5 sm:px-8 lg:py-3">
-        <a href={localizePath(lang)} class="text-lg font-[760] tracking-tight whitespace-nowrap">
+      <div class="mx-auto flex max-w-6xl items-center gap-x-3 px-4 py-2.5 sm:gap-x-6 sm:px-8 lg:py-3">
+        <a href={localizePath(lang)} class="group flex items-center gap-2 whitespace-nowrap text-lg font-[760] tracking-tight">
+          <IslandMark class="h-5 w-auto transition-transform duration-300 group-hover:-rotate-3 group-hover:scale-110 motion-reduce:transform-none" />
           {t("site.title")}
         </a>
         <nav aria-label={t("nav.label")} class="hidden lg:block">
@@ -146,8 +148,8 @@ const canonicalURL = new URL(Astro.url).href;
             {navigation.map((item) => <li><Link {...item} /></li>)}
           </ul>
         </nav>
-        <div class="ml-auto flex items-center gap-1 sm:gap-2">
-          <a href={searchHref} class="rounded p-2 hover:bg-white/20 dark:hover:bg-white/10" aria-label={t("search.title")}>
+        <div class="ml-auto flex items-center gap-0.5 sm:gap-2">
+          <a href={searchHref} class="rounded-full p-2 transition-colors hover:bg-white/20 dark:hover:bg-white/10" aria-label={t("search.title")}>
             <Icon name="lucide:search" class="size-5" />
           </a>
           <ul class="flex items-center gap-1 text-sm font-semibold" aria-label={t("nav.language")}>
@@ -160,7 +162,7 @@ const canonicalURL = new URL(Astro.url).href;
                     lang={l}
                     aria-current={l === lang ? "true" : undefined}
                     class:list={[
-                      "block rounded px-2 py-1.5",
+                      "block rounded-full px-2 py-1.5 transition sm:px-2.5",
                       l === lang ? "bg-white/20 dark:bg-white/10" : "opacity-80 hover:opacity-100",
                     ]}
                   >
@@ -170,23 +172,23 @@ const canonicalURL = new URL(Astro.url).href;
               ))
             }
           </ul>
-          <button id="dark-mode-toggle" class="rounded p-2 hover:bg-white/20 dark:hover:bg-white/10" aria-label={t("theme.toggle")}>
+          <button id="dark-mode-toggle" class="rounded-full p-2 transition-colors hover:bg-white/20 dark:hover:bg-white/10" aria-label={t("theme.toggle")}>
             <Icon name="moon" class="w-5 h-5 sun-icon" />
             <Icon name="sun" class="w-5 h-5 moon-icon" />
           </button>
           <!-- Narrow screens: a menu. <details> opens without JavaScript. -->
           <details class="site-menu lg:hidden" data-site-menu>
-            <summary class="flex cursor-pointer list-none items-center gap-1.5 rounded px-2 py-1.5 font-semibold hover:bg-white/20 dark:hover:bg-white/10 [&::-webkit-details-marker]:hidden">
+            <summary class="flex cursor-pointer list-none items-center gap-1.5 rounded-full px-2 py-1.5 sm:px-3 font-semibold hover:bg-white/20 dark:hover:bg-white/10 [&::-webkit-details-marker]:hidden">
               <Icon name="lucide:menu" class="size-5 menu-open-icon" />
               <Icon name="lucide:x" class="size-5 menu-close-icon" />
-              <span>{t("nav.menu")}</span>
+              <span class="sr-only min-[420px]:not-sr-only">{t("nav.menu")}</span>
             </summary>
             <div class="absolute inset-x-0 top-full border-b border-rule bg-bg text-ink shadow-lg">
               <nav aria-label={t("nav.label")} class="mx-auto max-w-6xl px-4 py-4 sm:px-8">
                 <ul class="grid gap-1 sm:grid-cols-2">
                   {navigation.map((item) => (
                     <li>
-                      <a href={item.href} aria-current={Astro.url.pathname.startsWith(item.href) ? "page" : undefined} class="block rounded-md px-3 py-3 text-lg font-semibold hover:bg-sunken aria-[current=page]:bg-panel aria-[current=page]:text-accent">
+                      <a href={item.href} aria-current={Astro.url.pathname.startsWith(item.href) ? "page" : undefined} class="block rounded-xl px-3 py-3 text-lg font-semibold hover:bg-sunken aria-[current=page]:bg-panel aria-[current=page]:text-accent">
                         {item.text}
                       </a>
                     </li>
@@ -209,17 +211,21 @@ const canonicalURL = new URL(Astro.url).href;
     </header>
     <main id="main-content" class="mx-auto w-full max-w-6xl flex-1 px-4 sm:px-8 py-10 sm:py-14" data-pagefind-body={unsearchable ? undefined : ""}>
       <noscript>
-        <p class="mb-8 rounded-md bg-sunken px-4 py-3 text-sm" data-pagefind-ignore>{t("noscript.body")}</p>
+        <p class="mb-8 rounded-xl bg-sunken px-4 py-3 text-sm" data-pagefind-ignore>{t("noscript.body")}</p>
       </noscript>
       <slot />
     </main>
-    <footer class="mt-8 border-t border-rule bg-sunken/60">
-      <div class="mx-auto grid max-w-6xl grid-cols-2 gap-8 px-4 py-10 text-sm sm:grid-cols-[1fr_auto_auto_auto] sm:gap-12 sm:px-8">
+    <footer class="relative mt-16 overflow-hidden bg-accent text-on-accent dark:border-t dark:border-accent/40 dark:bg-panel dark:text-ink">
+      <IslandMark variant="dotted" id="footer-island" class="pointer-events-none absolute -bottom-10 -right-16 w-[30rem] max-w-none opacity-[0.13] sm:-bottom-16 sm:w-[44rem] dark:text-accent dark:opacity-20" />
+      <div class="relative mx-auto grid max-w-6xl grid-cols-2 gap-x-8 gap-y-10 px-4 py-12 text-sm sm:grid-cols-[1fr_auto_auto_auto] sm:gap-x-14 sm:px-8 sm:py-16">
         <div class="col-span-2 sm:col-span-1">
-          <a href={localizePath(lang)} class="text-base font-[760] text-ink">{t("site.title")}</a>
-          <p class="mt-2 max-w-xs text-muted">
+          <a href={localizePath(lang)} class="inline-flex items-center gap-2.5 text-2xl font-[780] tracking-tight">
+            <IslandMark class="h-7 w-auto" />
+            {t("site.title")}
+          </a>
+          <p class="mt-4 max-w-xs opacity-80">
             {t("footer.copyright", { year: new Date().getFullYear(), author })}
-            <a href={repoUrl} class="link">{t("footer.source")}</a>
+            <a href={repoUrl} class="underline decoration-1 underline-offset-[3px] hover:decoration-2">{t("footer.source")}</a>
           </p>
         </div>
         {
@@ -231,10 +237,10 @@ const canonicalURL = new URL(Astro.url).href;
             .filter((group) => group.items.length > 0)
             .map((group) => (
               <nav aria-label={group.heading}>
-                <h2 class="font-bold text-ink">{group.heading}</h2>
-                <ul class="mt-2 space-y-1.5">
+                <h2 class="text-xs font-bold uppercase tracking-[0.12em] opacity-70">{group.heading}</h2>
+                <ul class="mt-3 space-y-2">
                   {group.items.map((item) => (
-                    <li><a href={item.href} class="text-muted hover:text-ink hover:underline">{item.text}</a></li>
+                    <li><a href={item.href} class="font-medium hover:underline hover:underline-offset-4">{item.text}</a></li>
                   ))}
                 </ul>
               </nav>
@@ -270,6 +276,25 @@ const canonicalURL = new URL(Astro.url).href;
         // Storage can be unavailable (private mode); the toggle still works.
       }
     });
+
+    // Fade-up on scroll, for [data-reveal] blocks that start below the window.
+    if ("IntersectionObserver" in window && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (!entry.isIntersecting) continue;
+            entry.target.dataset.reveal = "";
+            observer.unobserve(entry.target);
+          }
+        },
+        { rootMargin: "0px 0px -6% 0px" },
+      );
+      for (const el of document.querySelectorAll("[data-reveal]")) {
+        if (el.getBoundingClientRect().top < innerHeight) continue;
+        el.dataset.reveal = "waiting";
+        observer.observe(el);
+      }
+    }
 
     // Menu: close it with Escape, on a click outside, or when a link in it
     // is followed (back/forward cache would otherwise show it open).

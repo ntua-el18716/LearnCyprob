@@ -26,12 +26,14 @@ const link = "link";
 ---
 
 <Layout lang={lang} title={title} alternates={alternates}>
-  <h1 class="text-3xl font-bold tracking-tight text-ink">{title}</h1>
-  <p class="mt-2 flex flex-wrap gap-x-4 text-sm">
+  <header class="page-band">
+  <h1 class="page-title">{title}</h1>
+  <p class="mt-4 flex flex-wrap gap-x-4 font-semibold">
     <a href={localizePath(lang, `issues/${issue.slug}`)} lang={issue.isFallback ? issue.lang : undefined} class={link}>{issue.title}</a>
     <a href={localizePath(lang, "compare")} class={link}>{t("compare.backToMatrix")}</a>
   </p>
-  <ol class="mt-8 space-y-8">
+  </header>
+  <ol class="space-y-8">
     {
       plans.map((plan) => {
         const provision = cell(issue.slug, plan.id);

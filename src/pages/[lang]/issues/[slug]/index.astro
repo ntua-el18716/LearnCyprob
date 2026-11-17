@@ -94,19 +94,18 @@ const alternates = Object.fromEntries(
   noindex={data.draft}
   ogImage={{ src: `${issueLink(slug)}og.png`, alt: data.title }}
 >
-  {data.draft && <PageNotice kind="draft">{t("draft.banner")}</PageNotice>}
-  {isFallback && <PageNotice kind="translation">{t("translation.missing")}</PageNotice>}
-  {
-    import.meta.env.DEV && !hasConcerns && (
-      <PageNotice kind="draft" lang="en">
-        Dev only: this issue has no “{concernsHeading}” section. Every issue
-        article needs one (CLAUDE.md).
-      </PageNotice>
-    )
-  }
-
   <article>
-    <header class="-mt-2 mb-10 border-b border-rule pb-10">
+    <header class="page-band">
+      {data.draft && <PageNotice kind="draft">{t("draft.banner")}</PageNotice>}
+      {isFallback && <PageNotice kind="translation">{t("translation.missing")}</PageNotice>}
+      {
+        import.meta.env.DEV && !hasConcerns && (
+          <PageNotice kind="draft" lang="en">
+            Dev only: this issue has no “{concernsHeading}” section. Every issue
+            article needs one (CLAUDE.md).
+          </PageNotice>
+        )
+      }
       <div class="mb-5 flex items-center gap-3">
         <ChapterIcon slug={chapterSlug} size={ancestors.length ? "sm" : "md"} />
         {

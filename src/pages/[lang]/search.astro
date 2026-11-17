@@ -39,7 +39,7 @@ const strings = {
 ---
 
 <Layout lang={lang} title={t("search.title")} description={t("search.description")} alternates={alternates} unsearchable>
-  <PageHeader title={t("search.title")} intro={t("search.description")} introLang={t.langOf("search.description")} />
+  <PageHeader icon="lucide:search" title={t("search.title")} intro={t("search.description")} introLang={t.langOf("search.description")} />
 
   <form role="search" action={localizePath(lang, "search")} class="max-w-2xl" data-search-form>
     <label for="search-input" class="sr-only">{t("search.label")}</label>
@@ -56,7 +56,7 @@ const strings = {
       />
     </div>
   </form>
-  <noscript><p class="mt-6 max-w-2xl rounded-md bg-sunken px-4 py-3">{t("search.noscript")}</p></noscript>
+  <noscript><p class="mt-6 max-w-2xl rounded-xl bg-sunken px-4 py-3">{t("search.noscript")}</p></noscript>
 
   <div class="mt-8 max-w-3xl" data-search-results data-sections={JSON.stringify(sections)} data-strings={JSON.stringify(strings)}>
     <p role="status" class="text-sm font-semibold text-muted" data-search-status></p>

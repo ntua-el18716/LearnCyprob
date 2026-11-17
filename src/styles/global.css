@@ -63,7 +63,47 @@
   }
   /* Form controls (inputs, selects, buttons). */
   .control {
-    @apply rounded-md border border-control bg-bg px-3 py-2 text-ink;
+    @apply rounded-xl border border-control bg-bg px-3.5 py-2.5 text-ink transition-shadow;
+  }
+  .control:focus-visible {
+    box-shadow: 0 0 0 4px rgb(var(--accent) / 0.18);
+  }
+  /* Pill buttons: solid (main action) and outlined. */
+  .btn {
+    @apply inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 font-semibold text-on-accent shadow-lg shadow-accent/25 transition hover:shadow-xl hover:shadow-accent/30 active:scale-[0.97];
+  }
+  .btn-outline {
+    @apply inline-flex items-center gap-2 rounded-full border-2 border-ink/80 px-6 py-3 font-semibold transition hover:bg-ink hover:text-bg active:scale-[0.97];
+  }
+  /*
+   * Tinted band under the site header, holding a page's title block. It
+   * cancels <main>'s top padding and is bled to the window edges with a
+   * clipped shadow (no horizontal overflow). A field of dots fades in on
+   * the right as decoration.
+   */
+  .page-band {
+    @apply relative -mt-10 mb-10 py-10 sm:-mt-14 sm:mb-12 sm:py-14;
+    background-color: rgb(var(--panel));
+    box-shadow: 0 0 0 100vmax rgb(var(--panel));
+    clip-path: inset(0 -100vmax);
+  }
+  .page-band::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 45% 55%;
+    pointer-events: none;
+    background-image: radial-gradient(rgb(var(--accent) / 0.3) 1.5px, transparent 1.7px);
+    background-size: 18px 18px;
+    mask-image: radial-gradient(ellipse 75% 100% at 85% 50%, #000 5%, transparent 70%);
+    -webkit-mask-image: radial-gradient(ellipse 75% 100% at 85% 50%, #000 5%, transparent 70%);
+  }
+  @media (min-width: 768px) {
+    .page-band::before {
+      inset: 0 0 0 35%;
+    }
+  }
+  .page-band > * {
+    position: relative;
   }
   /* Page title block used by index pages. */
   .page-title {
@@ -71,6 +111,25 @@
   }
   .page-intro {
     @apply mt-3 max-w-2xl text-xl leading-snug text-muted;
+  }
+  /* Blocks below the fold fade up as they scroll into view. The script in
+     Layout.astro marks only blocks that start off-screen, so nothing is
+     hidden without it. `--i` staggers neighbours. */
+  [data-reveal] {
+    transition:
+      opacity 0.6s ease-out,
+      transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition-delay: calc(var(--i, 0) * 80ms);
+  }
+  [data-reveal="waiting"] {
+    opacity: 0;
+    transform: translateY(1.5rem);
+  }
+  @media print {
+    [data-reveal="waiting"] {
+      opacity: 1;
+      transform: none;
+    }
   }
   /* Site menu (narrow screens): swap the menu and close icons. */
   .site-menu .menu-close-icon,

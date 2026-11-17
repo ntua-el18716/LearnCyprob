@@ -29,12 +29,14 @@ const alternates = Object.fromEntries(publishedLocales.map((l) => [l, localizePa
 ---
 
 <Layout lang={lang} title={title} alternates={alternates} noindex={board.draft}>
-  {board.draft && <PageNotice kind="draft">{t("draft.banner")}</PageNotice>}
-  <h1 class="text-3xl font-bold tracking-tight text-ink">{title}</h1>
-  <p class="mt-2">
-    <a href={localizePath(lang, `issues/${slug}`)} lang={issue.isFallback ? issue.lang : undefined} class="link">
-      {issue.entry.data.title}
-    </a>
-  </p>
+  <header class="page-band">
+    {board.draft && <PageNotice kind="draft">{t("draft.banner")}</PageNotice>}
+    <h1 class="page-title">{title}</h1>
+    <p class="mt-4 font-semibold">
+      <a href={localizePath(lang, `issues/${slug}`)} lang={issue.isFallback ? issue.lang : undefined} class="link">
+        {issue.entry.data.title}
+      </a>
+    </p>
+  </header>
   <PositionBoard issue={slug} />
 </Layout>

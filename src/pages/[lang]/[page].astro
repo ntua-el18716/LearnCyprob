@@ -43,11 +43,10 @@ const alternates = Object.fromEntries(
   alternates={alternates}
   noindex={data.draft}
 >
-  {data.draft && <PageNotice kind="draft">{t("draft.banner")}</PageNotice>}
-  {isFallback && <PageNotice kind="translation">{t("translation.missing")}</PageNotice>}
-
-  <article class="max-w-[42rem]">
-    <header class="mb-8">
+  <article>
+    <header class="page-band">
+      {data.draft && <PageNotice kind="draft">{t("draft.banner")}</PageNotice>}
+      {isFallback && <PageNotice kind="translation">{t("translation.missing")}</PageNotice>}
       <h1 lang={contentLangAttr} class="page-title">
         {data.title}
       </h1>
@@ -60,9 +59,11 @@ const alternates = Object.fromEntries(
         </a>
       </p>
     </header>
-    <div lang={contentLangAttr} class="prose prose-site max-w-none">
-      <Content components={{ Analysis, Cite, Claim, Concern, Status, StatusTerm }} />
+    <div class="max-w-[42rem]">
+      <div lang={contentLangAttr} class="prose prose-site max-w-none">
+        <Content components={{ Analysis, Cite, Claim, Concern, Status, StatusTerm }} />
+      </div>
+      <SourcesList citations={citations} />
     </div>
-    <SourcesList citations={citations} />
   </article>
 </Layout>

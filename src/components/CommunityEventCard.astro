@@ -55,7 +55,7 @@ const languages = new Intl.DisplayNames([lang], { type: "language" });
 const Heading = `h${level}` as const;
 const ics = localizePath(lang, `events/${event.id}.ics`).replace(/\/$/, "");
 const button =
-  "inline-flex items-center gap-1.5 rounded-md border border-control px-3 py-1.5 text-sm font-semibold hover:border-accent hover:text-accent";
+  "inline-flex items-center gap-1.5 rounded-full border border-control px-3.5 py-1.5 transition-colors text-sm font-semibold hover:border-accent hover:text-accent";
 ---
 
 <li id={event.id} data-community-event data-kind={data.kind} data-last={lastDay(event)} class="scroll-mt-24">

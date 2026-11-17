@@ -52,10 +52,12 @@ const value = "mt-1 text-lg font-semibold";
   alternates={alternates}
   noindex={data.draft}
 >
-  {data.draft && <PageNotice kind="draft">{t("draft.banner")}</PageNotice>}
-
   <article>
-    <header class="mb-10">
+    <header class="page-band">
+      {data.draft && <PageNotice kind="draft">{t("draft.banner")}</PageNotice>}
+      <p class="mb-4 text-sm font-semibold">
+        <a href={localizePath(lang, "documents")} class="inline-flex items-center gap-1.5 link"><Icon name="lucide:arrow-left" class="size-4" aria-hidden="true" />{t("documents.title")}</a>
+      </p>
       <h1
         lang={langAttr(title)}
         class="page-title max-w-4xl"
@@ -65,7 +67,7 @@ const value = "mt-1 text-lg font-semibold";
       {data.originalTitle && <p class="mt-2 text-lg text-ink">{data.originalTitle}</p>}
 
       <!-- Facts as a grid of cells; 1px gaps over a rule-coloured background draw the dividers. -->
-      <dl class="mt-8 grid gap-px overflow-hidden rounded-xl border border-rule bg-rule sm:grid-cols-[repeat(auto-fit,minmax(13rem,1fr))]">
+      <dl class="mt-8 grid gap-px overflow-hidden rounded-2xl border border-rule bg-rule shadow-sm sm:grid-cols-[repeat(auto-fit,minmax(13rem,1fr))]">
         <div class={cell}>
           <dt class={term}>{t("documents.date")}</dt>
           <dd class={value}>
@@ -126,7 +128,7 @@ const value = "mt-1 text-lg font-semibold";
                     href={file.path}
                     hreflang={file.lang}
                     download={file.path.endsWith(".pdf") ? "" : undefined}
-                    class="inline-flex items-center gap-2 rounded-md bg-accent px-4 py-2.5 font-semibold text-on-accent hover:bg-accent/90"
+                    class="btn px-5 py-2.5"
                   >
                     <Icon name="lucide:download" class="size-5" aria-hidden="true" />
                     {t(kindKey)} ({file.lang.toUpperCase()}{file.path.endsWith(".pdf") ? ", PDF" : ""})

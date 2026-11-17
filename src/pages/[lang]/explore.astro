@@ -27,7 +27,7 @@ const alternates = Object.fromEntries(publishedLocales.map((l) => [l, localizePa
 ---
 
 <Layout lang={lang} title={t("explore.title")} description={t("explore.description")} alternates={alternates}>
-  <PageHeader title={t("explore.title")} intro={t("explore.description")} introLang={t.langOf("explore.description")} />
+  <PageHeader icon="lucide:compass" title={t("explore.title")} intro={t("explore.description")} introLang={t.langOf("explore.description")} />
 
   <div class="lg:grid lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-12">
     <div>

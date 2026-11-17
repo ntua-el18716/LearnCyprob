@@ -3,7 +3,7 @@ import { useForm, Controller } from "react-hook-form";
 import ResultsChart from "./ResultsChart.jsx";
 
 const field =
-  "block w-full mt-1 p-2 rounded-md border border-control bg-bg";
+  "block w-full mt-1 px-3 py-2.5 rounded-xl border border-control bg-bg";
 const percent = (n) => `${n.toFixed(1)}%`;
 
 /**
@@ -80,7 +80,7 @@ function Calculator({
           {slots.map((i) => (
             <fieldset
               key={i}
-              className="rounded-lg border border-rule p-4 space-y-3"
+              className="rounded-2xl border border-rule p-4 space-y-3"
             >
               <legend className="px-1 font-medium">
                 {strings.candidate.replace("{n}", i)}
@@ -140,7 +140,7 @@ function Calculator({
         </div>
         <button
           type="submit"
-          className="w-full py-3 rounded-lg border border-accent bg-accent text-on-accent font-semibold hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="w-full py-3.5 rounded-full border border-accent shadow-lg shadow-accent/25 transition active:scale-[0.98] bg-accent text-on-accent font-semibold hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2"
         >
           {strings.calculate}
         </button>

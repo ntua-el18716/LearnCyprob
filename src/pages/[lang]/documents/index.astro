@@ -29,7 +29,7 @@ const chipBase = "rounded-full border px-3.5 py-1.5 text-sm font-semibold transi
 ---
 
 <Layout lang={lang} title={t("documents.title")} description={t("documents.description")} alternates={alternates}>
-  <PageHeader title={t("documents.title")} intro={t("documents.description")} introLang={t.langOf("documents.description")}>
+  <PageHeader icon="lucide:file-stack" title={t("documents.title")} intro={t("documents.description")} introLang={t.langOf("documents.description")}>
     <p class="mt-4 text-sm font-semibold text-muted">{count(documents.length)}</p>
   </PageHeader>
 

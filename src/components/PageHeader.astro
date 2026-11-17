@@ -1,18 +1,70 @@
 ---
-// Title block for index pages: bold title, optional intro. `introLang`
-// marks an intro that fell back to another language.
+// Title block for index pages: a tinted band under the site header with a
+// bold title, optional intro and, with `icon`, a decorative emblem (the
+// section's icon in the site's circle motif). `introLang` marks an intro that
+// fell back to another language.
+import { Icon } from "astro-icon/components";
+
 interface Props {
   title: string;
   intro?: string;
   titleLang?: string;
   introLang?: string;
+  /** Icon name for the emblem, e.g. "lucide:compass". */
+  icon?: string;
 }
 
-const { title, intro, titleLang, introLang } = Astro.props;
+const { title, intro, titleLang, introLang, icon } = Astro.props;
 ---
 
-<header class="mb-10 sm:mb-12">
-  <h1 class="page-title" lang={titleLang}>{title}</h1>
-  {intro && <p class="page-intro" lang={introLang}>{intro}</p>}
-  <slot />
+<header class="page-band">
+  <div class="flex items-center justify-between gap-10">
+    <div class="min-w-0 flex-1">
+      {
+        icon && (
+          <span aria-hidden="true" class="mb-4 grid size-12 place-items-center rounded-full bg-accent text-on-accent shadow-lg shadow-accent/25 md:hidden">
+            <Icon name={icon} class="size-6" />
+          </span>
+        )
+      }
+      <h1 class="page-title" lang={titleLang}>{title}</h1>
+      {intro && <p class="page-intro" lang={introLang}>{intro}</p>}
+      <slot />
+    </div>
+    {
+      icon && (
+        <div aria-hidden="true" class="emblem relative hidden size-44 shrink-0 md:block lg:mr-10">
+          <svg viewBox="0 0 100 100" class="absolute inset-0 size-full text-accent" focusable="false">
+            <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" stroke-opacity="0.25" stroke-width="0.6" stroke-dasharray="1 2.4" stroke-linecap="round" />
+            <circle cx="50" cy="50" r="38" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="0.6" />
+            <g class="emblem-orbit" fill="currentColor">
+              <circle cx="50" cy="2" r="2.6" />
+              <circle cx="91.6" cy="74" r="1.8" fill-opacity="0.6" />
+              <circle cx="8.4" cy="74" r="1.2" fill-opacity="0.4" />
+            </g>
+          </svg>
+          <span class="absolute inset-[22%] grid place-items-center rounded-full bg-accent text-on-accent shadow-xl shadow-accent/30">
+            <Icon name={icon} class="size-10" />
+          </span>
+        </div>
+      )
+    }
+  </div>
 </header>
+
+<style>
+  .emblem-orbit {
+    transform-origin: 50px 50px;
+    animation: emblem-orbit 40s linear infinite;
+  }
+  @keyframes emblem-orbit {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .emblem-orbit {
+      animation: none;
+    }
+  }
+</style>
